@@ -1,0 +1,38 @@
+# WandB Sweep configuration
+# Run with: uv run python main.py sweep --config configs/sweep.yaml
+
+# Path to the base experiment config that will be used for each run
+base_config: configs/baseline.yaml
+
+# WandB project name
+project: c5-image-caption
+
+# Number of runs to execute
+count: 20
+
+# Sweep method: bayes, grid, or random
+method: bayes
+
+# Metric to optimize
+metric:
+  name: val_meteor
+  goal: maximize
+
+# Parameters to sweep over
+parameters:
+  training.lr:
+    distribution: log_uniform_values
+    min: 0.00001
+    max: 0.01
+  training.batch_size:
+    values: [32, 64, 128]
+  decoder.hidden_size:
+    values: [256, 512, 1024]
+  decoder.embed_size:
+    values: [256, 512]
+  decoder.num_layers:
+    values: [1, 2]
+  decoder.dropout:
+    values: [0.0, 0.1, 0.3, 0.5]
+  training.optimizer:
+    values: [adam, adamw]

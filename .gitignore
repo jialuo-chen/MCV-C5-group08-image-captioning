@@ -1,0 +1,24 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Training outputs
+*.pt
+*.pth
+
+# WandB
+wandb/
+
+# Data
+*.npy
+
+# OS files
+.DS_Store
+Thumbs.db
