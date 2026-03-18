@@ -25,7 +25,7 @@ That's it — `uv sync` reads `pyproject.toml` and installs everything into a lo
 
 ```
 c5_image_caption/
-├── main.py                  # CLI entry point (train / evaluate / infer / sweep)
+├── main.py                  # CLI entry point (train / evaluate / infer / sweep / visualize)
 ├── pyproject.toml           # Dependencies and project metadata
 ├── configs/                 # YAML configuration files for each experiment
 │   ├── baseline.yaml            # Baseline: ResNet-18 + GRU + character-level
@@ -49,10 +49,12 @@ c5_image_caption/
 │   ├── evaluation/
 │   │   └── metrics.py           # BLEU-1, BLEU-2, ROUGE-L, METEOR
 │   ├── utils/
-│   │   └── config.py            # YAML config loader with defaults & CLI overrides
+│   │   ├── config.py            # YAML config loader with defaults & CLI overrides
+│   │   └── logger.py            # Experiment logger (params, FLOPs, epoch stats)
 │   ├── train.py                 # Training loop (loss, checkpoints, WandB logging)
 │   ├── evaluate.py              # Run evaluation on the test set
-│   └── infer.py                 # Generate captions for individual images
+│   ├── infer.py                 # Generate captions for individual images
+│   └── visualize.py             # Generate captioning visualization plots
 ├── notebooks/                   # Reference notebooks (baseline model, demo eval)
 ├── outputs/                     # Training outputs: checkpoints & results (gitignored)
 └── .gitignore
@@ -138,6 +140,40 @@ uv run python main.py sweep --config configs/sweep.yaml
 ```
 
 The sweep config (`configs/sweep.yaml`) defines which parameters to search and references a base experiment config.
+
+### Visualize model predictions
+
+Generate side-by-side plots of ground-truth vs predicted captions on test images:
+
+```bash
+uv run python main.py visualize \
+    --config configs/baseline.yaml \
+    --checkpoint outputs/<run_name>/checkpoints/best.pt
+```
+
+Customize the number of samples and add a model label:
+
+```bash
+uv run python main.py visualize \
+    --config configs/baseline.yaml \
+    --checkpoint outputs/<run_name>/checkpoints/best.pt \
+    --num-images 10 \
+    --model-type "Baseline" \
+    --output outputs/plots/
+```
+
+Saves a grid image plus individual per-image plots.
+
+## Experiment Logger
+
+Every training run automatically produces an `experiment_log.json` inside the output directory with:
+
+- **Model info** — total / trainable parameters (broken down by encoder and decoder), estimated FLOPs
+- **Hyperparameters** — full config snapshot (encoder, decoder, attention, tokenizer, training)
+- **Per-epoch stats** — train loss, val loss, BLEU-1, BLEU-2, ROUGE-L, METEOR, learning rate, epoch wall-clock time
+- **Training summary** — best epoch, best metrics, total training time, min losses, average epoch time
+
+Inference runs also log checkpoint path, number of images, total time, and average latency.
 
 ## Available Configs
 

@@ -21,6 +21,7 @@ from src.models.captioner import CaptioningModel, build_captioning_model
 from src.models.decoders import HFLMDecoder
 from src.evaluation.metrics import compute_metrics, format_metrics
 from src.utils.config import Config
+from src.utils.logger import ExperimentLogger, print_model_summary
 
 
 def _build_optimizer(cfg: Config, params) -> torch.optim.Optimizer:
@@ -157,7 +158,11 @@ def train(cfg: Config) -> None:
     else:
         model = build_captioning_model(cfg, vocab_size=tokenizer.vocab_size, pad_id=tokenizer.pad_id)
     model = model.to(device)
-    print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
+
+    # -- Logger -------------------------------------------------------------
+    exp_logger = ExperimentLogger(output_dir, dict(cfg))
+    model_info = exp_logger.log_model_info(model, device=str(device))
+    print_model_summary(model_info)
 
     # -- Optimizer, scheduler, criterion ------------------------------------
     optimizer = _build_optimizer(cfg, model.parameters())
@@ -170,10 +175,14 @@ def train(cfg: Config) -> None:
 
     # -- Training loop ------------------------------------------------------
     best_metric = -1.0
+    best_epoch = 0
+    best_metrics_dict: dict[str, float] = {}
     patience_counter = 0
     patience = cfg.training.get("early_stopping_patience")
+    exp_logger.start_training()
 
     for epoch in range(cfg.training.epochs):
+        exp_logger.start_epoch()
         model.train()
         epoch_loss = 0.0
         num_batches = 0
@@ -237,6 +246,17 @@ def train(cfg: Config) -> None:
         if wandb_run:
             wandb_run.log(log_dict)
 
+        # -- Logger epoch ---------------------------------------------------
+        is_best = val_metrics.get("meteor", 0.0) > best_metric
+        exp_logger.log_epoch(
+            epoch=epoch + 1,
+            train_loss=avg_loss,
+            val_loss=val_loss,
+            metrics=val_metrics,
+            lr=optimizer.param_groups[0]["lr"],
+            is_best=is_best,
+        )
+
         # -- Scheduler step -------------------------------------------------
         if scheduler:
             scheduler.step()
@@ -262,6 +282,8 @@ def train(cfg: Config) -> None:
                 epoch=epoch + 1,
                 metrics=val_metrics,
             )
+            best_epoch = epoch + 1
+            best_metrics_dict = dict(val_metrics)
             print(f"  -> New best model (meteor={best_metric * 100:.2f}%)")
             patience_counter = 0
         else:
@@ -272,8 +294,11 @@ def train(cfg: Config) -> None:
             print(f"Early stopping after {patience} epochs without improvement.")
             break
 
+    exp_logger.end_training(best_epoch=best_epoch, best_metrics=best_metrics_dict)
+    log_path = exp_logger.save()
     print(f"\nTraining complete. Best METEOR: {best_metric * 100:.2f}%")
     print(f"Checkpoints saved to: {ckpt_dir}")
+    print(f"Experiment log saved to: {log_path}")
 
     if wandb_run:
         wandb_run.finish()

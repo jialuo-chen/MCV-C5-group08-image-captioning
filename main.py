@@ -79,6 +79,20 @@ def cmd_sweep(args: argparse.Namespace) -> None:
     wandb.agent(sweep_id, function=sweep_agent, count=sweep_cfg.get("count", 10))
 
 
+def cmd_visualize(args: argparse.Namespace) -> None:
+    from src.utils.config import load_config
+    from src.visualize import visualize
+
+    cfg = load_config(args.config, overrides=args.override)
+    visualize(
+        cfg,
+        checkpoint_path=args.checkpoint,
+        num_images=args.num_images,
+        output_dir=args.output,
+        model_type=args.model_type,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="c5-caption",
@@ -106,6 +120,14 @@ def main() -> None:
     p_sweep = subparsers.add_parser("sweep", help="Run a WandB hyperparameter sweep.")
     p_sweep.add_argument("--config", type=str, required=True, help="Path to sweep YAML config.")
 
+    # --- visualize ---
+    p_vis = subparsers.add_parser("visualize", help="Generate caption visualizations.")
+    _add_common_args(p_vis)
+    p_vis.add_argument("--checkpoint", type=str, required=True, help="Path to model checkpoint.")
+    p_vis.add_argument("--num-images", type=int, default=5, help="Number of images to visualize (default: 5).")
+    p_vis.add_argument("--output", type=str, default=None, help="Output directory for plots.")
+    p_vis.add_argument("--model-type", type=str, default=None, help="Model label for plot title.")
+
     args = parser.parse_args()
 
     commands = {
@@ -113,6 +135,7 @@ def main() -> None:
         "evaluate": cmd_evaluate,
         "infer": cmd_infer,
         "sweep": cmd_sweep,
+        "visualize": cmd_visualize,
     }
     commands[args.command](args)
 

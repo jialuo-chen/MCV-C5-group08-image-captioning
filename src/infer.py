@@ -7,6 +7,7 @@ a directory of images, or a list of image paths.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import torch
@@ -17,6 +18,7 @@ from src.data.tokenizer import BaseTokenizer, CharTokenizer, WordTokenizer, Subw
 from src.models.captioner import CaptioningModel
 from src.models.decoders import HFLMDecoder
 from src.utils.config import Config
+from src.utils.logger import ExperimentLogger, count_parameters
 
 
 def _load_tokenizer(ckpt_dir: Path, cfg: Config) -> BaseTokenizer:
@@ -73,6 +75,7 @@ def infer(cfg: Config, checkpoint_path: str, image_paths: list[str], output_file
 
     # -- Run inference ------------------------------------------------------
     results = []
+    t_start = time.time()
     for img_path in image_paths:
         img = Image.open(img_path).convert("RGB")
         img_tensor = transform(img).unsqueeze(0).to(device)
@@ -85,6 +88,20 @@ def infer(cfg: Config, checkpoint_path: str, image_paths: list[str], output_file
         result = {"image": str(img_path), "caption": captions[0]}
         results.append(result)
         print(f"{Path(img_path).name}: {captions[0]}")
+
+    total_time = time.time() - t_start
+
+    # -- Logger -------------------------------------------------------------
+    log_dir = Path(output_file).parent if output_file else ckpt_path.parent.parent / "results"
+    exp_logger = ExperimentLogger(log_dir, dict(saved_cfg))
+    exp_logger.log_model_info(model, device=str(device))
+    exp_logger.log_inference({
+        "checkpoint": str(ckpt_path),
+        "num_images": len(image_paths),
+        "total_time_s": round(total_time, 3),
+        "avg_latency_ms": round((total_time / max(len(image_paths), 1)) * 1000, 2),
+    })
+    exp_logger.save()
 
     # -- Save results -------------------------------------------------------
     if output_file:
