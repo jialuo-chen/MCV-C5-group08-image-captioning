@@ -162,16 +162,16 @@ class ExperimentLogger:
         """Log one epoch's results."""
         epoch_time = time.time() - self._epoch_start if self._epoch_start else 0.0
         entry = {
-            "epoch": epoch,
-            "train_loss": round(train_loss, 6),
-            "val_loss": round(val_loss, 6),
-            "bleu1": round(metrics.get("bleu1", 0.0), 6),
-            "bleu2": round(metrics.get("bleu2", 0.0), 6),
-            "rougeL": round(metrics.get("rougeL", 0.0), 6),
-            "meteor": round(metrics.get("meteor", 0.0), 6),
-            "lr": lr,
-            "epoch_time_s": round(epoch_time, 2),
-            "is_best": is_best,
+            "epoch": int(epoch),
+            "train_loss": float(round(float(train_loss), 6)),
+            "val_loss": float(round(float(val_loss), 6)),
+            "bleu1": float(round(float(metrics.get("bleu1", 0.0)), 6)),
+            "bleu2": float(round(float(metrics.get("bleu2", 0.0)), 6)),
+            "rougeL": float(round(float(metrics.get("rougeL", 0.0)), 6)),
+            "meteor": float(round(float(metrics.get("meteor", 0.0)), 6)),
+            "lr": float(lr),
+            "epoch_time_s": float(round(float(epoch_time), 2)),
+            "is_best": bool(is_best),
         }
         self.data["training"]["epochs"].append(entry)
 
@@ -203,7 +203,7 @@ class ExperimentLogger:
 
     def save(self) -> Path:
         """Write the log to disk and return the path."""
-        self.log_path.write_text(json.dumps(self.data, indent=2))
+        self.log_path.write_text(json.dumps(self.data, indent=2, default=_json_default))
         return self.log_path
 
 
@@ -233,6 +233,21 @@ def _format_time(seconds: float) -> str:
         return f"{minutes:.1f}min"
     hours = minutes / 60
     return f"{hours:.1f}h"
+
+
+def _json_default(obj):
+    """Fallback serializer for NumPy/Torch scalar types."""
+    # NumPy scalar -> Python scalar
+    if hasattr(obj, "item"):
+        try:
+            return obj.item()
+        except Exception:
+            pass
+    # Path-like -> string
+    if isinstance(obj, Path):
+        return str(obj)
+    # Let json raise for unknown complex objects
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
 
 
 def print_model_summary(info: dict) -> None:
