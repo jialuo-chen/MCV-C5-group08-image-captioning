@@ -222,14 +222,14 @@ For each experiment, collect:
 
 ### Final results table (to fill in):
 
-| Exp | Encoder | Decoder | Tok | Attn | BLEU-1 | BLEU-2 | ROUGE-L | METEOR | Params | Time |
-|-----|---------|---------|-----|------|--------|--------|---------|--------|--------|------|
-| A0 | R18 | GRU | char | ✗ | | | | | | |
-| A1 | R50 | GRU | char | ✗ | | | | | | |
-| A2 | R18 | LSTM | char | ✗ | | | | | | |
-| A3 | R18 | GRU | sub | ✗ | | | | | | |
-| A4 | R18 | GRU | word | ✗ | | | | | | |
-| A5 | R18 | GRU | char | Bah | | | | | | |
+| Exp | Encoder | Decoder | Tok | Attn | BLEU-1 | BLEU-2 | ROUGE-L | METEOR | Params | FLOPs | Infer. Time |
+|-----|---------|---------|-----|------|--------|--------|---------|--------|--------|-------|-------------|
+| A0 | R18 | GRU | char | ✗ | 0.4505 | 0.2242 | 0.3314 | 0.2836 | 13M | 3.63G | 33s |
+| A1 | R50 | GRU | char | ✗ | 0.4543 | 0.2526 | 0.3342 | 0.3086 | 26M | 8.18G | 32s |
+| A2 | R18 | LSTM | char | ✗ | 0.3882 | 0.1759 | 0.2721 | 0.2817 | 13M | 3.63G | 32s |
+| A3 | R18 | GRU | sub | ✗ | 0.5588 | 0.3078 | 0.3656 | 0.3132 | 17M | 3.71G | 32s |
+| A4 | R18 | GRU | word | ✗ | 0.5046 | 0.2853 | 0.3640 | 0.3129 | 22M | 3.81G | 32s |
+| A5 | R18 | GRU | char | Bah | 0.4589 | 0.2657 | 0.3519 | 0.3195 | 14M | 7.51G | 32s |
 | B1 | R50 | LSTM | char | ✗ | | | | | | |
 | B2 | R50 | LSTM | word | ✗ | | | | | | |
 | B3 | R50 | LSTM | sub | ✗ | | | | | | |

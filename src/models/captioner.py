@@ -148,8 +148,27 @@ class CaptioningModel(nn.Module):
 
         # Rebuild model from config
         from src.utils.config import Config
+        from src.data.tokenizer import CharTokenizer, WordTokenizer, SubwordTokenizer
         cfg = Config(config)
-        model = build_captioning_model(cfg)
+
+        # Resolve vocab_size / pad_id from saved tokenizer (required for RNN decoders)
+        vocab_size: int | None = None
+        pad_id: int = 0
+        if cfg.decoder.type == "rnn":
+            tok_path = path.parent / "tokenizer.json"
+            tok_type = cfg.tokenizer.type
+            if tok_type == "char":
+                tok = CharTokenizer.load(tok_path) if tok_path.exists() else CharTokenizer()
+            elif tok_type == "word":
+                tok = WordTokenizer.load(tok_path)
+            elif tok_type == "subword":
+                tok = SubwordTokenizer.load(tok_path)
+            else:
+                tok = CharTokenizer()
+            vocab_size = tok.vocab_size
+            pad_id = tok.pad_id
+
+        model = build_captioning_model(cfg, vocab_size=vocab_size, pad_id=pad_id)
         model.load_state_dict(checkpoint["model_state_dict"])
         model.to(device)
         return model, checkpoint

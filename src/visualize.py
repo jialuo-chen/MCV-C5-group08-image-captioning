@@ -139,7 +139,7 @@ def visualize(
     display_transform = _display_transform()
 
     # -- Generate and plot --------------------------------------------------
-    fig, axes = plt.subplots(1, num_images, figsize=(5 * num_images, 6))
+    fig, axes = plt.subplots(1, num_images, figsize=(5 * num_images, 7))
     if num_images == 1:
         axes = [axes]
 
@@ -195,7 +195,7 @@ def visualize(
             max_length=cfg.inference.get("max_length", cfg.tokenizer.max_length),
         )[0]
 
-        fig_single, ax_single = plt.subplots(figsize=(6, 7))
+        fig_single, ax_single = plt.subplots(figsize=(6, 9))
         display_img = display_transform(raw_img)
         ax_single.imshow(display_img.permute(1, 2, 0).clamp(0, 1).numpy())
         ax_single.set_axis_off()
