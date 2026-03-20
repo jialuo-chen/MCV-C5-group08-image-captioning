@@ -42,11 +42,11 @@ Once we know each component's individual effect, combine the chosen alternatives
 | ID | Name | Encoder | Decoder | Tokenizer | Attention | Config file | Run? |
 |----|------|---------|---------|-----------|-----------|-------------|------|
 | **B1** | Enc+Dec | ResNet-50 | LSTM | char | ✗ | `resnet50_lstm.yaml` | ✅ |
-| **B2** | Enc+Dec+Word | ResNet-50 | LSTM | word | ✗ | `resnet50_lstm_word.yaml` | 🆕 |
-| **B3** | Enc+Dec+Subword | ResNet-50 | LSTM | subword | ✗ | `resnet50_lstm_subword.yaml` | 🆕 |
+| **B2** | Enc+Dec+Word | ResNet-50 | LSTM | word | ✗ | `resnet50_lstm_word.yaml` | ✅ |
+| **B3** | Enc+Dec+Subword | ResNet-50 | LSTM | subword | ✗ | `resnet50_lstm_subword.yaml` | ✅ |
 | **B4** | Enc+Dec+Attn | ResNet-50 | LSTM | char | Bahdanau | `resnet50_lstm_attention.yaml` | ✅ |
-| **B5** | Full combo (word) | ResNet-50 | LSTM | word | Bahdanau | `resnet50_lstm_word_attn.yaml` | 🆕 |
-| **B6** | Full combo (subword) | ResNet-50 | LSTM | subword | Bahdanau | `resnet50_lstm_subword_attn.yaml` | 🆕 |
+| **B5** | Full combo (word) | ResNet-50 | LSTM | word | Bahdanau | `resnet50_lstm_word_attn.yaml` | ✅ |
+| **B6** | Full combo (subword) | ResNet-50 | LSTM | subword | Bahdanau | `resnet50_lstm_subword_attn.yaml` | ✅ |
 
 **Comparisons obtained:**
 
@@ -188,11 +188,11 @@ PHASE A — Single-variable ablations (can be run in parallel if multi-GPU)
 PHASE B — Combined architectures
 ─────────────────────────────────────────────────────────────────────────
   7.  B1  resnet50_lstm.yaml            ← encoder + decoder
-  8.  B2  resnet50_lstm_word.yaml       ← + word            (🆕 create)
-  9.  B3  resnet50_lstm_subword.yaml    ← + subword          (🆕 create)
+  8.  B2  resnet50_lstm_word.yaml       ← + word
+  9.  B3  resnet50_lstm_subword.yaml    ← + subword
  10.  B4  resnet50_lstm_attention.yaml  ← + attention
- 11.  B5  resnet50_lstm_word_attn.yaml  ← full combo word    (🆕 create)
- 12.  B6  resnet50_lstm_subword_attn.yaml ← full combo sub   (🆕 create)
+ 11.  B5  resnet50_lstm_word_attn.yaml  ← full combo word
+ 12.  B6  resnet50_lstm_subword_attn.yaml ← full combo sub
 
        ⬇ Analyze Phase B results → pick final best architecture
 
@@ -230,13 +230,13 @@ For each experiment, collect:
 | A3 | R18 | GRU | sub | ✗ | 0.5588 | 0.3078 | 0.3656 | 0.3132 | 17M | 3.71G | 32s |
 | A4 | R18 | GRU | word | ✗ | 0.5046 | 0.2853 | 0.3640 | 0.3129 | 22M | 3.81G | 32s |
 | A5 | R18 | GRU | char | Bah | 0.4589 | 0.2657 | 0.3519 | 0.3195 | 14M | 7.51G | 32s |
-| B1 | R50 | LSTM | char | ✗ | | | | | | |
-| B2 | R50 | LSTM | word | ✗ | | | | | | |
-| B3 | R50 | LSTM | sub | ✗ | | | | | | |
-| B4 | R50 | LSTM | char | Bah | | | | | | |
-| B5 | R50 | LSTM | word | Bah | | | | | | |
-| B6 | R50 | LSTM | sub | Bah | | | | | | |
-| C1★ | R18 | GRU | char | ✗ | | | | | | |
-| C2★ | _best_ | _best_ | _best_ | _best_ | | | | | | |
+| B1 | R50 | LSTM | char | ✗ | 0.5289 | 0.3064 | 0.3600 | 0.3283 | 27.8M | 8.18G | 390s |
+| B2 | R50 | LSTM | word | ✗ | 0.5585 | 0.3465 | 0.4070 | 0.3554 | 38.0M | 8.37G | 250s |
+| B3 | R50 | LSTM | sub | ✗ | 0.6205 | 0.3795 | 0.4104 | 0.3622 | 31.8M | 8.26G | 240s |
+| B4 | R50 | LSTM | char | Bah | 0.5000 | 0.3025 | 0.3740 | 0.3454 | 32.6M | 17.34G| 625s |
+| B5 | R50 | LSTM | word | Bah | 0.5609 | 0.3496 | 0.4131 | 0.3696 | 42.8M | 17.53G| 320s |
+| B6 | R50 | LSTM | sub | Bah | 0.6088 | 0.3782 | 0.4116 | 0.3718 | 36.7M | 17.41G| 312s |
+| C1★ | R18 | GRU | char | ✗ | | | | | | | |
+| C2★ | _best_ | _best_ | _best_ | _best_ | | | | | | | |
 
 > ★ = after HP sweep
