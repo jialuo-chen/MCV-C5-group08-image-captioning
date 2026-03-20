@@ -69,7 +69,7 @@ def _collect_train_captions(annotation_file: str) -> list[str]:
 # Training
 # ===================================================================
 
-def train(cfg: Config) -> None:
+def train(cfg: Config, epoch_callback=None) -> float:
     """Run the full training loop.
 
     Steps:
@@ -79,6 +79,20 @@ def train(cfg: Config) -> None:
     4. Train for N epochs with validation after each.
     5. Save best and last checkpoints.
     6. Log to WandB if enabled.
+
+    Parameters
+    ----------
+    cfg : Config
+        Experiment configuration.
+    epoch_callback : callable | None
+        Optional callback invoked after each epoch as
+        ``epoch_callback(metric_value, epoch)``.  If it returns ``True``
+        the training loop stops early (used by Optuna pruning).
+
+    Returns
+    -------
+    float
+        Best primary metric value (METEOR) achieved during training.
     """
     device = torch.device(cfg.device if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
@@ -289,6 +303,13 @@ def train(cfg: Config) -> None:
         else:
             patience_counter += 1
 
+        # -- Optuna / external callback -------------------------------------
+        if epoch_callback is not None:
+            should_stop = epoch_callback(current_metric, epoch + 1)
+            if should_stop:
+                print(f"Trial pruned at epoch {epoch + 1}.")
+                break
+
         # -- Early stopping -------------------------------------------------
         if patience and patience_counter >= patience:
             print(f"Early stopping after {patience} epochs without improvement.")
@@ -302,6 +323,8 @@ def train(cfg: Config) -> None:
 
     if wandb_run:
         wandb_run.finish()
+
+    return best_metric
 
 
 # ===================================================================

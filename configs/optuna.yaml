@@ -1,0 +1,80 @@
+# Optuna Hyperparameter Sweep configuration
+# Run with: uv run python main.py optuna-sweep --config configs/optuna.yaml
+# Visualize: uv run python main.py optuna-viz --study-dir outputs/optuna_sweep
+
+# Path to the base experiment config used for each trial
+base_config: configs/baseline.yaml
+
+# Study settings
+study_name: C1
+n_trials: 50
+storage: null  # null = in-memory; set to "sqlite:///optuna.db" for persistent storage
+
+# Output directory for study results, logs, and visualizations
+output_dir: outputs/optuna_sweep_c1
+
+# Metric to optimize (must match a key returned by validation metrics)
+metric:
+  name: meteor
+  direction: maximize  # "maximize" or "minimize"
+
+# Sampler: tpe (Tree-structured Parzen Estimator) is the recommended default
+# Options: tpe, cmaes, random
+sampler:
+  name: tpe
+  seed: 42
+  n_startup_trials: 10  # random trials before TPE kicks in
+
+# Pruner: stops unpromising trials early based on intermediate values
+# Options: hyperband, median, percentile, none
+pruner:
+  name: hyperband
+  min_resource: 3        # minimum epochs before pruning
+  max_resource: 50       # should match training.epochs in base config
+  reduction_factor: 3    # aggressiveness of pruning
+
+# WandB integration (optional): log each trial to WandB
+wandb:
+  enabled: false
+  project: c5-image-caption-optuna
+
+# Parameters to sweep over
+# Supported types: int, float, categorical, log_float
+parameters:
+  training.lr:
+    type: log_float
+    low: 0.00001
+    high: 0.01
+
+  training.batch_size:
+    type: categorical
+    choices: [32, 64, 128]
+
+  decoder.hidden_size:
+    type: categorical
+    choices: [256, 512, 1024]
+
+  decoder.embed_size:
+    type: categorical
+    choices: [256, 512]
+
+  decoder.num_layers:
+    type: int
+    low: 1
+    high: 3
+
+  decoder.dropout:
+    type: categorical
+    choices: [0.0, 0.1, 0.2, 0.3]
+
+  training.optimizer:
+    type: categorical
+    choices: [adam, adamw, sgd]
+
+  training.scheduler:
+    type: categorical
+    choices: [null, cosine]
+
+  training.weight_decay:
+    type: categorical
+    choices: [0.0, 0.0001, 0.001, 0.01]

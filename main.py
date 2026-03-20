@@ -2,10 +2,12 @@
 
 Subcommands
 -----------
-train     Train a model from a YAML config.
-evaluate  Evaluate a checkpoint on the test set.
-infer     Generate captions for images using a trained model.
-sweep     Run a WandB hyperparameter sweep.
+train          Train a model from a YAML config.
+evaluate       Evaluate a checkpoint on the test set.
+infer          Generate captions for images using a trained model.
+sweep          Run a WandB hyperparameter sweep.
+optuna-sweep   Run an Optuna hyperparameter sweep.
+optuna-viz     Generate visualizations from a completed Optuna sweep.
 
 Usage
 -----
@@ -13,6 +15,8 @@ Usage
     uv run python main.py evaluate --config configs/baseline.yaml --checkpoint outputs/.../best.pt
     uv run python main.py infer --config configs/baseline.yaml --checkpoint outputs/.../best.pt --image path/to/image.jpg
     uv run python main.py sweep --config configs/sweep.yaml
+    uv run python main.py optuna-sweep --config configs/optuna.yaml
+    uv run python main.py optuna-viz --study-dir outputs/optuna_sweep
 """
 
 from __future__ import annotations
@@ -79,6 +83,20 @@ def cmd_sweep(args: argparse.Namespace) -> None:
     wandb.agent(sweep_id, function=sweep_agent, count=sweep_cfg.get("count", 10))
 
 
+def cmd_optuna_sweep(args: argparse.Namespace) -> None:
+    """Launch an Optuna hyperparameter sweep."""
+    from src.optuna_sweep import run_optuna_sweep
+
+    run_optuna_sweep(args.config)
+
+
+def cmd_optuna_viz(args: argparse.Namespace) -> None:
+    """Generate visualizations from a completed Optuna sweep."""
+    from src.optuna_visualize import load_and_visualize
+
+    load_and_visualize(args.study_dir)
+
+
 def cmd_visualize(args: argparse.Namespace) -> None:
     from src.utils.config import load_config
     from src.visualize import visualize
@@ -120,6 +138,14 @@ def main() -> None:
     p_sweep = subparsers.add_parser("sweep", help="Run a WandB hyperparameter sweep.")
     p_sweep.add_argument("--config", type=str, required=True, help="Path to sweep YAML config.")
 
+    # --- optuna-sweep ---
+    p_optuna = subparsers.add_parser("optuna-sweep", help="Run an Optuna hyperparameter sweep.")
+    p_optuna.add_argument("--config", type=str, required=True, help="Path to Optuna sweep YAML config.")
+
+    # --- optuna-viz ---
+    p_optuna_viz = subparsers.add_parser("optuna-viz", help="Generate visualizations from a completed Optuna sweep.")
+    p_optuna_viz.add_argument("--study-dir", type=str, required=True, help="Path to Optuna output directory containing study.pkl.")
+
     # --- visualize ---
     p_vis = subparsers.add_parser("visualize", help="Generate caption visualizations.")
     _add_common_args(p_vis)
@@ -135,6 +161,8 @@ def main() -> None:
         "evaluate": cmd_evaluate,
         "infer": cmd_infer,
         "sweep": cmd_sweep,
+        "optuna-sweep": cmd_optuna_sweep,
+        "optuna-viz": cmd_optuna_viz,
         "visualize": cmd_visualize,
     }
     commands[args.command](args)
