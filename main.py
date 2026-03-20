@@ -8,6 +8,7 @@ infer          Generate captions for images using a trained model.
 sweep          Run a WandB hyperparameter sweep.
 optuna-sweep   Run an Optuna hyperparameter sweep.
 optuna-viz     Generate visualizations from a completed Optuna sweep.
+quantitative-plots  Generate quantitative result plots for the presentation.
 
 Usage
 -----
@@ -97,6 +98,13 @@ def cmd_optuna_viz(args: argparse.Namespace) -> None:
     load_and_visualize(args.study_dir)
 
 
+def cmd_quantitative_plots(args: argparse.Namespace) -> None:
+    """Generate quantitative result plots for the presentation."""
+    from src.generate_presentation_plots import generate_all_plots
+
+    generate_all_plots(args.outputs_dir, args.out_dir)
+
+
 def cmd_visualize(args: argparse.Namespace) -> None:
     from src.utils.config import load_config
     from src.visualize import visualize
@@ -154,6 +162,14 @@ def main() -> None:
     p_vis.add_argument("--output", type=str, default=None, help="Output directory for plots.")
     p_vis.add_argument("--model-type", type=str, default=None, help="Model label for plot title.")
 
+    # --- quantitative-plots ---
+    quant_plots = subparsers.add_parser("quantitative-plots",
+                                   help="Generate quantitative result plots for the presentation.")
+    quant_plots.add_argument("--outputs-dir", type=str, default="outputs",
+                        help="Directory containing experiment outputs (default: outputs).")
+    quant_plots.add_argument("--out-dir", type=str, default="outputs/presentation_plots",
+                        help="Output directory for plots (default: outputs/presentation_plots).")
+
     args = parser.parse_args()
 
     commands = {
@@ -164,6 +180,7 @@ def main() -> None:
         "optuna-sweep": cmd_optuna_sweep,
         "optuna-viz": cmd_optuna_viz,
         "visualize": cmd_visualize,
+        "quantitative-plots": cmd_quantitative_plots,
     }
     commands[args.command](args)
 
