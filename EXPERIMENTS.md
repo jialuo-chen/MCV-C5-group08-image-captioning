@@ -27,12 +27,12 @@ The only thing that changes between paired experiments is the variable under tes
 **Comparisons obtained:**
 
 ```
-A0 vs A1  →  Impact of encoder   (ResNet-18 vs ResNet-50)
-A0 vs A2  →  Impact of decoder   (GRU vs LSTM)
-A0 vs A3  →  Impact of tokenizer (char vs subword)
-A0 vs A4  →  Impact of tokenizer (char vs word)
-A0 vs A5  →  Impact of attention  (none vs Bahdanau)
-A3 vs A4  →  Subword vs word (text representation comparison)
+A0 vs A1  →  Impact of encoder   (ResNet-18 vs ResNet-50);  A1 [ResNet-50]
+A0 vs A2  →  Impact of decoder   (GRU vs LSTM);  A0 [GRU]
+A0 vs A3  →  Impact of tokenizer (char vs subword); A3 [subword]
+A0 vs A4  →  Impact of tokenizer (char vs word); A4 [word]
+A0 vs A5  →  Impact of attention  (none vs Bahdanau); A5 [Bahdanau]
+A3 vs A4  →  Subword vs word (text representation comparison); A3 [subword]
 ```
 
 ### Phase B — Combined Modifications (no sweep needed)
@@ -51,13 +51,13 @@ Once we know each component's individual effect, combine the chosen alternatives
 **Comparisons obtained:**
 
 ```
-B1 vs A1  →  Impact of decoder when encoder is already ResNet-50
-B1 vs A2  →  Impact of encoder when decoder is already LSTM
-B1 vs B4  →  Impact of attention on top of ResNet-50 + LSTM
-B4 vs B5  →  Impact of word tokenizer on the full pipeline
-B4 vs B6  →  Impact of subword tokenizer on the full pipeline
-B5 vs B6  →  Word vs subword in the full pipeline
-A0 vs B5  →  Full delta: baseline → best combo
+B1 vs A1  →  Impact of decoder when encoder is already ResNet-50; B1 [LSTM win]
+B1 vs A2  →  Impact of encoder when decoder is already LSTM; B1 [ResNet-50 win]
+B1 vs B4  →  Impact of attention on top of ResNet-50 + LSTM; B4 [with attention win]
+B4 vs B5  →  Impact of word tokenizer on the full pipeline; B5 [word win]
+B4 vs B6  →  Impact of subword tokenizer on the full pipeline; B6 [subword win]
+B5 vs B6  →  Word vs subword in the full pipeline; B6 [subword win]
+A0 vs B6  →  Full delta: baseline → best combo; B6 [ΔBLEU-1: ↑0.1583; ΔBLEU-2: ↑0.1540; ΔROUGE-L: ↑0.8020; ΔMETEOR: ↑0.8820]
 ```
 
 ### Phase C — Hyperparameter Sweep (WandB Bayesian search)
@@ -183,7 +183,7 @@ PHASE A — Single-variable ablations (can be run in parallel if multi-GPU)
   5.  A4  baseline_word.yaml            ← word effect
   6.  A5  baseline_attention.yaml       ← attention effect
 
-       ⬇ Analyze Phase A results → pick best tokenizer & confirm attention helps
+       ⬇ Analyze Phase A results → pick best tokenizer & confirm attention helps; best tokenizer: subword, attention: yes
 
 PHASE B — Combined architectures
 ─────────────────────────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ PHASE B — Combined architectures
  11.  B5  resnet50_lstm_word_attn.yaml  ← full combo word
  12.  B6  resnet50_lstm_subword_attn.yaml ← full combo sub
 
-       ⬇ Analyze Phase B results → pick final best architecture
+       ⬇ Analyze Phase B results → pick final best architecture; R50 + LSTM + sub + Bah [bests]
 
 PHASE C — Hyperparameter optimization (Bayesian sweep, ~20 runs each)
 ─────────────────────────────────────────────────────────────────────────
@@ -237,6 +237,6 @@ For each experiment, collect:
 | B5 | R50 | LSTM | word | Bah | 0.5609 | 0.3496 | 0.4131 | 0.3696 | 42.8M | 17.53G| 320s |
 | B6 | R50 | LSTM | sub | Bah | 0.6088 | 0.3782 | 0.4116 | 0.3718 | 36.7M | 17.41G| 312s |
 | C1★ | R18 | GRU | char | ✗ | | | | | | | |
-| C2★ | _best_ | _best_ | _best_ | _best_ | | | | | | | |
+| C2★ | _best_: R50 | _best_: LSTM | _best_: sub | _best_: Bah | | | | | | | |
 
 > ★ = after HP sweep
