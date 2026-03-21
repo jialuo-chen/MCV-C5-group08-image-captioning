@@ -319,6 +319,13 @@ def plot_baseline_to_best_progression(data: dict, out_dir: Path) -> None:
 
     fig, axes = plt.subplots(1, 4, figsize=(20, 6), sharey=False)
 
+    # Compute global y-range across all metrics so every subplot uses the same scale
+    all_vals = [pct(FINAL_METRICS[e][m]) for m in METRICS for e in path]
+    y_min = min(all_vals)
+    y_max = max(all_vals)
+    y_pad = (y_max - y_min) * 0.12
+    global_ylim = (y_min - y_pad - 2, y_max + y_pad + 2)
+
     for ax_i, m in enumerate(METRICS):
         ax = axes[ax_i]
         vals = [pct(FINAL_METRICS[e][m]) for e in path]
@@ -349,6 +356,7 @@ def plot_baseline_to_best_progression(data: dict, out_dir: Path) -> None:
         ax.text(len(path) - 1, vals[-1] + 1.0, f"{vals[-1]:.1f}%", ha="center", va="bottom",
                 fontsize=10, fontweight="bold", color="#C62828")
 
+        ax.set_ylim(global_ylim)
         ax.set_xticks(range(len(path)))
         ax.set_xticklabels(step_labels, fontsize=9, ha="center")
         ax.set_title(METRIC_LABELS[m], fontsize=14, fontweight="bold")
@@ -421,7 +429,7 @@ def _plot_training_curves(
     char_exps = [e for e in exps if TOK_TYPE[e] == "char" and e in data]
     text_exps = [e for e in exps if TOK_TYPE[e] in ("subword", "word") and e in data]
 
-    fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+    fig, axes = plt.subplots(2, 2, figsize=(16, 10), sharey="row")
 
     # Row 0: Validation loss | Row 1: BLEU-1 (%)
     # Col 0: Char-based      | Col 1: Subword/Word-based
