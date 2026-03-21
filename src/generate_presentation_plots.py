@@ -559,6 +559,48 @@ def plot_efficiency_scatter(data: dict, out_dir: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Plot 11 — Phase B METEOR Scatter (size & compute)
+# ---------------------------------------------------------------------------
+
+def plot_phase_b_meteor_scatter(data: dict, out_dir: Path) -> None:
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+
+    for exp in PHASE_B:
+        meteor = pct(FINAL_METRICS[exp]["meteor"])
+        params = PARAMS_M[exp]
+        flops = FLOPS_G[exp]
+
+        ax1.scatter(params, meteor, s=200, color=COLORS[exp],
+                    marker="s", edgecolors="white", linewidth=0.8, zorder=3)
+        ax1.annotate(PHASE_B_LABELS[exp], (params, meteor),
+                     textcoords="offset points", xytext=(6, 4),
+                     fontsize=9, fontweight="bold", color=COLORS[exp])
+
+        ax2.scatter(flops, meteor, s=200, color=COLORS[exp],
+                    marker="s", edgecolors="white", linewidth=0.8, zorder=3)
+        ax2.annotate(PHASE_B_LABELS[exp], (flops, meteor),
+                     textcoords="offset points", xytext=(6, 4),
+                     fontsize=9, fontweight="bold", color=COLORS[exp])
+
+    ax1.set_xlabel("Parameters (M)")
+    ax1.set_ylabel("METEOR (%)")
+    ax1.set_title("METEOR vs Model Size (Phase B)")
+    ax1.set_ylim(28, 42)
+
+    ax2.set_xlabel("FLOPs (G)")
+    ax2.set_ylabel("METEOR (%)")
+    ax2.set_title("METEOR vs Compute Cost (Phase B)")
+    ax2.set_ylim(28, 42)
+
+    fig.suptitle("Phase B — METEOR Efficiency Analysis (R50 + LSTM)", fontsize=18,
+                 fontweight="bold", y=1.01)
+    fig.tight_layout()
+    fig.savefig(out_dir / "11_phase_b_meteor_scatter.png", bbox_inches="tight")
+    plt.close(fig)
+    print("  [11] 11_phase_b_meteor_scatter.png")
+
+
+# ---------------------------------------------------------------------------
 # Plot 9 — Component Impact Bars
 # ---------------------------------------------------------------------------
 
@@ -736,6 +778,7 @@ def generate_all_plots(outputs_dir: str = "outputs",
     plot_efficiency_scatter(data, out_path)
     plot_component_impact_bars(data, out_path)
     plot_summary_table(data, out_path)
+    plot_phase_b_meteor_scatter(data, out_path)
 
     print(f"\nAll plots saved to {out_path}/")
 
