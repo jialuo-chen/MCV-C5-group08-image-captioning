@@ -1,13 +1,13 @@
 {
   "metrics": {
-    "bleu1": 0.4464002043569541,
-    "bleu2": 0.27145034012371694,
-    "rougeL": 0.36220414390901,
-    "meteor": 0.33768730847169653
+    "bleu1": 0.44640376786141933,
+    "bleu2": 0.27145257645556303,
+    "rougeL": 0.3623026845520168,
+    "meteor": 0.33768751677315967
   },
   "num_images": 7542,
-  "average_inference_time_per_image (ms)": 4.644717,
-  "total_inference_time_s": 35.030455,
+  "average_inference_time_per_image (ms)": 4.336551,
+  "total_inference_time_s": 32.706268,
   "checkpoint": "outputs/GRU3/checkpoints/best.pt",
   "samples": [
     {

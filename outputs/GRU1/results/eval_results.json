@@ -2,10 +2,12 @@
   "metrics": {
     "bleu1": 0.5697619155388585,
     "bleu2": 0.35513204610363514,
-    "rougeL": 0.40605933589912224,
+    "rougeL": 0.4061047199931477,
     "meteor": 0.3503295360266468
   },
   "num_images": 7542,
+  "average_inference_time_per_image (ms)": 1.030754,
+  "total_inference_time_s": 7.773944,
   "checkpoint": "outputs/GRU1/checkpoints/best.pt",
   "samples": [
     {
