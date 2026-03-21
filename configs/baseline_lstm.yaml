@@ -1,5 +1,6 @@
 # Decoder change: ResNet-18 + LSTM + char-level
 
+run_name: A2
 seed: 42
 device: cuda
 

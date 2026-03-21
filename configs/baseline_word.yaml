@@ -1,5 +1,6 @@
 # Text representation change: ResNet-18 + GRU + word-level
 
+run_name: A4
 seed: 42
 device: cuda
 
@@ -22,9 +23,9 @@ attention:
 
 tokenizer:
   type: word
-  vocab_size: 10000
-  min_freq: 2
-  max_length: 50   # word sequences are shorter than char
+  vocab_size: 30000
+  min_freq: 3
+  max_length: 100   # word sequences are shorter than char
 
 dataset:
   root: /data/123-1/users/jchen/VizWiz
@@ -37,21 +38,21 @@ dataset:
   val_split_ratio: 0.1
 
 training:
-  epochs: 20
+  epochs: 50
   batch_size: 64
   lr: 0.001
-  optimizer: adam
+  optimizer: adamw
   weight_decay: 0.0
   scheduler: null
   grad_clip: 5.0
   teacher_forcing_ratio: 1.0
   mixed_precision: false
   num_workers: 4
-  early_stopping_patience: 5
+  early_stopping_patience: 10
 
 inference:
   beam_size: 1
-  max_length: 50
+  max_length: 100
 
 wandb:
   enabled: false

@@ -1,5 +1,5 @@
 # Encoder change: ResNet-50 + GRU + char-level
-
+run_name: A1
 seed: 42
 device: cuda
 

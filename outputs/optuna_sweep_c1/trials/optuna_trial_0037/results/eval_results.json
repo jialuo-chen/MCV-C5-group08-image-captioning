@@ -2,10 +2,12 @@
   "metrics": {
     "bleu1": 0.5019906525878484,
     "bleu2": 0.28852817211855775,
-    "rougeL": 0.3571886842460573,
+    "rougeL": 0.3571081996716561,
     "meteor": 0.32538820183265554
   },
   "num_images": 7542,
+  "average_inference_time_per_image (ms)": 1.627483,
+  "total_inference_time_s": 12.27448,
   "checkpoint": "outputs/optuna_sweep_c1/trials/optuna_trial_0037/checkpoints/best.pt",
   "samples": [
     {

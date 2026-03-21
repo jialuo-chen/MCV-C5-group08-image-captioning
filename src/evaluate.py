@@ -7,6 +7,7 @@ computing BLEU-1, BLEU-2, ROUGE-L, and METEOR.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import torch
@@ -91,14 +92,17 @@ def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
     all_predictions: list[str] = []
     all_references: list[list[str]] = []
     all_image_paths: list[str] = []
+    total_inference_time_s = 0.0
 
     for images, cap_tensors, cap_texts, img_paths in tqdm(test_loader, desc="Evaluating"):
         images = images.to(device)
+        batch_start_time = time.perf_counter()
         generated = model.generate(
             images,
             tokenizer=tokenizer,
             max_length=cfg.inference.get("max_length", cfg.tokenizer.max_length),
         )
+        total_inference_time_s += time.perf_counter() - batch_start_time
         all_predictions.extend(generated)
         all_image_paths.extend(img_paths)
 
@@ -110,7 +114,10 @@ def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
                 all_references.append(refs)
 
     metrics = compute_metrics(all_predictions, all_references)
+    num_images = len(all_predictions)
+    avg_inference_ms = (total_inference_time_s / num_images * 1000.0) if num_images > 0 else 0.0
     print(f"\nTest Results: {format_metrics(metrics)}")
+    print(f"Average inference time per image: {avg_inference_ms:.3f} ms")
 
     # -- Save results -------------------------------------------------------
     results_dir = ckpt_path.parent.parent / "results"
@@ -118,7 +125,9 @@ def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
 
     results = {
         "metrics": metrics,
-        "num_images": len(all_predictions),
+        "num_images": num_images,
+        "average_inference_time_per_image (ms)": round(avg_inference_ms, 6),
+        "total_inference_time_s": round(total_inference_time_s, 6),
         "checkpoint": str(ckpt_path),
         "samples": [
             {"image": img, "prediction": pred, "references": refs}

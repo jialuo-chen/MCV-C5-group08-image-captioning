@@ -1,4 +1,5 @@
 # Experiment B4: ResNet-50 + LSTM + char-level + Bahdanau Attention
+run_name: B4
 seed: 42
 device: cuda
 
@@ -26,7 +27,7 @@ tokenizer:
   max_length: 201
 
 dataset:
-  root: /ghome/group08/VizWiz-Captions/images
+  root: /data/123-1/users/jchen/VizWiz
   train_ann: annotations/train.json
   val_ann: annotations/val.json
   train_img_dir: train

@@ -1,5 +1,6 @@
 # Attention: ResNet-18 + GRU + char-level + Bahdanau attention
 
+run_name: A5
 seed: 42
 device: cuda
 

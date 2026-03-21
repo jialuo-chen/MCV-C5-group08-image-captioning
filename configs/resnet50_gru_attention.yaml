@@ -1,0 +1,58 @@
+# Encoder change: ResNet-50 + GRU + char-level
+run_name: GRU3
+seed: 42
+device: cuda
+
+encoder:
+  name: resnet50
+  pretrained: microsoft/resnet-50
+  freeze: false
+  feature_dim: 2048
+
+decoder:
+  type: rnn
+  name: gru
+  hidden_size: 512
+  num_layers: 1
+  embed_size: 512
+  dropout: 0.0
+
+attention:
+  enabled: true
+  type: bahdanau
+  attention_dim: 256
+
+tokenizer:
+  type: char
+  max_length: 201
+
+dataset:
+  root: /data/123-1/users/jchen/VizWiz
+  train_ann: annotations/train.json
+  val_ann: annotations/val.json
+  train_img_dir: train
+  val_img_dir: val
+  ignore_rejected: true
+  ignore_precanned: true
+  val_split_ratio: 0.1
+
+training:
+  epochs: 20
+  batch_size: 64
+  lr: 0.001
+  optimizer: adam
+  weight_decay: 0.0
+  scheduler: null
+  grad_clip: 5.0
+  teacher_forcing_ratio: 1.0
+  mixed_precision: false
+  num_workers: 4
+  early_stopping_patience: 5
+
+inference:
+  beam_size: 1
+  max_length: 201
+
+wandb:
+  enabled: false
+  project: c5-image-caption

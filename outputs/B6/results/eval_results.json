@@ -2,14 +2,16 @@
   "metrics": {
     "bleu1": 0.6099095556429414,
     "bleu2": 0.3810497719291727,
-    "rougeL": 0.4101309416605903,
+    "rougeL": 0.4101713856303873,
     "meteor": 0.36988214787622803
   },
   "num_images": 7542,
+  "average_inference_time_per_image (ms)": 1.972674,
+  "total_inference_time_s": 14.877911,
   "checkpoint": "outputs/B6/checkpoints/best.pt",
   "samples": [
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000000.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000000.jpg",
       "prediction": "A computer screen with a blue background and white text .",
       "references": [
         "A computer screen shows a repair prompt on the screen.",
@@ -20,7 +22,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000001.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000001.jpg",
       "prediction": "A hand holding a bottle of anti - itch lotion with a white label and a blue label .",
       "references": [
         "A person is holding a bottle that has medicine for the night time.",
@@ -31,7 +33,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000002.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000002.jpg",
       "prediction": "A magazine has a picture of a man on it and a picture of a boy on it .",
       "references": [
         "a white paper showing an image of black and brown dog",
@@ -42,7 +44,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000003.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000003.jpg",
       "prediction": "A white and blue box of medicine on a wooden table .",
       "references": [
         "A white box is to the left of a blue box on a wooden table.",
@@ -53,7 +55,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000004.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000004.jpg",
       "prediction": "A computer screen is showing a captcha .",
       "references": [
         "close up of a computer monitor that is powered on.",
@@ -64,7 +66,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000005.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000005.jpg",
       "prediction": "A computer screen showing a blue screen with a message",
       "references": [
         "a DELL laptop computer screen  showing window 7 home premium",
@@ -75,7 +77,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000007.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000007.jpg",
       "prediction": "A black and white object with a blue and green label .",
       "references": [
         "A close-up of a package of a computer-related item.",
@@ -83,7 +85,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000008.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000008.jpg",
       "prediction": "A white container with a yellow label with a white background .",
       "references": [
         "A bottle of lotion on the table in front of someone sitting down wearing shorts.",
@@ -91,7 +93,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000009.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000009.jpg",
       "prediction": "A large window with a window with a window showing through the window .",
       "references": [
         "The interior of a bus has a horizontal bar near the ceiling for passengers to hold on to and behind it there is a sign regarding handicapped passengers.",
@@ -102,7 +104,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000010.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000010.jpg",
       "prediction": "A neighbor hood with a brick building and a building behind it .",
       "references": [
         "A view of a building with a picture of a man on it with a couple big trees in front of it.",
@@ -113,7 +115,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000011.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000011.jpg",
       "prediction": "A white and blue striped fabric on a dark wood surface .",
       "references": [
         "A white object with elastic sides sitting on a wooden surface.",
@@ -123,7 +125,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000012.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000012.jpg",
       "prediction": "A hand is holding up a white box with text on it .",
       "references": [
         "appears to be a picture of prepaid card",
@@ -134,21 +136,21 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000013.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000013.jpg",
       "prediction": "A white object with a blue logo and a blue logo .",
       "references": [
         "A white piece of paper with a blue emblem off to the side."
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000014.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000014.jpg",
       "prediction": "A white light with a white flash at the top .",
       "references": [
         "A bright blinding light is obstructing all view"
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000015.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000015.jpg",
       "prediction": "A box of J ell - O - Aid is on a wooden table .",
       "references": [
         "A set of hand held electronic children's learning devices, one for puzzles and a dictionary.",
@@ -158,7 +160,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000016.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000016.jpg",
       "prediction": "A person is holding a package of food .",
       "references": [
         "A picture of what appears to be some kind of food label.",
@@ -168,7 +170,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000017.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000017.jpg",
       "prediction": "A CD of a CD with a white label on it .",
       "references": [
         "an image of a windows seven disk plate on the floor",
@@ -179,7 +181,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000018.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000018.jpg",
       "prediction": "A laptop screen is open and has a black screen .",
       "references": [
         "A laptop screen with system dialog on the screen,",
@@ -190,7 +192,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000019.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000019.jpg",
       "prediction": "A black computer screen with a white background and black keys .",
       "references": [
         "The underside of a Dell Inspiron laptop showing the device label including the text \"Inspiron 1545\".",
@@ -201,7 +203,7 @@
       ]
     },
     {
-      "image": "/ghome/group08/VizWiz-Captions/images/val/VizWiz_val_00000020.jpg",
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000020.jpg",
       "prediction": "A Mexican restaurant store front with a picture of a store",
       "references": [
         "point of sale food or deli possibly inside of the mall or other retail outlet.",

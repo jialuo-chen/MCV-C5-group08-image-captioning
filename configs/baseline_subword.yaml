@@ -1,5 +1,6 @@
 # Text representation change: ResNet-18 + GRU + subword-level (BPE)
 
+run_name: A3
 seed: 42
 device: cuda
 
