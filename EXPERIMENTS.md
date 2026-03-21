@@ -60,6 +60,18 @@ B5 vs B6  →  Word vs subword in the full pipeline; B6 [subword win]
 A0 vs B6  →  Full delta: baseline → best combo; B6 [ΔBLEU-1: ↑0.1583; ΔBLEU-2: ↑0.1540; ΔROUGE-L: ↑0.8020; ΔMETEOR: ↑0.8820]
 ```
 
+### Phase GRU — Combined Modifications (no sweep needed)
+
+More experiments testing the ResNet-50 + GRU combo, to confirm the trends hold across decoders:
+
+| ID | Name | Encoder | Decoder | Tokenizer | Attention | Config file | Run? |
+|----|------|---------|---------|-----------|-----------|-------------|------|
+| **GRU1** | Enc+Dec+Word | ResNet-50 | GRU | word | ✗ | `resnet50_gru_word.yaml` | ✅ |
+| **GRU2** | Enc+Dec+Subword | ResNet-50 | GRU | subword | ✗ | `resnet50_gru_subword.yaml` | ✅ |
+| **GRU3** | Enc+Dec+Attn | ResNet-50 | GRU | char | Bahdanau | `resnet50_gru_attention.yaml` | ✅ |
+| **GRU4** | Full combo (word) | ResNet-50 | GRU | word | Bahdanau | `resnet50_gru_word_attn.yaml` | ✅ |
+| **GRU5** | Full combo (subword) | ResNet-50 | GRU | subword | Bahdanau | `resnet50_gru_subword_attn.yaml` | ✅ |
+
 ### Phase C — Hyperparameter Sweep (WandB Bayesian search)
 
 Sweep is needed to **fairly optimize** the final chosen architectures and for learning-rate-sensitive configs.
@@ -236,7 +248,7 @@ For each experiment, collect:
 | B4 | R50 | LSTM | char | Bah | 0.5000 | 0.3025 | 0.3740 | 0.3454 | 32.6M | 17.34G| 625s |
 | B5 | R50 | LSTM | word | Bah | 0.5609 | 0.3496 | 0.4131 | 0.3696 | 42.8M | 17.53G| 320s |
 | B6 | R50 | LSTM | sub | Bah | 0.6088 | 0.3782 | 0.4116 | 0.3718 | 36.7M | 17.41G| 312s |
-| C1★ | R18 | GRU | char | ✗ | | | | | | | |
+| C1★ | R18 | GRU | char | ✗ | 0.5020 | 0.2885 | 0.3572 | 0.3254 | 23.3M | 3.63G | 39s |
 | C2★ | _best_: R50 | _best_: LSTM | _best_: sub | _best_: Bah | | | | | | | |
 
 > ★ = after HP sweep

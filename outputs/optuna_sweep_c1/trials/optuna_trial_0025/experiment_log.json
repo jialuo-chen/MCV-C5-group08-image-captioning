@@ -1,0 +1,115 @@
+{
+  "hyperparameters": {
+    "encoder": {
+      "name": "resnet18",
+      "pretrained": "microsoft/resnet-18",
+      "freeze": false,
+      "feature_dim": 512
+    },
+    "decoder": {
+      "type": "rnn",
+      "name": "gru",
+      "pretrained": null,
+      "hidden_size": 256,
+      "num_layers": 2,
+      "embed_size": 512,
+      "dropout": 0.2
+    },
+    "attention": {
+      "enabled": false,
+      "type": "bahdanau",
+      "attention_dim": 256
+    },
+    "tokenizer": {
+      "type": "char",
+      "vocab_size": null,
+      "max_length": 201,
+      "pretrained": null
+    },
+    "training": {
+      "epochs": 50,
+      "batch_size": 32,
+      "lr": 0.0011335283400776463,
+      "optimizer": "adamw",
+      "weight_decay": 0.0,
+      "scheduler": null,
+      "scheduler_params": {},
+      "grad_clip": 5.0,
+      "teacher_forcing_ratio": 1.0,
+      "mixed_precision": false,
+      "num_workers": 4,
+      "early_stopping_patience": 5
+    },
+    "seed": 42,
+    "device": "cuda"
+  },
+  "model_info": {
+    "total_params": 12486800,
+    "trainable_params": 12486800,
+    "encoder_total_params": 11176512,
+    "encoder_trainable_params": 11176512,
+    "decoder_total_params": 1310288,
+    "decoder_trainable_params": 1310288,
+    "other_total_params": 0,
+    "other_trainable_params": 0,
+    "flops": 3628425216,
+    "flops_readable": "3.63G"
+  },
+  "training": {
+    "epochs": [
+      {
+        "epoch": 1,
+        "train_loss": 1.570271,
+        "val_loss": 1.226228,
+        "bleu1": 0.432937,
+        "bleu2": 0.202391,
+        "rougeL": 0.276516,
+        "meteor": 0.219906,
+        "lr": 0.0011335283400776463,
+        "epoch_time_s": 119.39,
+        "is_best": true
+      },
+      {
+        "epoch": 2,
+        "train_loss": 1.217651,
+        "val_loss": 1.208626,
+        "bleu1": 0.508149,
+        "bleu2": 0.221044,
+        "rougeL": 0.307662,
+        "meteor": 0.249444,
+        "lr": 0.0011335283400776463,
+        "epoch_time_s": 118.99,
+        "is_best": true
+      },
+      {
+        "epoch": 3,
+        "train_loss": 1.145386,
+        "val_loss": 1.084871,
+        "bleu1": 0.430144,
+        "bleu2": 0.168703,
+        "rougeL": 0.269152,
+        "meteor": 0.248491,
+        "lr": 0.0011335283400776463,
+        "epoch_time_s": 122.65,
+        "is_best": false
+      }
+    ]
+  },
+  "summary": {
+    "total_epochs_run": 3,
+    "total_training_time_s": 361.88,
+    "total_training_time_readable": "6.0min",
+    "best_epoch": 2,
+    "best_metrics": {
+      "bleu1": 0.508149,
+      "bleu2": 0.221044,
+      "rougeL": 0.307662,
+      "meteor": 0.249444
+    },
+    "final_train_loss": 1.145386,
+    "final_val_loss": 1.084871,
+    "min_train_loss": 1.145386,
+    "min_val_loss": 1.084871,
+    "avg_epoch_time_s": 120.34
+  }
+}
