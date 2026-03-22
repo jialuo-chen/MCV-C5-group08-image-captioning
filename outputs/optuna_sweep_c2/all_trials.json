@@ -1,0 +1,852 @@
+[
+  {
+    "number": 0,
+    "value": 0.016416093815156664,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0001329291894316216,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 3,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "sgd",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 1015.753082
+  },
+  {
+    "number": 1,
+    "value": 0.3764741138388451,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00012562773503807024,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 7318.16728
+  },
+  {
+    "number": 2,
+    "value": 0.017842533779331253,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 8.612579192594876e-05,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 3,
+      "decoder.dropout": 0.3,
+      "training.optimizer": "sgd",
+      "training.scheduler": null,
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 1572.993554
+  },
+  {
+    "number": 3,
+    "value": 0.25244432054619037,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.009133995846860976,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 2,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "sgd",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 1335.66152
+  },
+  {
+    "number": 4,
+    "value": 0.3632741433296517,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0019158219548093154,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 2,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 4697.571407
+  },
+  {
+    "number": 5,
+    "value": 0.33590231557499584,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.004115113049561088,
+      "training.batch_size": 128,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adam",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 1370.046845
+  },
+  {
+    "number": 6,
+    "value": 0.0931636213449205,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00012327891605450807,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 2,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "sgd",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 2107.17226
+  },
+  {
+    "number": 7,
+    "value": 0.36783735625045466,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0007887102624766477,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 3,
+      "decoder.dropout": 0.3,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 4565.672452
+  },
+  {
+    "number": 8,
+    "value": 0.3164524340057865,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 5.940525755701928e-05,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 2,
+      "decoder.dropout": 0.3,
+      "training.optimizer": "adam",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 4123.709146
+  },
+  {
+    "number": 9,
+    "value": 0.3820389792083648,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0009783749110062348,
+      "training.batch_size": 128,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 3922.79989
+  },
+  {
+    "number": 10,
+    "value": 0.18989801943996742,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00010731123310454335,
+      "training.batch_size": 128,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.01
+    },
+    "duration_s": 434.913051
+  },
+  {
+    "number": 11,
+    "value": 0.3509294384229444,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 6.0212605220523775e-05,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adam",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 4153.161519
+  },
+  {
+    "number": 12,
+    "value": 0.35776811840617906,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 5.242992766737874e-05,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 2,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 4748.538961
+  },
+  {
+    "number": 13,
+    "value": 0.3666418034349131,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.002124430413665403,
+      "training.batch_size": 128,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.3,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 3920.729945
+  },
+  {
+    "number": 14,
+    "value": 0.37187228971787795,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0016411237236822701,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 3239.278338
+  },
+  {
+    "number": 15,
+    "value": 0.38281249404734163,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0003469220658452217,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 3217.238314
+  },
+  {
+    "number": 16,
+    "value": 0.27365808549316545,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00027527645528906375,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 465.067868
+  },
+  {
+    "number": 17,
+    "value": 0.3723883444188302,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0008975841748632783,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.0,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 2662.155889
+  },
+  {
+    "number": 18,
+    "value": 0.3849253859954727,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0001429920716479278,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 5132.116173
+  },
+  {
+    "number": 19,
+    "value": 0.28181419622387455,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 8.585676821408067e-05,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 2,
+      "decoder.dropout": 0.0,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 618.653441
+  },
+  {
+    "number": 20,
+    "value": 0.3827469052854164,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0002794445554616106,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 3297.82468
+  },
+  {
+    "number": 21,
+    "value": 0.38354871842327615,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00025913109488156307,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 2751.207904
+  },
+  {
+    "number": 22,
+    "value": 0.3624463509004536,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 2.7408028761071676e-05,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adam",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 4977.363954
+  },
+  {
+    "number": 23,
+    "value": 0.3732890999599313,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00048316994058541227,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.3,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 1388.516554
+  },
+  {
+    "number": 24,
+    "value": 0.3744322234266426,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.000692212111319933,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.3,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 1653.7387
+  },
+  {
+    "number": 25,
+    "value": 0.21446165465059283,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 6.950548853718044e-05,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.01
+    },
+    "duration_s": 516.054901
+  },
+  {
+    "number": 26,
+    "value": 0.09290104997475865,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0006445960323411008,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "sgd",
+      "training.scheduler": null,
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 454.593837
+  },
+  {
+    "number": 27,
+    "value": 0.184262684731424,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00018873158324918696,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "sgd",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 1615.242514
+  },
+  {
+    "number": 28,
+    "value": 0.378740150617272,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0008177367440511369,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 2414.085919
+  },
+  {
+    "number": 29,
+    "value": 0.36935902322919983,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00033728540026217865,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 1390.608811
+  },
+  {
+    "number": 30,
+    "value": 0.3671202520804412,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0002236254965962937,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 1645.047043
+  },
+  {
+    "number": 31,
+    "value": 0.3808443525235792,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00025660268803691654,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 2720.202896
+  },
+  {
+    "number": 32,
+    "value": 0.2013895247879366,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0001484134183071864,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.01
+    },
+    "duration_s": 578.113353
+  },
+  {
+    "number": 33,
+    "value": 0.29515068254341165,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0004298079051554428,
+      "training.batch_size": 128,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 449.044651
+  },
+  {
+    "number": 34,
+    "value": 0.3806993070538041,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00026403246831173,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 2729.312253
+  },
+  {
+    "number": 35,
+    "value": 0.36006983750911764,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.002081001163703708,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 4258.563651
+  },
+  {
+    "number": 36,
+    "value": 0.38439090290261807,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00012016618593205758,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 4796.112459
+  },
+  {
+    "number": 37,
+    "value": 0.38208699823951414,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00037794917607086756,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 2581.50103
+  },
+  {
+    "number": 38,
+    "value": 0.2790003082433699,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 6.777212718831393e-05,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.0,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 514.002456
+  },
+  {
+    "number": 39,
+    "value": 0.37877085077206646,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0002610551877520608,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.0,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 6199.068929
+  },
+  {
+    "number": 40,
+    "value": 0.28778696887773786,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 3.767750061773408e-05,
+      "training.batch_size": 128,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adam",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 1383.419358
+  },
+  {
+    "number": 41,
+    "value": 0.3132483749368805,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0003228838601602674,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": null,
+      "training.weight_decay": 0.0001
+    },
+    "duration_s": 467.991574
+  },
+  {
+    "number": 42,
+    "value": 0.29013268733099895,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 6.0618612489143437e-05,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 1024,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.0,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 564.138024
+  },
+  {
+    "number": 43,
+    "value": 0.269050284638997,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 6.747570937688231e-05,
+      "training.batch_size": 64,
+      "decoder.hidden_size": 256,
+      "decoder.embed_size": 512,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 1378.570901
+  },
+  {
+    "number": 44,
+    "value": 0.38621045441980867,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0003605985802984155,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 4438.132532
+  },
+  {
+    "number": 45,
+    "value": 0.3561879925427891,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00018313748176050878,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.001
+    },
+    "duration_s": 1494.798148
+  },
+  {
+    "number": 46,
+    "value": 0.36617064255602044,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 6.821418370572612e-05,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.1,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 5604.065919
+  },
+  {
+    "number": 47,
+    "value": 0.38361665161561953,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0004545714477763307,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 4439.799156
+  },
+  {
+    "number": 48,
+    "value": 0.36608595095839386,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.000852879183244825,
+      "training.batch_size": 32,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.01
+    },
+    "duration_s": 1485.675504
+  },
+  {
+    "number": 49,
+    "value": 0.32555730331973215,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00014895476750753525,
+      "training.batch_size": 128,
+      "decoder.hidden_size": 512,
+      "decoder.embed_size": 256,
+      "decoder.num_layers": 1,
+      "decoder.dropout": 0.2,
+      "training.optimizer": "adamw",
+      "training.scheduler": "cosine",
+      "training.weight_decay": 0.0
+    },
+    "duration_s": 1335.754709
+  }
+]
