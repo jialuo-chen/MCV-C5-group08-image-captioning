@@ -29,6 +29,7 @@ import seaborn as sns
 
 PHASE_A = ["A0", "A1", "A2", "A3", "A4", "A5"]
 PHASE_B = ["B1", "B2", "B3", "B4", "B5", "B6"]
+PHASE_GRU = ["GRU1", "GRU2", "GRU3", "GRU4", "GRU5"]
 ALL_EXPERIMENTS = PHASE_A + PHASE_B
 
 METRICS = ["bleu1", "bleu2", "rougeL", "meteor"]
@@ -57,6 +58,15 @@ PHASE_B_LABELS = {
     "B4": "char + attn",
     "B5": "word + attn",
     "B6": "subword + attn",
+}
+
+# Phase GRU labels — all use R50+GRU, vary tokenizer & attention
+PHASE_GRU_LABELS = {
+    "GRU1": "word",
+    "GRU2": "subword",
+    "GRU3": "char + attn",
+    "GRU4": "word + attn",
+    "GRU5": "subword + attn",
 }
 
 # Short labels for training curves / small legends
@@ -89,16 +99,23 @@ FINAL_METRICS: dict[str, dict[str, float]] = {
     "B4": {"bleu1": 0.5000, "bleu2": 0.3025, "rougeL": 0.3740, "meteor": 0.3454},
     "B5": {"bleu1": 0.5609, "bleu2": 0.3496, "rougeL": 0.4131, "meteor": 0.3696},
     "B6": {"bleu1": 0.6088, "bleu2": 0.3782, "rougeL": 0.4116, "meteor": 0.3718},
+    "GRU1": {"bleu1": 0.5554, "bleu2": 0.3400, "rougeL": 0.4037, "meteor": 0.3513},
+    "GRU2": {"bleu1": 0.6105, "bleu2": 0.3685, "rougeL": 0.4017, "meteor": 0.3580},
+    "GRU3": {"bleu1": 0.4544, "bleu2": 0.2765, "rougeL": 0.3689, "meteor": 0.3464},
+    "GRU4": {"bleu1": 0.5419, "bleu2": 0.3389, "rougeL": 0.4095, "meteor": 0.3579},
+    "GRU5": {"bleu1": 0.5999, "bleu2": 0.3716, "rougeL": 0.4124, "meteor": 0.3707},
 }
 
 PARAMS_M: dict[str, float] = {
     "A0": 13.0, "A1": 26.0, "A2": 13.0, "A3": 17.0, "A4": 22.0, "A5": 14.0,
     "B1": 27.8, "B2": 38.0, "B3": 31.8, "B4": 32.6, "B5": 42.8, "B6": 36.7,
+    "GRU1": 36.4, "GRU2": 30.2, "GRU3": 30.0, "GRU4": 40.2, "GRU5": 34.0,
 }
 
 FLOPS_G: dict[str, float] = {
     "A0": 3.63, "A1": 8.18, "A2": 3.63, "A3": 3.71, "A4": 3.81, "A5": 7.51,
     "B1": 8.18, "B2": 8.37, "B3": 8.26, "B4": 17.34, "B5": 17.53, "B6": 17.41,
+    "GRU1": 8.37, "GRU2": 8.25, "GRU3": 17.33, "GRU4": 17.53, "GRU5": 17.41,
 }
 
 # Color palette
@@ -115,6 +132,11 @@ COLORS: dict[str, str] = {
     "B4": "#E65100",  # dark orange
     "B5": "#6A1B9A",  # purple
     "B6": "#C62828",  # dark red — best
+    "GRU1": "#42A5F5",  # blue — word
+    "GRU2": "#66BB6A",  # green — subword
+    "GRU3": "#FFA726",  # orange — char+attn
+    "GRU4": "#AB47BC",  # purple — word+attn
+    "GRU5": "#EF5350",  # red — subword+attn
 }
 
 # Tokenizer type for each experiment (for grouping loss curves)
@@ -565,34 +587,46 @@ def plot_efficiency_scatter(data: dict, out_dir: Path) -> None:
 def plot_phase_b_meteor_scatter(data: dict, out_dir: Path) -> None:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
 
-    for exp in PHASE_B:
-        meteor = pct(FINAL_METRICS[exp]["meteor"])
-        params = PARAMS_M[exp]
-        flops = FLOPS_G[exp]
+    for ax, x_key, xlabel, title in [
+        (ax1, "params", "Parameters (M)", "METEOR vs Model Size"),
+        (ax2, "flops", "FLOPs (G)", "METEOR vs Compute Cost"),
+    ]:
+        for exp in PHASE_B:
+            meteor = pct(FINAL_METRICS[exp]["meteor"])
+            x = PARAMS_M[exp] if x_key == "params" else FLOPS_G[exp]
+            ax.scatter(x, meteor, s=200, color=COLORS[exp],
+                       marker="s", edgecolors="white", linewidth=0.8, zorder=3,
+                       label=f"{PHASE_B_LABELS[exp]} (LSTM)" if ax is ax1 else "_nolegend_")
+            ax.annotate(PHASE_B_LABELS[exp], (x, meteor),
+                        textcoords="offset points", xytext=(6, 4),
+                        fontsize=9, fontweight="bold", color=COLORS[exp])
 
-        ax1.scatter(params, meteor, s=200, color=COLORS[exp],
-                    marker="s", edgecolors="white", linewidth=0.8, zorder=3)
-        ax1.annotate(PHASE_B_LABELS[exp], (params, meteor),
-                     textcoords="offset points", xytext=(6, 4),
-                     fontsize=9, fontweight="bold", color=COLORS[exp])
+        for exp in PHASE_GRU:
+            meteor = pct(FINAL_METRICS[exp]["meteor"])
+            x = PARAMS_M[exp] if x_key == "params" else FLOPS_G[exp]
+            ax.scatter(x, meteor, s=200, color=COLORS[exp],
+                       marker="o", edgecolors="white", linewidth=0.8, zorder=3,
+                       label=f"{PHASE_GRU_LABELS[exp]} (GRU)" if ax is ax1 else "_nolegend_")
+            ax.annotate(PHASE_GRU_LABELS[exp], (x, meteor),
+                        textcoords="offset points", xytext=(6, 4),
+                        fontsize=9, fontweight="bold", color=COLORS[exp])
 
-        ax2.scatter(flops, meteor, s=200, color=COLORS[exp],
-                    marker="s", edgecolors="white", linewidth=0.8, zorder=3)
-        ax2.annotate(PHASE_B_LABELS[exp], (flops, meteor),
-                     textcoords="offset points", xytext=(6, 4),
-                     fontsize=9, fontweight="bold", color=COLORS[exp])
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel("METEOR (%)")
+        ax.set_title(title)
+        ax.set_ylim(28, 42)
 
-    ax1.set_xlabel("Parameters (M)")
-    ax1.set_ylabel("METEOR (%)")
-    ax1.set_title("METEOR vs Model Size (Phase B)")
-    ax1.set_ylim(28, 42)
+    from matplotlib.lines import Line2D
+    legend_elements = [
+        Line2D([0], [0], marker="s", color="w", markerfacecolor="#555",
+               markersize=10, label="LSTM (Phase B)"),
+        Line2D([0], [0], marker="o", color="w", markerfacecolor="#555",
+               markersize=10, label="GRU"),
+    ]
+    ax1.legend(handles=legend_elements, loc="lower right")
+    ax2.legend(handles=legend_elements, loc="lower right")
 
-    ax2.set_xlabel("FLOPs (G)")
-    ax2.set_ylabel("METEOR (%)")
-    ax2.set_title("METEOR vs Compute Cost (Phase B)")
-    ax2.set_ylim(28, 42)
-
-    fig.suptitle("Phase B — METEOR Efficiency Analysis (R50 + LSTM)", fontsize=18,
+    fig.suptitle("Phase B — METEOR Efficiency Analysis (R50 + LSTM vs GRU)", fontsize=18,
                  fontweight="bold", y=1.01)
     fig.tight_layout()
     fig.savefig(out_dir / "11_phase_b_meteor_scatter.png", bbox_inches="tight")
