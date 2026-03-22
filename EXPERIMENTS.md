@@ -254,6 +254,6 @@ For each experiment, collect:
 | B5 | R50 | LSTM | word | Bah | 0.5544 | 0.3458 | 0.4060 | 0.3618 | 42.8M | 17.53G| 1.97 |
 | B6 | R50 | LSTM | sub | Bah | 0.6099 | 0.3811 | 0.4102 | 0.3699 | 36.7M | 17.41G| 1.97 |
 | C1★ | R18 | GRU | char | ✗ | 0.5020 | 0.2885 | 0.3572 | 0.3254 | 23.3M | 3.63G | 1.63 |
-| C2★ | _best_: R50 | _best_: LSTM | _best_: sub | _best_: Bah | | | | | | | |
+| C2★ | _best_: R50 | _best_: LSTM | _best_: sub | _best_: Bah | 0.6382 | 0.4078 | 0.4287 | 0.3826 | 35.1M | 17.41G | 1.95 |
 
 > ★ = after HP sweep
