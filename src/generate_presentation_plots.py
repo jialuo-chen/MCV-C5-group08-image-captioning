@@ -5,7 +5,7 @@ Reads experiment_log.json from each experiment in outputs/ and produces
 
 Usage
 -----
-    uv run python src/generate_presentation_plots.py [--outputs-dir outputs] [--out-dir outputs/presentation_plots]
+    uv run python src/generate_presentation_plots.py [--outputs-dir outputs] [--out-dir outputs/quantitative_plots]
     uv run python main.py presentation-plots
 """
 
@@ -791,7 +791,7 @@ def plot_summary_table(data: dict, out_dir: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def generate_all_plots(outputs_dir: str = "outputs",
-                       out_dir: str = "outputs/presentation_plots") -> None:
+                       out_dir: str = "outputs/quantitative_plots") -> None:
     outputs_path = Path(outputs_dir)
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
@@ -825,7 +825,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate presentation plots.")
     parser.add_argument("--outputs-dir", type=str, default="outputs",
                         help="Directory containing experiment outputs.")
-    parser.add_argument("--out-dir", type=str, default="outputs/presentation_plots",
+    parser.add_argument("--out-dir", type=str, default="outputs/quantitative_plots",
                         help="Output directory for generated plots.")
     args = parser.parse_args()
     generate_all_plots(args.outputs_dir, args.out_dir)
