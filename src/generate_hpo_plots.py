@@ -292,7 +292,7 @@ def plot_hpo_history(trials: list[dict], study_name: str, best_trial: int,
 
     ax.set_xlabel("Trial number")
     ax.set_ylabel("METEOR (%)")
-    ax.set_title(f"{study_name} — Optuna Optimisation History (50 trials, TPE sampler + Hyperband pruner)")
+    ax.set_title(f"{study_name} — Optimisation History")
     ax.legend(loc="lower right", fontsize=10)
     ax.set_xlim(-1, len(trials))
     fig.tight_layout()
