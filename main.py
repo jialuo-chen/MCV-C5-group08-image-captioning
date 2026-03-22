@@ -1,81 +1,65 @@
-"""CLI entry point for the image captioning framework.
-
-Subcommands
------------
-train          Train a model from a YAML config.
-evaluate       Evaluate a checkpoint on the test set.
-infer          Generate captions for images using a trained model.
-sweep          Run a WandB hyperparameter sweep.
-optuna-sweep   Run an Optuna hyperparameter sweep.
-optuna-viz     Generate visualizations from a completed Optuna sweep.
-quantitative-plots  Generate quantitative result plots for the presentation.
-
-Usage
------
-    uv run python main.py train --config configs/baseline.yaml
-    uv run python main.py evaluate --config configs/baseline.yaml --checkpoint outputs/.../best.pt
-    uv run python main.py infer --config configs/baseline.yaml --checkpoint outputs/.../best.pt --image path/to/image.jpg
-    uv run python main.py sweep --config configs/sweep.yaml
-    uv run python main.py optuna-sweep --config configs/optuna.yaml
-    uv run python main.py optuna-viz --study-dir outputs/optuna_sweep
-"""
-
 from __future__ import annotations
 
 import argparse
-import sys
+
+import wandb
+import yaml
+
+from src.evaluate import evaluate
+from src.infer import collect_image_paths, infer
+from src.train import train
+from src.utils.config import load_config
 
 
 def _add_common_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--config", type=str, required=True, help="Path to YAML config file.")
     parser.add_argument(
-        "--override", nargs="*", default=[],
+        "--config", type=str, required=True, help="Path to YAML config file."
+    )
+    parser.add_argument(
+        "--override",
+        nargs="*",
+        default=[],
         help="Config overrides as key=value pairs (e.g., training.lr=0.001).",
     )
 
 
 def cmd_train(args: argparse.Namespace) -> None:
-    from src.utils.config import load_config
-    from src.train import train
 
     cfg = load_config(args.config, overrides=args.override)
     train(cfg)
 
 
 def cmd_evaluate(args: argparse.Namespace) -> None:
-    from src.utils.config import load_config
-    from src.evaluate import evaluate
 
     cfg = load_config(args.config, overrides=args.override)
     evaluate(cfg, checkpoint_path=args.checkpoint)
 
 
 def cmd_infer(args: argparse.Namespace) -> None:
-    from src.utils.config import load_config
-    from src.infer import infer, collect_image_paths
 
     cfg = load_config(args.config, overrides=args.override)
     image_paths = collect_image_paths(args.image)
-    infer(cfg, checkpoint_path=args.checkpoint, image_paths=image_paths, output_file=args.output)
+    infer(
+        cfg,
+        checkpoint_path=args.checkpoint,
+        image_paths=image_paths,
+        output_file=args.output,
+    )
 
 
 def cmd_sweep(args: argparse.Namespace) -> None:
     """Launch a WandB sweep from a sweep YAML config."""
-    import yaml
-    import wandb
-    from src.utils.config import load_config
-    from src.train import train
 
     with open(args.config) as f:
         sweep_cfg = yaml.safe_load(f)
 
-    # The sweep config should have a "base_config" field pointing to the experiment config
     base_config_path = sweep_cfg.pop("base_config")
-    sweep_id = wandb.sweep(sweep_cfg, project=sweep_cfg.get("project", "c5-image-caption"))
+    sweep_id = wandb.sweep(
+        sweep_cfg, project=sweep_cfg.get("project", "c5-image-caption")
+    )
 
     def sweep_agent():
         wandb.init()
-        # Merge wandb sweep params as overrides
         overrides = [f"{k}={v}" for k, v in wandb.config.items()]
         cfg = load_config(base_config_path, overrides=overrides)
         cfg.wandb.enabled = True
@@ -85,21 +69,18 @@ def cmd_sweep(args: argparse.Namespace) -> None:
 
 
 def cmd_optuna_sweep(args: argparse.Namespace) -> None:
-    """Launch an Optuna hyperparameter sweep."""
     from src.optuna_sweep import run_optuna_sweep
 
     run_optuna_sweep(args.config)
 
 
 def cmd_optuna_viz(args: argparse.Namespace) -> None:
-    """Generate visualizations from a completed Optuna sweep."""
     from src.optuna_visualize import load_and_visualize
 
     load_and_visualize(args.study_dir)
 
 
 def cmd_quantitative_plots(args: argparse.Namespace) -> None:
-    """Generate quantitative result plots for the presentation."""
     from src.generate_presentation_plots import generate_all_plots
 
     generate_all_plots(args.outputs_dir, args.out_dir)
@@ -126,49 +107,81 @@ def main() -> None:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # --- train ---
     p_train = subparsers.add_parser("train", help="Train a model.")
     _add_common_args(p_train)
 
-    # --- evaluate ---
     p_eval = subparsers.add_parser("evaluate", help="Evaluate a checkpoint.")
     _add_common_args(p_eval)
-    p_eval.add_argument("--checkpoint", type=str, required=True, help="Path to model checkpoint.")
+    p_eval.add_argument(
+        "--checkpoint", type=str, required=True, help="Path to model checkpoint."
+    )
 
-    # --- infer ---
     p_infer = subparsers.add_parser("infer", help="Run inference on images.")
     _add_common_args(p_infer)
-    p_infer.add_argument("--checkpoint", type=str, required=True, help="Path to model checkpoint.")
-    p_infer.add_argument("--image", type=str, required=True, help="Image path or directory.")
+    p_infer.add_argument(
+        "--checkpoint", type=str, required=True, help="Path to model checkpoint."
+    )
+    p_infer.add_argument(
+        "--image", type=str, required=True, help="Image path or directory."
+    )
     p_infer.add_argument("--output", type=str, default=None, help="Output JSON file.")
 
-    # --- sweep ---
     p_sweep = subparsers.add_parser("sweep", help="Run a WandB hyperparameter sweep.")
-    p_sweep.add_argument("--config", type=str, required=True, help="Path to sweep YAML config.")
+    p_sweep.add_argument(
+        "--config", type=str, required=True, help="Path to sweep YAML config."
+    )
 
-    # --- optuna-sweep ---
-    p_optuna = subparsers.add_parser("optuna-sweep", help="Run an Optuna hyperparameter sweep.")
-    p_optuna.add_argument("--config", type=str, required=True, help="Path to Optuna sweep YAML config.")
+    p_optuna = subparsers.add_parser(
+        "optuna-sweep", help="Run an Optuna hyperparameter sweep."
+    )
+    p_optuna.add_argument(
+        "--config", type=str, required=True, help="Path to Optuna sweep YAML config."
+    )
 
-    # --- optuna-viz ---
-    p_optuna_viz = subparsers.add_parser("optuna-viz", help="Generate visualizations from a completed Optuna sweep.")
-    p_optuna_viz.add_argument("--study-dir", type=str, required=True, help="Path to Optuna output directory containing study.pkl.")
+    p_optuna_viz = subparsers.add_parser(
+        "optuna-viz", help="Generate visualizations from a completed Optuna sweep."
+    )
+    p_optuna_viz.add_argument(
+        "--study-dir",
+        type=str,
+        required=True,
+        help="Path to Optuna output directory containing study.pkl.",
+    )
 
-    # --- visualize ---
     p_vis = subparsers.add_parser("visualize", help="Generate caption visualizations.")
     _add_common_args(p_vis)
-    p_vis.add_argument("--checkpoint", type=str, required=True, help="Path to model checkpoint.")
-    p_vis.add_argument("--num-images", type=int, default=5, help="Number of images to visualize (default: 5).")
-    p_vis.add_argument("--output", type=str, default=None, help="Output directory for plots.")
-    p_vis.add_argument("--model-type", type=str, default=None, help="Model label for plot title.")
+    p_vis.add_argument(
+        "--checkpoint", type=str, required=True, help="Path to model checkpoint."
+    )
+    p_vis.add_argument(
+        "--num-images",
+        type=int,
+        default=5,
+        help="Number of images to visualize (default: 5).",
+    )
+    p_vis.add_argument(
+        "--output", type=str, default=None, help="Output directory for plots."
+    )
+    p_vis.add_argument(
+        "--model-type", type=str, default=None, help="Model label for plot title."
+    )
 
-    # --- quantitative-plots ---
-    quant_plots = subparsers.add_parser("quantitative-plots",
-                                   help="Generate quantitative result plots for the presentation.")
-    quant_plots.add_argument("--outputs-dir", type=str, default="outputs",
-                        help="Directory containing experiment outputs (default: outputs).")
-    quant_plots.add_argument("--out-dir", type=str, default="outputs/presentation_plots",
-                        help="Output directory for plots (default: outputs/presentation_plots).")
+    quant_plots = subparsers.add_parser(
+        "quantitative-plots",
+        help="Generate quantitative result plots for the presentation.",
+    )
+    quant_plots.add_argument(
+        "--outputs-dir",
+        type=str,
+        default="outputs",
+        help="Directory containing experiment outputs (default: outputs).",
+    )
+    quant_plots.add_argument(
+        "--out-dir",
+        type=str,
+        default="outputs/presentation_plots",
+        help="Output directory for plots (default: outputs/presentation_plots).",
+    )
 
     args = parser.parse_args()
 

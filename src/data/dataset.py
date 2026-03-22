@@ -1,28 +1,16 @@
-"""VizWiz Caption Dataset for PyTorch.
-
-Loads VizWiz images + captions using the VizWiz API class.
-Handles train/val splitting (90/10 of train set) and test (val set).
-"""
-
 from __future__ import annotations
 
-import os
 import random
 from pathlib import Path
-from typing import Sequence
 
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms import v2
 
-from src.data.vizwiz import VizWiz
 from src.data.tokenizer import BaseTokenizer
+from src.data.vizwiz import VizWiz
 
-
-# ---------------------------------------------------------------------------
-# Image transforms
-# ---------------------------------------------------------------------------
 
 def get_image_transform(split: str = "train", image_size: int = 224):
     """Return image transform pipeline.
@@ -34,25 +22,25 @@ def get_image_transform(split: str = "train", image_size: int = 224):
         std=(0.229, 0.224, 0.225),
     )
     if split == "train":
-        return v2.Compose([
-            v2.ToImage(),
-            v2.ToDtype(torch.float32, scale=True),
-            v2.Resize((image_size, image_size), antialias=True),
-            v2.RandomHorizontalFlip(p=0.5),
-            normalize,
-        ])
+        return v2.Compose(
+            [
+                v2.ToImage(),
+                v2.ToDtype(torch.float32, scale=True),
+                v2.Resize((image_size, image_size), antialias=True),
+                v2.RandomHorizontalFlip(p=0.5),
+                normalize,
+            ]
+        )
     else:
-        return v2.Compose([
-            v2.ToImage(),
-            v2.ToDtype(torch.float32, scale=True),
-            v2.Resize((image_size, image_size), antialias=True),
-            normalize,
-        ])
+        return v2.Compose(
+            [
+                v2.ToImage(),
+                v2.ToDtype(torch.float32, scale=True),
+                v2.Resize((image_size, image_size), antialias=True),
+                normalize,
+            ]
+        )
 
-
-# ---------------------------------------------------------------------------
-# Dataset
-# ---------------------------------------------------------------------------
 
 class VizWizCaptionDataset(Dataset):
     """VizWiz image-captioning dataset.
@@ -92,13 +80,15 @@ class VizWizCaptionDataset(Dataset):
         self.split = split
         self.transform = get_image_transform(split)
 
-        # Load annotations using VizWiz API
-        vizwiz = VizWiz(str(annotation_file), ignore_rejected=True, ignore_precanned=True)
+        vizwiz = VizWiz(
+            str(annotation_file), ignore_rejected=True, ignore_precanned=True
+        )
         self._build_image_caption_pairs(vizwiz, indices)
 
-    def _build_image_caption_pairs(self, vizwiz: VizWiz, indices: list[int] | None) -> None:
+    def _build_image_caption_pairs(
+        self, vizwiz: VizWiz, indices: list[int] | None
+    ) -> None:
         """Group captions by image and store as list of dicts."""
-        # Build list of (image_info, [captions])
         all_img_ids = sorted(vizwiz.imgs.keys())
         if indices is not None:
             all_img_ids = [all_img_ids[i] for i in indices if i < len(all_img_ids)]
@@ -110,29 +100,28 @@ class VizWizCaptionDataset(Dataset):
             captions = [ann["caption"] for ann in anns if ann.get("caption")]
             if not captions:
                 continue
-            self.items.append({
-                "image_id": img_id,
-                "file_name": img_info["file_name"],
-                "captions": captions,
-            })
+            self.items.append(
+                {
+                    "image_id": img_id,
+                    "file_name": img_info["file_name"],
+                    "captions": captions,
+                }
+            )
 
     def __len__(self) -> int:
         return len(self.items)
 
     def __getitem__(self, idx: int):
         item = self.items[idx]
-        # Load image
         img_path = self.image_dir / item["file_name"]
         img = Image.open(img_path).convert("RGB")
         img = self.transform(img)
 
-        # Pick one caption (random for train, first for eval)
         if self.split == "train":
             caption_text = random.choice(item["captions"])
         else:
             caption_text = item["captions"][0]
 
-        # Encode caption
         cap_ids = self.tokenizer.encode(caption_text)
         cap_ids = self.tokenizer.pad_sequence(cap_ids, self.max_length)
         cap_tensor = torch.tensor(cap_ids, dtype=torch.long)
@@ -151,10 +140,6 @@ class VizWizCaptionDataset(Dataset):
         return []
 
 
-# ---------------------------------------------------------------------------
-# Collate function
-# ---------------------------------------------------------------------------
-
 def caption_collate_fn(batch):
     """Custom collate: stack images and caption tensors, collect texts and paths."""
     images, cap_tensors, cap_texts, img_paths = zip(*batch)
@@ -162,10 +147,6 @@ def caption_collate_fn(batch):
     cap_tensors = torch.stack(cap_tensors, dim=0)
     return images, cap_tensors, list(cap_texts), list(img_paths)
 
-
-# ---------------------------------------------------------------------------
-# Helpers for building train / val / test datasets
-# ---------------------------------------------------------------------------
 
 def build_datasets(cfg, tokenizer: BaseTokenizer):
     """Build train, validation, and test datasets from config.
@@ -185,10 +166,8 @@ def build_datasets(cfg, tokenizer: BaseTokenizer):
     val_img_dir = str(root / cfg.dataset.val_img_dir)
     max_length = cfg.tokenizer.max_length
 
-    # Count images in training set to compute split indices
     vizwiz_train = VizWiz(train_ann, ignore_rejected=True, ignore_precanned=True)
     all_img_ids = sorted(vizwiz_train.imgs.keys())
-    # Only keep images that have at least one caption
     valid_indices = []
     for i, img_id in enumerate(all_img_ids):
         anns = vizwiz_train.imgToAnns.get(img_id, [])
@@ -196,7 +175,6 @@ def build_datasets(cfg, tokenizer: BaseTokenizer):
         if captions:
             valid_indices.append(i)
 
-    # Shuffle and split
     rng = random.Random(cfg.seed)
     rng.shuffle(valid_indices)
     val_size = int(len(valid_indices) * cfg.dataset.val_split_ratio)

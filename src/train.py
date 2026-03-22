@@ -1,9 +1,3 @@
-"""Training loop for image captioning models.
-
-Supports both RNN decoders (CrossEntropyLoss) and HF LM decoders (causal LM loss).
-Includes WandB logging, checkpointing, gradient clipping, and optional mixed precision.
-"""
-
 from __future__ import annotations
 
 import random
@@ -12,16 +6,23 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
+import wandb
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from src.data.dataset import VizWizCaptionDataset, caption_collate_fn, build_datasets
-from src.data.tokenizer import BaseTokenizer, build_tokenizer
+from src.data.dataset import build_datasets, caption_collate_fn
+from src.data.tokenizer import BaseTokenizer, CharTokenizer, build_tokenizer
+from src.data.vizwiz import VizWiz
+from src.evaluation.metrics import compute_metrics, format_metrics
 from src.models.captioner import CaptioningModel, build_captioning_model
 from src.models.decoders import HFLMDecoder
-from src.evaluation.metrics import compute_metrics, format_metrics
 from src.utils.config import Config
 from src.utils.logger import ExperimentLogger, print_model_summary
+
+
+def _set_module_trainable(module: nn.Module, trainable: bool) -> None:
+    for param in module.parameters():
+        param.requires_grad = trainable
 
 
 def _build_optimizer(cfg: Config, params) -> torch.optim.Optimizer:
@@ -45,7 +46,9 @@ def _build_scheduler(cfg: Config, optimizer):
     params = cfg.training.get("scheduler_params", {})
     if sched == "cosine":
         return torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=cfg.training.epochs, **params,
+            optimizer,
+            T_max=cfg.training.epochs,
+            **params,
         )
     elif sched == "step":
         return torch.optim.lr_scheduler.StepLR(optimizer, **params)
@@ -54,8 +57,6 @@ def _build_scheduler(cfg: Config, optimizer):
 
 
 def _collect_train_captions(annotation_file: str) -> list[str]:
-    """Extract all caption strings from a VizWiz annotation file."""
-    from src.data.vizwiz import VizWiz
     vw = VizWiz(annotation_file, ignore_rejected=True, ignore_precanned=True)
     captions = []
     for ann in vw.dataset.get("annotations", []):
@@ -64,10 +65,6 @@ def _collect_train_captions(annotation_file: str) -> list[str]:
             captions.append(cap)
     return captions
 
-
-# ===================================================================
-# Training
-# ===================================================================
 
 def train(cfg: Config, epoch_callback=None) -> float:
     """Run the full training loop.
@@ -97,11 +94,9 @@ def train(cfg: Config, epoch_callback=None) -> float:
     device = torch.device(cfg.device if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    # -- Seed ---------------------------------------------------------------
     torch.manual_seed(cfg.seed)
     random.seed(cfg.seed)
 
-    # -- Run name -----------------------------------------------------------
     run_name = cfg.get("run_name")
     if not run_name:
         ts = time.strftime("%Y%m%d_%H%M%S")
@@ -113,10 +108,8 @@ def train(cfg: Config, epoch_callback=None) -> float:
     results_dir.mkdir(parents=True, exist_ok=True)
     print(f"Output: {output_dir}")
 
-    # -- WandB --------------------------------------------------------------
     wandb_run = None
     if cfg.wandb.enabled:
-        import wandb
         wandb_run = wandb.init(
             project=cfg.wandb.project,
             entity=cfg.wandb.get("entity"),
@@ -125,7 +118,6 @@ def train(cfg: Config, epoch_callback=None) -> float:
             tags=cfg.wandb.get("tags", []),
         )
 
-    # -- Tokenizer ----------------------------------------------------------
     root = Path(cfg.dataset.root)
     train_ann_path = str(root / cfg.dataset.train_ann)
 
@@ -138,12 +130,10 @@ def train(cfg: Config, epoch_callback=None) -> float:
         tokenizer = build_tokenizer(cfg.tokenizer, captions=captions)
         print(f"Tokenizer: {cfg.tokenizer.type}, vocab_size={tokenizer.vocab_size}")
 
-    # -- Datasets -----------------------------------------------------------
     if is_hf_lm:
         # HF LM uses its own tokenizer — we still need a BaseTokenizer wrapper
         # For simplicity, use CharTokenizer as a pass-through for dataset loading.
         # The actual encoding will be handled in the training loop.
-        from src.data.tokenizer import CharTokenizer
         tokenizer = CharTokenizer()  # placeholder for dataset loading
 
     train_ds, val_ds, test_ds = build_datasets(cfg, tokenizer)
@@ -166,28 +156,48 @@ def train(cfg: Config, epoch_callback=None) -> float:
         pin_memory=True,
     )
 
-    # -- Model --------------------------------------------------------------
     if is_hf_lm:
         model = build_captioning_model(cfg)
     else:
-        model = build_captioning_model(cfg, vocab_size=tokenizer.vocab_size, pad_id=tokenizer.pad_id)
+        model = build_captioning_model(
+            cfg, vocab_size=tokenizer.vocab_size, pad_id=tokenizer.pad_id
+        )
     model = model.to(device)
 
-    # -- Logger -------------------------------------------------------------
+    freeze_encoder = bool(
+        cfg.training.get("freeze_encoder", cfg.encoder.get("freeze", False))
+    )
+    freeze_decoder = bool(
+        cfg.training.get("freeze_decoder", cfg.decoder.get("freeze", False))
+    )
+
+    if freeze_encoder:
+        _set_module_trainable(model.encoder, trainable=False)
+        print("Encoder frozen (requires_grad=False).")
+    if freeze_decoder:
+        _set_module_trainable(model.decoder, trainable=False)
+        print("Decoder frozen (requires_grad=False).")
+
     exp_logger = ExperimentLogger(output_dir, dict(cfg))
     model_info = exp_logger.log_model_info(model, device=str(device))
     print_model_summary(model_info)
 
-    # -- Optimizer, scheduler, criterion ------------------------------------
-    optimizer = _build_optimizer(cfg, model.parameters())
-    scheduler = _build_scheduler(cfg, optimizer)
-    criterion = nn.CrossEntropyLoss(ignore_index=tokenizer.pad_id) if not is_hf_lm else None
+    trainable_params = [p for p in model.parameters() if p.requires_grad]
+    if not trainable_params:
+        raise ValueError(
+            "No trainable parameters found. Set training.freeze_encoder/training.freeze_decoder "
+            "to ensure at least one module remains trainable."
+        )
 
-    # -- Mixed precision ----------------------------------------------------
+    optimizer = _build_optimizer(cfg, trainable_params)
+    scheduler = _build_scheduler(cfg, optimizer)
+    criterion = (
+        nn.CrossEntropyLoss(ignore_index=tokenizer.pad_id) if not is_hf_lm else None
+    )
+
     use_amp = cfg.training.get("mixed_precision", False)
     scaler = torch.amp.GradScaler("cuda") if use_amp else None
 
-    # -- Training loop ------------------------------------------------------
     best_metric = -1.0
     best_epoch = 0
     best_metrics_dict: dict[str, float] = {}
@@ -198,6 +208,10 @@ def train(cfg: Config, epoch_callback=None) -> float:
     for epoch in range(cfg.training.epochs):
         exp_logger.start_epoch()
         model.train()
+        if freeze_encoder:
+            model.encoder.eval()
+        if freeze_decoder:
+            model.decoder.eval()
         epoch_loss = 0.0
         num_batches = 0
 
@@ -240,8 +254,9 @@ def train(cfg: Config, epoch_callback=None) -> float:
 
         avg_loss = epoch_loss / max(num_batches, 1)
 
-        # -- Validation -----------------------------------------------------
-        val_metrics = _run_validation(model, val_loader, tokenizer, device, cfg, criterion)
+        val_metrics = _run_validation(
+            model, val_loader, tokenizer, device, cfg, criterion
+        )
         val_loss = val_metrics.pop("val_loss", 0.0)
 
         print(
@@ -249,7 +264,6 @@ def train(cfg: Config, epoch_callback=None) -> float:
             f"{format_metrics(val_metrics)}"
         )
 
-        # -- Logging --------------------------------------------------------
         log_dict = {
             "epoch": epoch + 1,
             "train_loss": avg_loss,
@@ -260,7 +274,6 @@ def train(cfg: Config, epoch_callback=None) -> float:
         if wandb_run:
             wandb_run.log(log_dict)
 
-        # -- Logger epoch ---------------------------------------------------
         is_best = val_metrics.get("meteor", 0.0) > best_metric
         exp_logger.log_epoch(
             epoch=epoch + 1,
@@ -271,12 +284,9 @@ def train(cfg: Config, epoch_callback=None) -> float:
             is_best=is_best,
         )
 
-        # -- Scheduler step -------------------------------------------------
         if scheduler:
             scheduler.step()
 
-        # -- Checkpointing --------------------------------------------------
-        # Save last
         model.save_checkpoint(
             ckpt_dir / "last.pt",
             config=dict(cfg),
@@ -285,7 +295,6 @@ def train(cfg: Config, epoch_callback=None) -> float:
             metrics=val_metrics,
         )
 
-        # Save best (by METEOR)
         current_metric = val_metrics.get("meteor", 0.0)
         if current_metric > best_metric:
             best_metric = current_metric
@@ -303,14 +312,12 @@ def train(cfg: Config, epoch_callback=None) -> float:
         else:
             patience_counter += 1
 
-        # -- Optuna / external callback -------------------------------------
         if epoch_callback is not None:
             should_stop = epoch_callback(current_metric, epoch + 1)
             if should_stop:
                 print(f"Trial pruned at epoch {epoch + 1}.")
                 break
 
-        # -- Early stopping -------------------------------------------------
         if patience and patience_counter >= patience:
             print(f"Early stopping after {patience} epochs without improvement.")
             break
@@ -327,10 +334,6 @@ def train(cfg: Config, epoch_callback=None) -> float:
     return best_metric
 
 
-# ===================================================================
-# Validation helper
-# ===================================================================
-
 @torch.no_grad()
 def _run_validation(
     model: CaptioningModel,
@@ -340,7 +343,6 @@ def _run_validation(
     cfg: Config,
     criterion: nn.Module | None,
 ) -> dict[str, float]:
-    """Run validation: compute loss + captioning metrics."""
     model.eval()
     is_hf_lm = isinstance(model.decoder, HFLMDecoder)
 
@@ -363,7 +365,6 @@ def _run_validation(
         total_loss += loss.item()
         num_batches += 1
 
-        # Generate captions for metrics
         generated = model.generate(
             images,
             tokenizer=tokenizer,
@@ -371,7 +372,6 @@ def _run_validation(
         )
         all_predictions.extend(generated)
 
-        # Collect references (all captions for each image)
         dataset = val_loader.dataset
         batch_start = (num_batches - 1) * val_loader.batch_size
         for i in range(len(generated)):
@@ -382,7 +382,6 @@ def _run_validation(
 
     avg_loss = total_loss / max(num_batches, 1)
 
-    # Compute metrics
     metrics = compute_metrics(all_predictions, all_references)
     metrics["val_loss"] = avg_loss
     return metrics

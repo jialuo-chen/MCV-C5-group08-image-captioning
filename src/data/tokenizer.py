@@ -1,13 +1,3 @@
-"""Tokenizer classes for image captioning.
-
-Three levels of text representation:
-- CharTokenizer:    character-level (baseline)
-- SubwordTokenizer: BPE via HuggingFace tokenizers
-- WordTokenizer:    whitespace-split word-level
-
-All share the same interface: encode / decode / vocab_size / special token ids.
-"""
-
 from __future__ import annotations
 
 import json
@@ -16,11 +6,11 @@ from abc import ABC, abstractmethod
 from collections import Counter
 from pathlib import Path
 from typing import Sequence
+from tokenizers import Tokenizer
+from tokenizers.models import BPE
+from tokenizers.pre_tokenizers import Whitespace
+from tokenizers.trainers import BpeTrainer
 
-
-# ---------------------------------------------------------------------------
-# Base interface
-# ---------------------------------------------------------------------------
 
 class BaseTokenizer(ABC):
     """Common tokenizer interface."""
@@ -65,10 +55,6 @@ class BaseTokenizer(ABC):
         raise NotImplementedError
 
 
-# ---------------------------------------------------------------------------
-# Character-level tokenizer (mirrors baseline notebook)
-# ---------------------------------------------------------------------------
-
 _DEFAULT_CHARS = [
     "<SOS>", "<EOS>", "<PAD>",
     " ", "!", '"', "#", "&", "'", "(", ")", ",", "-", ".", "0", "1", "2",
@@ -88,8 +74,6 @@ class CharTokenizer(BaseTokenizer):
         self._idx2char = {i: c for i, c in enumerate(self._chars)}
         self._char2idx = {c: i for i, c in enumerate(self._chars)}
         self._unk_char = " "  # map unknown chars to space
-
-    # -- interface ----------------------------------------------------------
 
     def encode(self, text: str) -> list[int]:
         ids = [self._char2idx["<SOS>"]]
@@ -136,11 +120,6 @@ class CharTokenizer(BaseTokenizer):
         data = json.loads(Path(path).read_text())
         return cls(chars=data["chars"])
 
-
-# ---------------------------------------------------------------------------
-# Word-level tokenizer
-# ---------------------------------------------------------------------------
-
 class WordTokenizer(BaseTokenizer):
     """Whitespace-split word-level tokenizer.
 
@@ -165,7 +144,6 @@ class WordTokenizer(BaseTokenizer):
         counter: Counter[str] = Counter()
         for cap in captions:
             counter.update(self._tokenize(cap))
-        # Filter by frequency
         words = [w for w, c in counter.most_common() if c >= min_freq]
         if max_vocab is not None:
             words = words[:max_vocab - len(self.SPECIAL_TOKENS)]
@@ -174,9 +152,7 @@ class WordTokenizer(BaseTokenizer):
 
     @staticmethod
     def _tokenize(text: str) -> list[str]:
-        # Lowercase + split on whitespace, keep basic punctuation attached
         text = text.lower().strip()
-        # Split punctuation from words but keep them as tokens
         tokens = re.findall(r"\w+|[^\w\s]", text)
         return tokens
 
@@ -227,10 +203,6 @@ class WordTokenizer(BaseTokenizer):
         return cls(vocab=data["vocab"])
 
 
-# ---------------------------------------------------------------------------
-# Subword-level tokenizer (BPE via HuggingFace tokenizers)
-# ---------------------------------------------------------------------------
-
 class SubwordTokenizer(BaseTokenizer):
     """BPE subword tokenizer backed by HuggingFace ``tokenizers``.
 
@@ -245,10 +217,6 @@ class SubwordTokenizer(BaseTokenizer):
 
     def train(self, captions: list[str], vocab_size: int = 4000) -> None:
         """Train a BPE tokenizer on *captions*."""
-        from tokenizers import Tokenizer
-        from tokenizers.models import BPE
-        from tokenizers.trainers import BpeTrainer
-        from tokenizers.pre_tokenizers import Whitespace
 
         tokenizer = Tokenizer(BPE(unk_token="<UNK>"))
         tokenizer.pre_tokenizer = Whitespace()
@@ -267,7 +235,6 @@ class SubwordTokenizer(BaseTokenizer):
         return [self._sos_id] + enc.ids + [self._eos_id]
 
     def decode(self, ids: Sequence[int]) -> str:
-        # Strip special tokens
         filtered = []
         for i in ids:
             if i == self._sos_id or i == self._pad_id:
@@ -300,7 +267,6 @@ class SubwordTokenizer(BaseTokenizer):
 
     @classmethod
     def load(cls, path: str | Path) -> "SubwordTokenizer":
-        from tokenizers import Tokenizer
         tok = cls()
         tok._tokenizer = Tokenizer.from_file(str(path))
         tok._pad_id = tok._tokenizer.token_to_id("<PAD>")
@@ -308,10 +274,6 @@ class SubwordTokenizer(BaseTokenizer):
         tok._eos_id = tok._tokenizer.token_to_id("<EOS>")
         return tok
 
-
-# ---------------------------------------------------------------------------
-# Factory
-# ---------------------------------------------------------------------------
 
 def build_tokenizer(cfg, captions: list[str] | None = None) -> BaseTokenizer:
     """Build a tokenizer from config.

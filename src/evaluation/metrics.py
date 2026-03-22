@@ -1,14 +1,7 @@
-"""Evaluation metrics for image captioning.
-
-Computes BLEU-1, BLEU-2, ROUGE-L, and METEOR using HuggingFace ``evaluate``.
-"""
-
 from __future__ import annotations
 
 import evaluate
 
-
-# Pre-load metrics (lazy singletons)
 _bleu = None
 _rouge = None
 _meteor = None
@@ -43,8 +36,6 @@ def compute_metrics(
     dict[str, float]
         ``{"bleu1", "bleu2", "rougeL", "meteor"}`` — all in [0, 1].
     """
-    # Degenerate batches can happen early in training (e.g., empty generations).
-    # Return safe zeros instead of crashing metric libraries.
     if not predictions or not references or len(predictions) != len(references):
         return {
             "bleu1": 0.0,
@@ -53,7 +44,6 @@ def compute_metrics(
             "meteor": 0.0,
         }
 
-    # Ensure each sample has at least one non-empty reference caption.
     placeholder = "<empty>"
     normalized_references: list[list[str]] = []
     for refs in references:
@@ -63,26 +53,29 @@ def compute_metrics(
             cleaned = [r for r in refs if isinstance(r, str) and r.strip()]
             normalized_references.append(cleaned if cleaned else [placeholder])
 
-    # BLEU in evaluate can raise ZeroDivisionError when all predictions are empty.
-    # Use a single space placeholder so the metric returns ~0 rather than failing.
     normalized_predictions = [
-        p if isinstance(p, str) and p.strip() else placeholder
-        for p in predictions
+        p if isinstance(p, str) and p.strip() else placeholder for p in predictions
     ]
 
     bleu_metric, rouge_metric, meteor_metric = _get_metrics()
 
     bleu1 = bleu_metric.compute(
-        predictions=normalized_predictions, references=normalized_references, max_order=1,
+        predictions=normalized_predictions,
+        references=normalized_references,
+        max_order=1,
     )
     bleu2 = bleu_metric.compute(
-        predictions=normalized_predictions, references=normalized_references, max_order=2,
+        predictions=normalized_predictions,
+        references=normalized_references,
+        max_order=2,
     )
     rouge = rouge_metric.compute(
-        predictions=normalized_predictions, references=normalized_references,
+        predictions=normalized_predictions,
+        references=normalized_references,
     )
     meteor = meteor_metric.compute(
-        predictions=normalized_predictions, references=normalized_references,
+        predictions=normalized_predictions,
+        references=normalized_references,
     )
 
     return {

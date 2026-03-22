@@ -1,58 +1,42 @@
-"""Configuration system for image captioning experiments.
-
-Loads YAML config files into a nested dict with dot-access support.
-Supports CLI overrides via key=value pairs (e.g., training.lr=0.001).
-"""
-
 from __future__ import annotations
 
 import copy
-import yaml
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-
-# ---------------------------------------------------------------------------
-# Default configuration (mirrors baseline: ResNet-18 + GRU + char-level)
-# ---------------------------------------------------------------------------
+import yaml
 
 DEFAULTS: dict[str, Any] = {
     "seed": 42,
     "device": "cuda",
     "run_name": None,  # auto-generated if None
     "output_dir": "outputs",
-
     "encoder": {
         "name": "resnet18",
         "pretrained": "microsoft/resnet-18",
         "freeze": False,
         "feature_dim": 512,  # overridden per model
     },
-
     "decoder": {
-        "type": "rnn",            # "rnn" or "hf_lm"
-        "name": "gru",            # "gru", "lstm" (for rnn) or HF model id (for hf_lm)
-        "pretrained": None,       # HF model id for hf_lm decoders
+        "type": "rnn",  # "rnn" or "hf_lm"
+        "name": "gru",  # "gru", "lstm" (for rnn) or HF model id (for hf_lm)
+        "pretrained": None,  # HF model id for hf_lm decoders
         "hidden_size": 512,
         "num_layers": 1,
         "embed_size": 512,
         "dropout": 0.0,
     },
-
     "attention": {
         "enabled": False,
-        "type": "bahdanau",       # "bahdanau" or "luong"
+        "type": "bahdanau",  # "bahdanau" or "luong"
         "attention_dim": 256,
     },
-
     "tokenizer": {
-        "type": "char",           # "char", "subword", "word"
-        "vocab_size": None,       # auto for char; set for subword/word
+        "type": "char",  # "char", "subword", "word"
+        "vocab_size": None,  # auto for char; set for subword/word
         "max_length": 201,
-        "pretrained": None,       # path or HF tokenizer name for subword
+        "pretrained": None,  # path or HF tokenizer name for subword
     },
-
     "dataset": {
         "root": "/data/123-1/users/jchen/VizWiz",
         "train_ann": "annotations/train.json",
@@ -61,16 +45,17 @@ DEFAULTS: dict[str, Any] = {
         "val_img_dir": "val",
         "ignore_rejected": True,
         "ignore_precanned": True,
-        "val_split_ratio": 0.1,   # fraction of training data used as validation
+        "val_split_ratio": 0.1,  # fraction of training data used as validation
     },
-
     "training": {
         "epochs": 20,
         "batch_size": 64,
         "lr": 1e-3,
-        "optimizer": "adam",       # "adam", "adamw", "sgd"
+        "freeze_encoder": False,
+        "freeze_decoder": False,
+        "optimizer": "adam",  # "adam", "adamw", "sgd"
         "weight_decay": 0.0,
-        "scheduler": None,        # "cosine", "step", None
+        "scheduler": None,  # "cosine", "step", None
         "scheduler_params": {},
         "grad_clip": 5.0,
         "teacher_forcing_ratio": 1.0,
@@ -78,13 +63,11 @@ DEFAULTS: dict[str, Any] = {
         "num_workers": 4,
         "early_stopping_patience": None,
     },
-
     "inference": {
-        "beam_size": 1,           # 1 = greedy
+        "beam_size": 1,  # 1 = greedy
         "max_length": 201,
         "temperature": 1.0,
     },
-
     "wandb": {
         "enabled": False,
         "project": "c5-image-caption",
@@ -93,27 +76,16 @@ DEFAULTS: dict[str, Any] = {
     },
 }
 
-
-# ---------------------------------------------------------------------------
-# Encoder registry: short name -> (HF model id, feature_dim)
-# ---------------------------------------------------------------------------
-
 ENCODER_REGISTRY: dict[str, dict[str, Any]] = {
-    "resnet18":  {"pretrained": "microsoft/resnet-18",  "feature_dim": 512},
-    "resnet34":  {"pretrained": "microsoft/resnet-34",  "feature_dim": 512},
-    "resnet50":  {"pretrained": "microsoft/resnet-50",  "feature_dim": 2048},
-    "vgg16":     {"pretrained": "google/vgg-16",        "feature_dim": 512},
-    "vgg19":     {"pretrained": "google/vgg-19",        "feature_dim": 512},
+    "resnet18": {"pretrained": "microsoft/resnet-18", "feature_dim": 512},
+    "resnet34": {"pretrained": "microsoft/resnet-34", "feature_dim": 512},
+    "resnet50": {"pretrained": "microsoft/resnet-50", "feature_dim": 2048},
+    "vgg16": {"pretrained": "google/vgg-16", "feature_dim": 512},
+    "vgg19": {"pretrained": "google/vgg-19", "feature_dim": 512},
 }
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 class Config(dict):
-    """Dict subclass with dot-access for convenience."""
-
     def __getattr__(self, key: str) -> Any:
         try:
             val = self[key]
@@ -132,7 +104,6 @@ class Config(dict):
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
-    """Recursively merge *override* into a copy of *base*."""
     result = copy.deepcopy(base)
     for k, v in override.items():
         if k in result and isinstance(result[k], dict) and isinstance(v, dict):
@@ -143,7 +114,6 @@ def _deep_merge(base: dict, override: dict) -> dict:
 
 
 def _set_nested(d: dict, key: str, value: str) -> None:
-    """Set a nested key like 'training.lr' to a parsed value."""
     parts = key.split(".")
     for part in parts[:-1]:
         d = d.setdefault(part, {})
@@ -153,7 +123,6 @@ def _set_nested(d: dict, key: str, value: str) -> None:
 
 
 def _parse_value(value: str) -> Any:
-    """Best-effort parse of a CLI string value to Python type."""
     if value.lower() in ("true", "yes"):
         return True
     if value.lower() in ("false", "no"):
@@ -171,30 +140,11 @@ def _parse_value(value: str) -> Any:
     return value
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
 def load_config(path: str | Path, overrides: list[str] | None = None) -> Config:
-    """Load a YAML config, merge with defaults, apply CLI overrides.
-
-    Parameters
-    ----------
-    path : str | Path
-        Path to a YAML config file.
-    overrides : list[str] | None
-        Optional list of ``key=value`` strings for CLI overrides.
-
-    Returns
-    -------
-    Config
-        Merged configuration with dot-access support.
-    """
     path = Path(path)
     with open(path) as f:
         user_cfg = yaml.safe_load(f) or {}
 
-    # Resolve encoder registry shorthand
     enc_name = user_cfg.get("encoder", {}).get("name")
     if enc_name and enc_name in ENCODER_REGISTRY:
         registry_defaults = ENCODER_REGISTRY[enc_name]
@@ -205,7 +155,6 @@ def load_config(path: str | Path, overrides: list[str] | None = None) -> Config:
 
     merged = _deep_merge(DEFAULTS, user_cfg)
 
-    # Apply CLI overrides
     if overrides:
         for item in overrides:
             if "=" not in item:

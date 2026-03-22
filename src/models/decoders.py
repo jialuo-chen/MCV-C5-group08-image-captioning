@@ -1,26 +1,9 @@
-"""Decoder modules for image captioning.
-
-Two decoder families:
-
-1. **RNNDecoder** — GRU / LSTM trained from scratch with our tokenizer.
-   Supports optional attention over encoder spatial features.
-2. **HFLMDecoder** — Pretrained HuggingFace causal LM (e.g. xLSTM) fine-tuned
-   for captioning by prepending projected image features as prefix tokens.
-"""
-
 from __future__ import annotations
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from typing import Optional
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from src.models.attention import BahdanauAttention, LuongAttention
-
-
-# ===================================================================
-# Custom RNN Decoder (GRU / LSTM)
-# ===================================================================
 
 class RNNDecoder(nn.Module):
     """Autoregressive decoder using GRU or LSTM cells.
@@ -70,10 +53,9 @@ class RNNDecoder(nn.Module):
 
         self.embedding = nn.Embedding(vocab_size, embed_size, padding_idx=pad_id)
 
-        # Input to RNN: embed_size (+ encoder_dim if attention)
         rnn_input_size = embed_size
         if self.use_attention:
-            rnn_input_size += (encoder_dim or hidden_size)
+            rnn_input_size += encoder_dim or hidden_size
 
         rnn_cls = nn.GRU if self.rnn_type == "gru" else nn.LSTM
         self.rnn = rnn_cls(
@@ -87,25 +69,30 @@ class RNNDecoder(nn.Module):
         self.fc_out = nn.Linear(hidden_size, vocab_size)
         self.dropout = nn.Dropout(dropout)
 
-        # Project encoder pooled feature → initial hidden state
         self.init_h = nn.Linear(encoder_dim or hidden_size, hidden_size * num_layers)
         if self.rnn_type == "lstm":
-            self.init_c = nn.Linear(encoder_dim or hidden_size, hidden_size * num_layers)
-
-    # ----- helpers ---------------------------------------------------------
+            self.init_c = nn.Linear(
+                encoder_dim or hidden_size, hidden_size * num_layers
+            )
 
     def _init_hidden(self, encoder_features: torch.Tensor) -> torch.Tensor:
         """Initialize hidden state from encoder features ``(batch, feature_dim)``."""
         batch = encoder_features.size(0)
         h = self.init_h(encoder_features)  # (batch, hidden_size * num_layers)
-        h = h.view(batch, self.num_layers, self.hidden_size).permute(1, 0, 2).contiguous()
+        h = (
+            h.view(batch, self.num_layers, self.hidden_size)
+            .permute(1, 0, 2)
+            .contiguous()
+        )
         if self.rnn_type == "lstm":
             c = self.init_c(encoder_features)
-            c = c.view(batch, self.num_layers, self.hidden_size).permute(1, 0, 2).contiguous()
+            c = (
+                c.view(batch, self.num_layers, self.hidden_size)
+                .permute(1, 0, 2)
+                .contiguous()
+            )
             return (h, c)
         return h
-
-    # ----- forward (teacher-forced training) --------------------------------
 
     def forward(
         self,
@@ -131,7 +118,9 @@ class RNNDecoder(nn.Module):
         """
         # Exclude last token (we don't predict after <EOS>)
         captions_input = captions[:, :-1]  # input tokens
-        embeddings = self.dropout(self.embedding(captions_input))  # (batch, seq-1, embed)
+        embeddings = self.dropout(
+            self.embedding(captions_input)
+        )  # (batch, seq-1, embed)
 
         hidden = self._init_hidden(encoder_pooled)
 
@@ -154,8 +143,6 @@ class RNNDecoder(nn.Module):
         logits = self.fc_out(outputs)  # (batch, seq-1, vocab_size)
         return logits.permute(0, 2, 1)  # (batch, vocab_size, seq-1)
 
-    # ----- generate (inference) ---------------------------------------------
-
     @torch.no_grad()
     def generate(
         self,
@@ -176,7 +163,9 @@ class RNNDecoder(nn.Module):
         device = encoder_pooled.device
         hidden = self._init_hidden(encoder_pooled)
 
-        current_token = torch.full((batch_size, 1), sos_id, dtype=torch.long, device=device)
+        current_token = torch.full(
+            (batch_size, 1), sos_id, dtype=torch.long, device=device
+        )
         sequences: list[list[int]] = [[] for _ in range(batch_size)]
         finished = [False] * batch_size
 
@@ -192,7 +181,7 @@ class RNNDecoder(nn.Module):
 
             out, hidden = self.rnn(rnn_input, hidden)
             logits = self.fc_out(out.squeeze(1))  # (batch, vocab_size)
-            next_token = logits.argmax(dim=-1)     # (batch,)
+            next_token = logits.argmax(dim=-1)  # (batch,)
 
             for i in range(batch_size):
                 if not finished[i]:
@@ -209,10 +198,6 @@ class RNNDecoder(nn.Module):
 
         return sequences
 
-
-# ===================================================================
-# HuggingFace Causal LM Decoder (e.g. xLSTM)
-# ===================================================================
 
 class HFLMDecoder(nn.Module):
     """Decoder that wraps a pretrained HuggingFace causal LM.
@@ -240,10 +225,13 @@ class HFLMDecoder(nn.Module):
         freeze_lm: bool = False,
     ) -> None:
         super().__init__()
-        from transformers import AutoModelForCausalLM, AutoTokenizer
 
-        self.lm = AutoModelForCausalLM.from_pretrained(pretrained, trust_remote_code=True)
-        self.tokenizer = AutoTokenizer.from_pretrained(pretrained, trust_remote_code=True)
+        self.lm = AutoModelForCausalLM.from_pretrained(
+            pretrained, trust_remote_code=True
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            pretrained, trust_remote_code=True
+        )
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -286,7 +274,6 @@ class HFLMDecoder(nn.Module):
         caption_embeds = self.lm.get_input_embeddings()(captions)
         inputs_embeds = torch.cat([prefix_embeds, caption_embeds], dim=1)
 
-        # Build labels: -100 for prefix positions (ignored in loss), then caption ids
         prefix_labels = torch.full(
             (captions.size(0), self.num_prefix_tokens),
             -100,
@@ -294,7 +281,6 @@ class HFLMDecoder(nn.Module):
             device=captions.device,
         )
         labels = torch.cat([prefix_labels, captions], dim=1)
-        # Shift labels left by 1 for causal LM (model does this internally)
 
         outputs = self.lm(inputs_embeds=inputs_embeds, labels=labels)
         return outputs.loss
@@ -317,13 +303,11 @@ class HFLMDecoder(nn.Module):
         batch_size = encoder_pooled.size(0)
         device = encoder_pooled.device
 
-        # Use a BOS token as the start
         bos_id = self.tokenizer.bos_token_id or self.tokenizer.eos_token_id
         start_ids = torch.full((batch_size, 1), bos_id, dtype=torch.long, device=device)
         start_embeds = self.lm.get_input_embeddings()(start_ids)
         inputs_embeds = torch.cat([prefix_embeds, start_embeds], dim=1)
 
-        # Create attention mask
         attention_mask = torch.ones(
             (batch_size, self.num_prefix_tokens + 1),
             dtype=torch.long,
@@ -342,11 +326,12 @@ class HFLMDecoder(nn.Module):
         return captions
 
 
-# ===================================================================
-# Factory
-# ===================================================================
-
-def build_decoder(cfg, vocab_size: int | None = None, pad_id: int = 0, attention: nn.Module | None = None):
+def build_decoder(
+    cfg,
+    vocab_size: int | None = None,
+    pad_id: int = 0,
+    attention: nn.Module | None = None,
+):
     """Build a decoder from config.
 
     Parameters

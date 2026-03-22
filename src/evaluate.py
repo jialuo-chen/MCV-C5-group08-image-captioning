@@ -1,9 +1,3 @@
-"""Evaluation script.
-
-Loads a trained checkpoint and evaluates on the test set (VizWiz val split),
-computing BLEU-1, BLEU-2, ROUGE-L, and METEOR.
-"""
-
 from __future__ import annotations
 
 import json
@@ -11,19 +5,24 @@ import time
 from pathlib import Path
 
 import torch
+import wandb
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from src.data.dataset import VizWizCaptionDataset, caption_collate_fn
-from src.data.tokenizer import BaseTokenizer, CharTokenizer, WordTokenizer, SubwordTokenizer
+from src.data.tokenizer import (
+    BaseTokenizer,
+    CharTokenizer,
+    SubwordTokenizer,
+    WordTokenizer,
+)
+from src.evaluation.metrics import compute_metrics, format_metrics
 from src.models.captioner import CaptioningModel
 from src.models.decoders import HFLMDecoder
-from src.evaluation.metrics import compute_metrics, format_metrics
 from src.utils.config import Config
 
 
 def _load_tokenizer(ckpt_dir: Path, cfg: Config) -> BaseTokenizer:
-    """Load tokenizer from checkpoint directory."""
     tok_path = ckpt_dir / "tokenizer.json"
     tok_type = cfg.tokenizer.type
     if tok_type == "char":
@@ -37,24 +36,9 @@ def _load_tokenizer(ckpt_dir: Path, cfg: Config) -> BaseTokenizer:
 
 
 def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
-    """Evaluate a model checkpoint on the test set.
-
-    Parameters
-    ----------
-    cfg : Config
-        Experiment configuration.
-    checkpoint_path : str
-        Path to the model checkpoint.
-
-    Returns
-    -------
-    dict[str, float]
-        Metric scores.
-    """
     device = torch.device(cfg.device if torch.cuda.is_available() else "cpu")
     ckpt_path = Path(checkpoint_path)
 
-    # -- Load model ---------------------------------------------------------
     model, checkpoint = CaptioningModel.from_checkpoint(ckpt_path, device=str(device))
     model.eval()
     is_hf_lm = isinstance(model.decoder, HFLMDecoder)
@@ -62,14 +46,12 @@ def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
     saved_cfg = Config(checkpoint["config"])
     print(f"Loaded checkpoint from epoch {checkpoint.get('epoch', '?')}")
 
-    # -- Load tokenizer -----------------------------------------------------
     if is_hf_lm:
         tokenizer = CharTokenizer()  # placeholder
     else:
         tokenizer = _load_tokenizer(ckpt_path.parent, saved_cfg)
     print(f"Tokenizer: {saved_cfg.tokenizer.type}, vocab_size={tokenizer.vocab_size}")
 
-    # -- Build test dataset -------------------------------------------------
     root = Path(cfg.dataset.root)
     test_ds = VizWizCaptionDataset(
         annotation_file=str(root / cfg.dataset.val_ann),
@@ -88,13 +70,14 @@ def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
     )
     print(f"Test set: {len(test_ds)} images")
 
-    # -- Generate & evaluate ------------------------------------------------
     all_predictions: list[str] = []
     all_references: list[list[str]] = []
     all_image_paths: list[str] = []
     total_inference_time_s = 0.0
 
-    for images, cap_tensors, cap_texts, img_paths in tqdm(test_loader, desc="Evaluating"):
+    for images, cap_tensors, cap_texts, img_paths in tqdm(
+        test_loader, desc="Evaluating"
+    ):
         images = images.to(device)
         batch_start_time = time.perf_counter()
         generated = model.generate(
@@ -115,11 +98,12 @@ def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
 
     metrics = compute_metrics(all_predictions, all_references)
     num_images = len(all_predictions)
-    avg_inference_ms = (total_inference_time_s / num_images * 1000.0) if num_images > 0 else 0.0
+    avg_inference_ms = (
+        (total_inference_time_s / num_images * 1000.0) if num_images > 0 else 0.0
+    )
     print(f"\nTest Results: {format_metrics(metrics)}")
     print(f"Average inference time per image: {avg_inference_ms:.3f} ms")
 
-    # -- Save results -------------------------------------------------------
     results_dir = ckpt_path.parent.parent / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
 
@@ -132,7 +116,9 @@ def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
         "samples": [
             {"image": img, "prediction": pred, "references": refs}
             for img, pred, refs in zip(
-                all_image_paths[:20], all_predictions[:20], all_references[:20],
+                all_image_paths[:20],
+                all_predictions[:20],
+                all_references[:20],
             )
         ],
     }
@@ -140,9 +126,7 @@ def evaluate(cfg: Config, checkpoint_path: str) -> dict[str, float]:
     results_file.write_text(json.dumps(results, indent=2))
     print(f"Results saved to: {results_file}")
 
-    # -- WandB logging (if enabled) -----------------------------------------
     if cfg.wandb.enabled:
-        import wandb
         wandb.init(
             project=cfg.wandb.project,
             entity=cfg.wandb.get("entity"),

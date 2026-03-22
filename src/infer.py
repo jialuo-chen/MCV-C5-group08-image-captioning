@@ -1,9 +1,3 @@
-"""Inference script.
-
-Load a trained checkpoint and generate captions for a single image,
-a directory of images, or a list of image paths.
-"""
-
 from __future__ import annotations
 
 import json
@@ -14,15 +8,19 @@ import torch
 from PIL import Image
 
 from src.data.dataset import get_image_transform
-from src.data.tokenizer import BaseTokenizer, CharTokenizer, WordTokenizer, SubwordTokenizer
+from src.data.tokenizer import (
+    BaseTokenizer,
+    CharTokenizer,
+    SubwordTokenizer,
+    WordTokenizer,
+)
 from src.models.captioner import CaptioningModel
 from src.models.decoders import HFLMDecoder
 from src.utils.config import Config
-from src.utils.logger import ExperimentLogger, count_parameters
+from src.utils.logger import ExperimentLogger
 
 
 def _load_tokenizer(ckpt_dir: Path, cfg: Config) -> BaseTokenizer:
-    """Load tokenizer from checkpoint directory."""
     tok_path = ckpt_dir / "tokenizer.json"
     tok_type = cfg.tokenizer.type
     if tok_type == "char":
@@ -35,45 +33,28 @@ def _load_tokenizer(ckpt_dir: Path, cfg: Config) -> BaseTokenizer:
         raise ValueError(f"Unknown tokenizer type: {tok_type}")
 
 
-def infer(cfg: Config, checkpoint_path: str, image_paths: list[str], output_file: str | None = None) -> list[dict]:
-    """Run inference on a list of images.
-
-    Parameters
-    ----------
-    cfg : Config
-        Experiment configuration.
-    checkpoint_path : str
-        Path to the trained model checkpoint.
-    image_paths : list[str]
-        Paths to input images.
-    output_file : str | None
-        If given, save results as JSON.
-
-    Returns
-    -------
-    list[dict]
-        List of ``{"image": str, "caption": str}`` dicts.
-    """
+def infer(
+    cfg: Config,
+    checkpoint_path: str,
+    image_paths: list[str],
+    output_file: str | None = None,
+) -> list[dict]:
     device = torch.device(cfg.device if torch.cuda.is_available() else "cpu")
     ckpt_path = Path(checkpoint_path)
 
-    # -- Load model ---------------------------------------------------------
     model, checkpoint = CaptioningModel.from_checkpoint(ckpt_path, device=str(device))
     model.eval()
     is_hf_lm = isinstance(model.decoder, HFLMDecoder)
 
     saved_cfg = Config(checkpoint["config"])
 
-    # -- Load tokenizer -----------------------------------------------------
     if is_hf_lm:
         tokenizer = CharTokenizer()
     else:
         tokenizer = _load_tokenizer(ckpt_path.parent, saved_cfg)
 
-    # -- Image transform ----------------------------------------------------
     transform = get_image_transform("val")
 
-    # -- Run inference ------------------------------------------------------
     results = []
     t_start = time.time()
     for img_path in image_paths:
@@ -91,19 +72,21 @@ def infer(cfg: Config, checkpoint_path: str, image_paths: list[str], output_file
 
     total_time = time.time() - t_start
 
-    # -- Logger -------------------------------------------------------------
-    log_dir = Path(output_file).parent if output_file else ckpt_path.parent.parent / "results"
+    log_dir = (
+        Path(output_file).parent if output_file else ckpt_path.parent.parent / "results"
+    )
     exp_logger = ExperimentLogger(log_dir, dict(saved_cfg))
     exp_logger.log_model_info(model, device=str(device))
-    exp_logger.log_inference({
-        "checkpoint": str(ckpt_path),
-        "num_images": len(image_paths),
-        "total_time_s": round(total_time, 3),
-        "avg_latency_ms": round((total_time / max(len(image_paths), 1)) * 1000, 2),
-    })
+    exp_logger.log_inference(
+        {
+            "checkpoint": str(ckpt_path),
+            "num_images": len(image_paths),
+            "total_time_s": round(total_time, 3),
+            "avg_latency_ms": round((total_time / max(len(image_paths), 1)) * 1000, 2),
+        }
+    )
     exp_logger.save()
 
-    # -- Save results -------------------------------------------------------
     if output_file:
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)
         Path(output_file).write_text(json.dumps(results, indent=2))
@@ -113,7 +96,6 @@ def infer(cfg: Config, checkpoint_path: str, image_paths: list[str], output_file
 
 
 def collect_image_paths(path: str) -> list[str]:
-    """Collect image paths from a file path or directory."""
     p = Path(path)
     if p.is_file():
         return [str(p)]

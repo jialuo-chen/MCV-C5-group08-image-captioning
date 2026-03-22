@@ -1,9 +1,3 @@
-"""Attention mechanisms for image captioning.
-
-- BahdanauAttention (additive)
-- LuongAttention (multiplicative)
-"""
-
 from __future__ import annotations
 
 import torch
@@ -27,7 +21,9 @@ class BahdanauAttention(nn.Module):
         Internal projection dimension.
     """
 
-    def __init__(self, encoder_dim: int, decoder_dim: int, attention_dim: int = 256) -> None:
+    def __init__(
+        self, encoder_dim: int, decoder_dim: int, attention_dim: int = 256
+    ) -> None:
         super().__init__()
         self.encoder_proj = nn.Linear(encoder_dim, attention_dim)
         self.decoder_proj = nn.Linear(decoder_dim, attention_dim)
@@ -53,18 +49,17 @@ class BahdanauAttention(nn.Module):
         weights : Tensor
             ``(batch, num_positions)``
         """
-        # Project
-        enc_proj = self.encoder_proj(encoder_features)   # (batch, pos, attn_dim)
-        dec_proj = self.decoder_proj(decoder_hidden)      # (batch, attn_dim)
-        dec_proj = dec_proj.unsqueeze(1)                  # (batch, 1, attn_dim)
+        enc_proj = self.encoder_proj(encoder_features)  # (batch, pos, attn_dim)
+        dec_proj = self.decoder_proj(decoder_hidden)  # (batch, attn_dim)
+        dec_proj = dec_proj.unsqueeze(1)  # (batch, 1, attn_dim)
 
-        # Score
-        energy = torch.tanh(enc_proj + dec_proj)          # (batch, pos, attn_dim)
-        scores = self.score(energy).squeeze(-1)           # (batch, pos)
-        weights = F.softmax(scores, dim=-1)               # (batch, pos)
+        energy = torch.tanh(enc_proj + dec_proj)  # (batch, pos, attn_dim)
+        scores = self.score(energy).squeeze(-1)  # (batch, pos)
+        weights = F.softmax(scores, dim=-1)  # (batch, pos)
 
-        # Context
-        context = (encoder_features * weights.unsqueeze(-1)).sum(dim=1)  # (batch, encoder_dim)
+        context = (encoder_features * weights.unsqueeze(-1)).sum(
+            dim=1
+        )  # (batch, encoder_dim)
         return context, weights
 
 
@@ -103,8 +98,10 @@ class LuongAttention(nn.Module):
         weights : Tensor
             ``(batch, num_positions)``
         """
-        proj = self.proj(decoder_hidden)                  # (batch, encoder_dim)
-        scores = torch.bmm(encoder_features, proj.unsqueeze(-1)).squeeze(-1)  # (batch, pos)
+        proj = self.proj(decoder_hidden)  # (batch, encoder_dim)
+        scores = torch.bmm(encoder_features, proj.unsqueeze(-1)).squeeze(
+            -1
+        )  # (batch, pos)
         weights = F.softmax(scores, dim=-1)
         context = (encoder_features * weights.unsqueeze(-1)).sum(dim=1)
         return context, weights

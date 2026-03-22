@@ -1,15 +1,3 @@
-"""Experiment logger.
-
-Logs training/inference stats to a structured JSON file inside the run's output
-directory.  Captures:
-
-- Model info: encoder/decoder parameter counts, total parameters, FLOPs estimate
-- Hyperparameters: full config snapshot
-- Per-epoch: train_loss, val_loss, metrics (bleu1, bleu2, rougeL, meteor), lr, epoch time
-- Summary: best epoch, best metrics, total training time
-- Inference: checkpoint used, number of images, average latency
-"""
-
 from __future__ import annotations
 
 import json
@@ -19,14 +7,10 @@ from typing import Any
 
 import torch
 import torch.nn as nn
+from torch.utils.flop_counter import FlopCounterMode
 
-
-# ---------------------------------------------------------------------------
-# Parameter counting
-# ---------------------------------------------------------------------------
 
 def count_parameters(model: nn.Module) -> dict[str, int]:
-    """Count trainable and total parameters, broken down by encoder/decoder/other."""
     encoder_total = 0
     encoder_trainable = 0
     decoder_total = 0
@@ -64,15 +48,10 @@ def count_parameters(model: nn.Module) -> dict[str, int]:
     }
 
 
-# ---------------------------------------------------------------------------
-# FLOPs estimation
-# ---------------------------------------------------------------------------
-
-def estimate_flops(model: nn.Module, input_size: tuple = (1, 3, 224, 224), device: str = "cpu") -> int | None:
-    """Estimate FLOPs for a single forward pass using torch.utils.flop_counter."""
+def estimate_flops(
+    model: nn.Module, input_size: tuple = (1, 3, 224, 224), device: str = "cpu"
+) -> int | None:
     try:
-        from torch.utils.flop_counter import FlopCounterMode
-
         dummy_img = torch.randn(*input_size, device=device)
         # Caption length doesn't matter much for FLOPs estimate; use short sequence
         dummy_cap = torch.zeros(input_size[0], 20, dtype=torch.long, device=device)
@@ -85,24 +64,7 @@ def estimate_flops(model: nn.Module, input_size: tuple = (1, 3, 224, 224), devic
         return None
 
 
-# ---------------------------------------------------------------------------
-# Experiment Logger
-# ---------------------------------------------------------------------------
-
 class ExperimentLogger:
-    """Logs experiment stats to a JSON file.
-
-    Usage::
-
-        logger = ExperimentLogger(output_dir, config)
-        logger.log_model_info(model, device)
-        logger.start_training()
-        for epoch in ...:
-            logger.log_epoch(epoch_data)
-        logger.end_training()
-        logger.save()
-    """
-
     def __init__(self, output_dir: str | Path, config: dict) -> None:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -121,7 +83,6 @@ class ExperimentLogger:
 
     @staticmethod
     def _extract_hyperparams(config: dict) -> dict:
-        """Extract a clean hyperparameter dict from the full config."""
         return {
             "encoder": dict(config.get("encoder", {})),
             "decoder": dict(config.get("decoder", {})),
@@ -133,7 +94,6 @@ class ExperimentLogger:
         }
 
     def log_model_info(self, model: nn.Module, device: str = "cpu") -> dict:
-        """Log parameter counts and FLOPs. Returns the info dict."""
         param_info = count_parameters(model)
         flops = estimate_flops(model, device=device)
         info = {
@@ -159,7 +119,6 @@ class ExperimentLogger:
         lr: float,
         is_best: bool = False,
     ) -> None:
-        """Log one epoch's results."""
         epoch_time = time.time() - self._epoch_start if self._epoch_start else 0.0
         entry = {
             "epoch": int(epoch),
@@ -176,7 +135,6 @@ class ExperimentLogger:
         self.data["training"]["epochs"].append(entry)
 
     def end_training(self, best_epoch: int, best_metrics: dict[str, float]) -> None:
-        """Log training summary."""
         total_time = time.time() - self._train_start if self._train_start else 0.0
         epochs_data = self.data["training"]["epochs"]
         train_losses = [e["train_loss"] for e in epochs_data]
@@ -193,26 +151,20 @@ class ExperimentLogger:
             "min_train_loss": min(train_losses) if train_losses else None,
             "min_val_loss": min(val_losses) if val_losses else None,
             "avg_epoch_time_s": round(
-                sum(e["epoch_time_s"] for e in epochs_data) / max(len(epochs_data), 1), 2
+                sum(e["epoch_time_s"] for e in epochs_data) / max(len(epochs_data), 1),
+                2,
             ),
         }
 
     def log_inference(self, info: dict) -> None:
-        """Log inference session info."""
         self.data["inference"] = info
 
     def save(self) -> Path:
-        """Write the log to disk and return the path."""
         self.log_path.write_text(json.dumps(self.data, indent=2, default=_json_default))
         return self.log_path
 
 
-# ---------------------------------------------------------------------------
-# Formatting helpers
-# ---------------------------------------------------------------------------
-
 def _format_number(n: int | float) -> str:
-    """Human-readable number (e.g. 1.2M, 3.4G)."""
     if n >= 1e12:
         return f"{n / 1e12:.2f}T"
     if n >= 1e9:
@@ -225,7 +177,6 @@ def _format_number(n: int | float) -> str:
 
 
 def _format_time(seconds: float) -> str:
-    """Human-readable time string."""
     if seconds < 60:
         return f"{seconds:.1f}s"
     minutes = seconds / 60
@@ -236,22 +187,17 @@ def _format_time(seconds: float) -> str:
 
 
 def _json_default(obj):
-    """Fallback serializer for NumPy/Torch scalar types."""
-    # NumPy scalar -> Python scalar
     if hasattr(obj, "item"):
         try:
             return obj.item()
         except Exception:
             pass
-    # Path-like -> string
     if isinstance(obj, Path):
         return str(obj)
-    # Let json raise for unknown complex objects
     raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
 
 
 def print_model_summary(info: dict) -> None:
-    """Pretty-print model parameter and FLOPs info."""
     print("=" * 60)
     print("MODEL SUMMARY")
     print("=" * 60)

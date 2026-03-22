@@ -1,28 +1,12 @@
-"""Optuna study visualization.
-
-Generates publication-ready plots from a completed Optuna study.
-Can be used immediately after a sweep or later via CLI::
-
-    uv run python main.py optuna-viz --study-dir outputs/optuna_sweep
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
 
+import joblib
 import optuna
 
 
 def generate_optuna_plots(study: optuna.Study, output_dir: str | Path) -> None:
-    """Generate and save all Optuna visualization plots.
-
-    Parameters
-    ----------
-    study : optuna.Study
-        A completed or in-progress Optuna study.
-    output_dir : str | Path
-        Directory where plot images will be saved.
-    """
     output_dir = Path(output_dir) / "plots"
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -45,17 +29,11 @@ def generate_optuna_plots(study: optuna.Study, output_dir: str | Path) -> None:
     print(f"Optuna plots saved to: {output_dir}")
 
 
-# -----------------------------------------------------------------------
-# Individual plot generators
-# -----------------------------------------------------------------------
-
 def _save_plot(fig, path: Path) -> None:
-    """Write a plotly figure to both HTML and PNG."""
     fig.write_html(str(path.with_suffix(".html")))
     try:
         fig.write_image(str(path.with_suffix(".png")), width=1200, height=700, scale=2)
     except (ValueError, ImportError):
-        # kaleido not installed — skip static image
         pass
 
 
@@ -116,14 +94,15 @@ def _save_timeline(study: optuna.Study, output_dir: Path) -> None:
 def _save_edf(study: optuna.Study, output_dir: Path) -> None:
     try:
         fig = optuna.visualization.plot_edf(study)
-        fig.update_layout(title="Empirical Distribution Function", template="plotly_white")
+        fig.update_layout(
+            title="Empirical Distribution Function", template="plotly_white"
+        )
         _save_plot(fig, output_dir / "edf")
     except Exception as e:
         print(f"  [skip] edf: {e}")
 
 
 def _save_summary_table(study: optuna.Study, output_dir: Path) -> None:
-    """Save a Markdown summary table of all trials."""
     trials = study.trials
     completed = [t for t in trials if t.state == optuna.trial.TrialState.COMPLETE]
     pruned = [t for t in trials if t.state == optuna.trial.TrialState.PRUNED]
@@ -152,28 +131,25 @@ def _save_summary_table(study: optuna.Study, output_dir: Path) -> None:
         "## All Completed Trials",
         "",
         "| Trial | Value | " + " | ".join(study.best_trial.params.keys()) + " |",
-        "| ----- | ----- | " + " | ".join(["-----"] * len(study.best_trial.params)) + " |",
+        "| ----- | ----- | "
+        + " | ".join(["-----"] * len(study.best_trial.params))
+        + " |",
     ]
-    for t in sorted(completed, key=lambda t: t.value if t.value is not None else float("-inf"), reverse=True):
-        vals = " | ".join(str(t.params.get(k, "")) for k in study.best_trial.params.keys())
+    for t in sorted(
+        completed,
+        key=lambda t: t.value if t.value is not None else float("-inf"),
+        reverse=True,
+    ):
+        vals = " | ".join(
+            str(t.params.get(k, "")) for k in study.best_trial.params.keys()
+        )
         value_str = f"{t.value:.6f}" if t.value is not None else "N/A"
         lines.append(f"| {t.number} | {value_str} | {vals} |")
 
     (output_dir / "study_summary.md").write_text("\n".join(lines))
 
 
-# -----------------------------------------------------------------------
-# CLI entry point: load a saved study and regenerate plots
-# -----------------------------------------------------------------------
-
 def load_and_visualize(study_dir: str) -> None:
-    """Load a saved study from disk and regenerate all plots.
-
-    Parameters
-    ----------
-    study_dir : str
-        Path to the Optuna output directory containing ``study.pkl``.
-    """
     study_dir = Path(study_dir)
     study_path = study_dir / "study.pkl"
 
@@ -183,7 +159,6 @@ def load_and_visualize(study_dir: str) -> None:
             "Run an optuna-sweep first, or provide the correct --study-dir."
         )
 
-    import joblib
     study: optuna.Study = joblib.load(study_path)
     print(f"Loaded study '{study.study_name}' with {len(study.trials)} trials.")
 

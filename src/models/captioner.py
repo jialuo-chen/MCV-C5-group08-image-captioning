@@ -1,22 +1,21 @@
-"""Captioning model: composes encoder + decoder (+ optional attention).
-
-Provides a unified interface for training (``forward``) and inference (``generate``),
-plus checkpoint save/load with full config and tokenizer state.
-"""
-
 from __future__ import annotations
 
-import json
 from datetime import datetime
 from pathlib import Path
 
 import torch
 import torch.nn as nn
 
-from src.models.encoders import ImageEncoder
-from src.models.decoders import RNNDecoder, HFLMDecoder, build_decoder
+from src.data.tokenizer import (
+    BaseTokenizer,
+    CharTokenizer,
+    SubwordTokenizer,
+    WordTokenizer,
+)
 from src.models.attention import build_attention
-from src.data.tokenizer import BaseTokenizer
+from src.models.decoders import HFLMDecoder, RNNDecoder, build_decoder
+from src.models.encoders import ImageEncoder
+from src.utils.config import Config
 
 
 class CaptioningModel(nn.Module):
@@ -42,7 +41,9 @@ class CaptioningModel(nn.Module):
         self.decoder = decoder
         self.is_hf_lm = isinstance(decoder, HFLMDecoder)
         self.use_attention = (
-            not self.is_hf_lm and hasattr(decoder, "use_attention") and decoder.use_attention
+            not self.is_hf_lm
+            and hasattr(decoder, "use_attention")
+            and decoder.use_attention
         )
 
     def forward(self, images: torch.Tensor, captions: torch.Tensor):
@@ -65,7 +66,9 @@ class CaptioningModel(nn.Module):
             return self.decoder(encoder_pooled, captions)
         else:
             encoder_pooled = self.encoder(images, spatial=False)
-            encoder_spatial = self.encoder(images, spatial=True) if self.use_attention else None
+            encoder_spatial = (
+                self.encoder(images, spatial=True) if self.use_attention else None
+            )
             return self.decoder(encoder_pooled, captions, encoder_spatial)
 
     @torch.no_grad()
@@ -96,9 +99,13 @@ class CaptioningModel(nn.Module):
         encoder_pooled = self.encoder(images, spatial=False)
 
         if self.is_hf_lm:
-            return self.decoder.generate(encoder_pooled, max_length=max_length, **kwargs)
+            return self.decoder.generate(
+                encoder_pooled, max_length=max_length, **kwargs
+            )
         else:
-            encoder_spatial = self.encoder(images, spatial=True) if self.use_attention else None
+            encoder_spatial = (
+                self.encoder(images, spatial=True) if self.use_attention else None
+            )
             sequences = self.decoder.generate(
                 encoder_pooled,
                 sos_id=tokenizer.sos_id,
@@ -107,8 +114,6 @@ class CaptioningModel(nn.Module):
                 encoder_spatial=encoder_spatial,
             )
             return [tokenizer.decode(seq) for seq in sequences]
-
-    # ----- checkpoint save / load -------------------------------------------
 
     def save_checkpoint(
         self,
@@ -131,13 +136,14 @@ class CaptioningModel(nn.Module):
         }
         torch.save(checkpoint, path)
 
-        # Save tokenizer alongside checkpoint
         if tokenizer is not None:
             tok_path = path.parent / "tokenizer.json"
             tokenizer.save(tok_path)
 
     @classmethod
-    def from_checkpoint(cls, path: str | Path, device: str = "cpu") -> tuple["CaptioningModel", dict]:
+    def from_checkpoint(
+        cls, path: str | Path, device: str = "cpu"
+    ) -> tuple["CaptioningModel", dict]:
         """Load model from checkpoint.
 
         Returns the model and the checkpoint dict (containing config, epoch, metrics).
@@ -146,19 +152,19 @@ class CaptioningModel(nn.Module):
         checkpoint = torch.load(path, map_location=device, weights_only=False)
         config = checkpoint["config"]
 
-        # Rebuild model from config
-        from src.utils.config import Config
-        from src.data.tokenizer import CharTokenizer, WordTokenizer, SubwordTokenizer
         cfg = Config(config)
 
-        # Resolve vocab_size / pad_id from saved tokenizer (required for RNN decoders)
         vocab_size: int | None = None
         pad_id: int = 0
         if cfg.decoder.type == "rnn":
             tok_path = path.parent / "tokenizer.json"
             tok_type = cfg.tokenizer.type
             if tok_type == "char":
-                tok = CharTokenizer.load(tok_path) if tok_path.exists() else CharTokenizer()
+                tok = (
+                    CharTokenizer.load(tok_path)
+                    if tok_path.exists()
+                    else CharTokenizer()
+                )
             elif tok_type == "word":
                 tok = WordTokenizer.load(tok_path)
             elif tok_type == "subword":
@@ -173,15 +179,15 @@ class CaptioningModel(nn.Module):
         model.to(device)
         return model, checkpoint
 
-    # ----- factory ----------------------------------------------------------
-
     @classmethod
     def from_config(cls, cfg) -> "CaptioningModel":
         """Build model from config (delegates to ``build_captioning_model``)."""
         return build_captioning_model(cfg)
 
 
-def build_captioning_model(cfg, vocab_size: int | None = None, pad_id: int = 0) -> CaptioningModel:
+def build_captioning_model(
+    cfg, vocab_size: int | None = None, pad_id: int = 0
+) -> CaptioningModel:
     """Build a complete captioning model from config.
 
     Parameters
@@ -195,5 +201,7 @@ def build_captioning_model(cfg, vocab_size: int | None = None, pad_id: int = 0) 
     """
     encoder = ImageEncoder.from_config(cfg)
     attention = build_attention(cfg) if cfg.decoder.type == "rnn" else None
-    decoder = build_decoder(cfg, vocab_size=vocab_size, pad_id=pad_id, attention=attention)
+    decoder = build_decoder(
+        cfg, vocab_size=vocab_size, pad_id=pad_id, attention=attention
+    )
     return CaptioningModel(encoder, decoder)
