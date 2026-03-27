@@ -38,6 +38,7 @@ def count_parameters(model: nn.Module) -> dict[str, int]:
 
     return {
         "total_params": total,
+        "readable_total_params": _format_number(total),
         "trainable_params": trainable,
         "encoder_total_params": encoder_total,
         "encoder_trainable_params": encoder_trainable,
@@ -201,7 +202,7 @@ def print_model_summary(info: dict) -> None:
     print("=" * 60)
     print("MODEL SUMMARY")
     print("=" * 60)
-    print(f"  Total parameters:      {info['total_params']:>12,}")
+    print(f"  Total parameters:      {info['readable_total_params']:>12,}")
     print(f"  Trainable parameters:  {info['trainable_params']:>12,}")
     print(f"  ─ Encoder total:       {info['encoder_total_params']:>12,}")
     print(f"  ─ Encoder trainable:   {info['encoder_trainable_params']:>12,}")

@@ -1,0 +1,30 @@
+# Config for evaluating pretrained HuggingFace captioning models (Task 1)
+# Usage:
+#   uv run python main.py evaluate-pretrained --config configs/eval_pretrained.yaml \
+#       --model nlpconnect/vit-gpt2-image-captioning
+#   uv run python main.py evaluate-pretrained --config configs/eval_pretrained.yaml \
+#       --model Salesforce/blip-image-captioning-base
+#   uv run python main.py evaluate-pretrained --config configs/eval_pretrained.yaml \
+#       --model microsoft/git-base-coco
+
+seed: 42
+device: cuda
+output_dir: outputs
+
+dataset:
+  root: /data/123-1/users/jchen/VizWiz
+  train_ann: annotations/train.json
+  val_ann: annotations/val.json
+  train_img_dir: train
+  val_img_dir: val
+  ignore_rejected: true
+  ignore_precanned: true
+  val_split_ratio: 0.1
+
+training:
+  batch_size: 16
+  num_workers: 4
+
+inference:
+  max_length: 128
+  max_new_tokens: 128

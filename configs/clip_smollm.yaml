@@ -1,0 +1,56 @@
+# CLIP-ViT-B/16 encoder + SmolLM2-135M decoder fine-tuning (Task 2)
+# Usage: uv run python main.py finetune --config configs/clip_smollm.yaml
+
+run_name: clip-smollm
+seed: 42
+device: cuda
+output_dir: outputs
+
+encoder:
+  name: clip-vit-base
+  pretrained: openai/clip-vit-base-patch16
+  freeze: false
+  feature_dim: 768
+
+decoder:
+  type: hf_ved
+  name: smollm2-135m
+  pretrained: HuggingFaceTB/SmolLM2-135M
+
+tokenizer:
+  type: hf
+  max_length: 128
+
+attention:
+  enabled: false
+
+dataset:
+  root: /data/123-1/users/jchen/VizWiz
+  train_ann: annotations/train.json
+  val_ann: annotations/val.json
+  train_img_dir: train
+  val_img_dir: val
+  ignore_rejected: true
+  ignore_precanned: true
+  val_split_ratio: 0.1
+
+training:
+  epochs: 10
+  batch_size: 16
+  lr: 0.00005
+  optimizer: adamw
+  weight_decay: 0.01
+  scheduler: cosine
+  grad_clip: 1.0
+  mixed_precision: true
+  num_workers: 4
+  freeze_encoder: false
+  freeze_decoder: false
+  early_stopping_patience: 3
+
+inference:
+  max_length: 128
+
+wandb:
+  enabled: false
+  project: c5-image-caption

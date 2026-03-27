@@ -1,0 +1,31 @@
+# Config for evaluating Qwen3.5 multimodal model on VizWiz (Task 3)
+# Qwen3.5 is natively multimodal — no separate VL variant needed.
+# Usage:
+#   uv run python main.py evaluate-multimodal \
+#       --config configs/eval_qwen_multimodal.yaml \
+#       --model Qwen/Qwen3.5-9B
+
+seed: 42
+device: cuda
+output_dir: outputs
+
+dataset:
+  root: /data/123-1/users/jchen/VizWiz
+  train_ann: annotations/train.json
+  val_ann: annotations/val.json
+  train_img_dir: train
+  val_img_dir: val
+  ignore_rejected: true
+  ignore_precanned: true
+  val_split_ratio: 0.1
+
+training:
+  batch_size: 4         # batched inference — adjust down if OOM
+  num_workers: 4        # parallel image I/O workers
+
+inference:
+  max_length: 128
+
+multimodal:
+  prompt: "Describe this image briefly."
+  max_new_tokens: 128

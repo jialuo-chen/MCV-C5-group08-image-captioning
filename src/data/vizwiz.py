@@ -1,5 +1,5 @@
-__author__ = 'nilavra'
-__version__ = '1.0'
+__author__ = "nilavra"
+__version__ = "1.0"
 # Interface for accessing the VizWiz dataset.
 
 # The codebase is adapted from Microsoft COCO Python API (http://cocodataset.org)
@@ -43,18 +43,17 @@ __version__ = '1.0'
 # https://creativecommons.org/licenses/by/4.0
 
 
-import json
-import time
-import matplotlib.pyplot as plt
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Polygon
-import numpy as np
-import copy
 import itertools
-#from . import mask as maskUtils
+import json
+
+# from . import mask as maskUtils
 import os
-from collections import defaultdict
 import sys
+import time
+from collections import defaultdict
+
+import numpy as np
+
 PYTHON_VERSION = sys.version_info[0]
 if PYTHON_VERSION == 2:
     from urllib import urlretrieve
@@ -63,7 +62,7 @@ elif PYTHON_VERSION == 3:
 
 
 def _isArrayLike(obj):
-    return hasattr(obj, '__iter__') and hasattr(obj, '__len__')
+    return hasattr(obj, "__iter__") and hasattr(obj, "__len__")
 
 
 class VizWiz:
@@ -75,50 +74,53 @@ class VizWiz:
         :return:
         """
         # load dataset
-        self.dataset,self.anns,self.cats,self.imgs = dict(),dict(),dict(),dict()
+        self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(), dict()
         self.imgToAnns, self.catToImgs = defaultdict(list), defaultdict(list)
         if not annotation_file == None:
-            print('loading annotations into memory...')
+            print("loading annotations into memory...")
             tic = time.time()
-            dataset = json.load(open(annotation_file, 'r'))
-            assert type(dataset) == dict, 'annotation file format {} not supported'.format(type(dataset))
+            dataset = json.load(open(annotation_file, "r"))
+            assert type(dataset) == dict, (
+                "annotation file format {} not supported".format(type(dataset))
+            )
             self.dataset = {}
             for key, value in dataset.items():
-                if key != 'annotations':
+                if key != "annotations":
                     self.dataset[key] = value
-            self.dataset['annotations'] = []
-            for annotation in dataset['annotations']:
-                if (ignore_rejected and annotation['is_rejected']) \
-                    or (ignore_precanned and annotation['is_precanned']):
+            self.dataset["annotations"] = []
+            for annotation in dataset["annotations"]:
+                if (ignore_rejected and annotation["is_rejected"]) or (
+                    ignore_precanned and annotation["is_precanned"]
+                ):
                     continue
                 else:
-                    self.dataset['annotations'].append(annotation)
-            
-            print('Done (t={:0.2f}s)'.format(time.time()- tic))
-            #self.dataset = dataset
+                    self.dataset["annotations"].append(annotation)
+
+            print("Done (t={:0.2f}s)".format(time.time() - tic))
+            # self.dataset = dataset
             self.createIndex()
 
     def createIndex(self):
         # create index
-        print('creating index...')
+        print("creating index...")
         anns, cats, imgs = {}, {}, {}
-        imgToAnns,catToImgs = defaultdict(list),defaultdict(list)
-        if 'annotations' in self.dataset:
-            for ann in self.dataset['annotations']:
-                imgToAnns[ann['image_id']].append(ann)
-                anns[ann['id']] = ann
+        imgToAnns, catToImgs = defaultdict(list), defaultdict(list)
+        if "annotations" in self.dataset:
+            for ann in self.dataset["annotations"]:
+                imgToAnns[ann["image_id"]].append(ann)
+                anns[ann["id"]] = ann
 
-        if 'images' in self.dataset:
-            for img in self.dataset['images']:
-                imgs[img['id']] = img
+        if "images" in self.dataset:
+            for img in self.dataset["images"]:
+                imgs[img["id"]] = img
 
-        if 'categories' in self.dataset:
-            for cat in self.dataset['categories']:
-                cats[cat['id']] = cat
+        if "categories" in self.dataset:
+            for cat in self.dataset["categories"]:
+                cats[cat["id"]] = cat
 
-        if 'annotations' in self.dataset and 'categories' in self.dataset:
-            for ann in self.dataset['annotations']:
-                catToImgs[ann['category_id']].append(ann['image_id'])
+        if "annotations" in self.dataset and "categories" in self.dataset:
+            for ann in self.dataset["annotations"]:
+                catToImgs[ann["category_id"]].append(ann["image_id"])
 
         # create class members
         self.anns = anns
@@ -127,17 +129,15 @@ class VizWiz:
         self.imgs = imgs
         self.cats = cats
 
-        print('index created! imgs = %d, anns = %d'
-              % (len(self.imgs), len(self.anns))
-        )
+        print("index created! imgs = %d, anns = %d" % (len(self.imgs), len(self.anns)))
 
     def info(self):
         """
         Print information about the annotation file.
         :return:
         """
-        for key, value in self.dataset['info'].items():
-            print('{}: {}'.format(key, value))
+        for key, value in self.dataset["info"].items():
+            print("{}: {}".format(key, value))
 
     def getAnnIds(self, imgIds=[], catIds=[], areaRng=[], iscrowd=None):
         """
@@ -152,19 +152,33 @@ class VizWiz:
         catIds = catIds if _isArrayLike(catIds) else [catIds]
 
         if len(imgIds) == len(catIds) == len(areaRng) == 0:
-            anns = self.dataset['annotations']
+            anns = self.dataset["annotations"]
         else:
             if not len(imgIds) == 0:
-                lists = [self.imgToAnns[imgId] for imgId in imgIds if imgId in self.imgToAnns]
+                lists = [
+                    self.imgToAnns[imgId] for imgId in imgIds if imgId in self.imgToAnns
+                ]
                 anns = list(itertools.chain.from_iterable(lists))
             else:
-                anns = self.dataset['annotations']
-            anns = anns if len(catIds)  == 0 else [ann for ann in anns if ann['category_id'] in catIds]
-            anns = anns if len(areaRng) == 0 else [ann for ann in anns if ann['area'] > areaRng[0] and ann['area'] < areaRng[1]]
+                anns = self.dataset["annotations"]
+            anns = (
+                anns
+                if len(catIds) == 0
+                else [ann for ann in anns if ann["category_id"] in catIds]
+            )
+            anns = (
+                anns
+                if len(areaRng) == 0
+                else [
+                    ann
+                    for ann in anns
+                    if ann["area"] > areaRng[0] and ann["area"] < areaRng[1]
+                ]
+            )
         if not iscrowd == None:
-            ids = [ann['id'] for ann in anns if ann['iscrowd'] == iscrowd]
+            ids = [ann["id"] for ann in anns if ann["iscrowd"] == iscrowd]
         else:
-            ids = [ann['id'] for ann in anns]
+            ids = [ann["id"] for ann in anns]
         return ids
 
     def getCatIds(self, catNms=[], supNms=[], catIds=[]):
@@ -180,22 +194,32 @@ class VizWiz:
         catIds = catIds if _isArrayLike(catIds) else [catIds]
 
         if len(catNms) == len(supNms) == len(catIds) == 0:
-            cats = self.dataset['categories']
+            cats = self.dataset["categories"]
         else:
-            cats = self.dataset['categories']
-            cats = cats if len(catNms) == 0 else [cat for cat in cats if cat['name']          in catNms]
-            cats = cats if len(supNms) == 0 else [cat for cat in cats if cat['supercategory'] in supNms]
-            cats = cats if len(catIds) == 0 else [cat for cat in cats if cat['id']            in catIds]
-        ids = [cat['id'] for cat in cats]
+            cats = self.dataset["categories"]
+            cats = (
+                cats
+                if len(catNms) == 0
+                else [cat for cat in cats if cat["name"] in catNms]
+            )
+            cats = (
+                cats
+                if len(supNms) == 0
+                else [cat for cat in cats if cat["supercategory"] in supNms]
+            )
+            cats = (
+                cats if len(catIds) == 0 else [cat for cat in cats if cat["id"] in catIds]
+            )
+        ids = [cat["id"] for cat in cats]
         return ids
 
     def getImgIds(self, imgIds=[], catIds=[]):
-        '''
+        """
         Get img ids that satisfy given filter conditions.
         :param imgIds (int array) : get imgs for given ids
         :param catIds (int array) : get imgs with all given cats
         :return: ids (int array)  : integer array of img ids
-        '''
+        """
         imgIds = imgIds if _isArrayLike(imgIds) else [imgIds]
         catIds = catIds if _isArrayLike(catIds) else [catIds]
 
@@ -251,20 +275,17 @@ class VizWiz:
         """
         if len(anns) == 0:
             return 0
-        if 'segmentation' in anns[0] or 'keypoints' in anns[0]:
-            datasetType = 'instances'
-        elif 'caption' in anns[0]:
-            datasetType = 'captions'
+        if "segmentation" in anns[0] or "keypoints" in anns[0]:
+            datasetType = "instances"
+        elif "caption" in anns[0]:
+            datasetType = "captions"
         else:
-            raise Exception('datasetType not supported')
+            raise Exception("datasetType not supported")
 
-        if datasetType == 'captions':
+        if datasetType == "captions":
             for ann in anns:
-                print(ann['caption'])
+                print(ann["caption"])
 
-        #####################################################
-        # implement other annotation types as needed below
-        #####################################################
         """
         elif datasetType == 'instances':
             
@@ -322,9 +343,9 @@ class VizWiz:
         :return: res (obj)         : result api object
         """
         res = VizWiz()
-        res.dataset['images'] = [img for img in self.dataset['images']]
+        res.dataset["images"] = [img for img in self.dataset["images"]]
 
-        print('Loading and preparing results...')
+        print("Loading and preparing results...")
         tic = time.time()
         if type(resFile) == str or type(resFile) == bytes:
             anns = json.load(open(resFile))
@@ -332,19 +353,21 @@ class VizWiz:
             anns = self.loadNumpyAnnotations(resFile)
         else:
             anns = resFile
-        assert type(anns) == list, 'results in not an array of objects'
-        annsImgIds = [ann['image_id'] for ann in anns]
-        assert set(annsImgIds) == (set(annsImgIds) & set(self.getImgIds())), \
-            'Results do not correspond to current VizWiz set'
-        if 'caption' in anns[0]:
-            imgIds = set([img['id'] for img in res.dataset['images']]) & set([ann['image_id'] for ann in anns])
-            res.dataset['images'] = [img for img in res.dataset['images'] if img['id'] in imgIds]
+        assert type(anns) == list, "results in not an array of objects"
+        annsImgIds = [ann["image_id"] for ann in anns]
+        assert set(annsImgIds) == (set(annsImgIds) & set(self.getImgIds())), (
+            "Results do not correspond to current VizWiz set"
+        )
+        if "caption" in anns[0]:
+            imgIds = set([img["id"] for img in res.dataset["images"]]) & set(
+                [ann["image_id"] for ann in anns]
+            )
+            res.dataset["images"] = [
+                img for img in res.dataset["images"] if img["id"] in imgIds
+            ]
             for id, ann in enumerate(anns):
-                ann['id'] = id+1
+                ann["id"] = id + 1
 
-        #####################################################
-        # implement other annotation types as needed below
-        #####################################################
         """
         elif 'bbox' in anns[0] and not anns[0]['bbox'] == []:
             res.dataset['categories'] = copy.deepcopy(self.dataset['categories'])
@@ -377,21 +400,21 @@ class VizWiz:
                 ann['bbox'] = [x0,y0,x1-x0,y1-y0]
         """
 
-        print('DONE (t={:0.2f}s)'.format(time.time()- tic))
+        print("DONE (t={:0.2f}s)".format(time.time() - tic))
 
-        res.dataset['annotations'] = anns
+        res.dataset["annotations"] = anns
         res.createIndex()
         return res
 
-    def download(self, tarDir = None, imgIds = [] ):
-        '''
+    def download(self, tarDir=None, imgIds=[]):
+        """
         Download VizWiz images from vizwiz.org server.
         :param tarDir (str): VizWiz results directory name
                imgIds (list): images to be downloaded
         :return:
-        '''
+        """
         if tarDir is None:
-            print('Please specify target directory')
+            print("Please specify target directory")
             return -1
         if len(imgIds) == 0:
             imgs = self.imgs.values()
@@ -402,10 +425,10 @@ class VizWiz:
             os.makedirs(tarDir)
         for i, img in enumerate(imgs):
             tic = time.time()
-            fname = os.path.join(tarDir, img['file_name'])
+            fname = os.path.join(tarDir, img["file_name"])
             if not os.path.exists(fname):
-                urlretrieve(img['vizwiz_url'], fname)
-            print('downloaded {}/{} images (t={:0.1f}s)'.format(i, N, time.time()- tic))
+                urlretrieve(img["vizwiz_url"], fname)
+            print("downloaded {}/{} images (t={:0.1f}s)".format(i, N, time.time() - tic))
 
     def loadNumpyAnnotations(self, data):
         """
@@ -413,21 +436,23 @@ class VizWiz:
         :param  data (numpy.ndarray)
         :return: annotations (python nested list)
         """
-        print('Converting ndarray to lists...')
-        assert(type(data) == np.ndarray)
+        print("Converting ndarray to lists...")
+        assert type(data) == np.ndarray
         print(data.shape)
-        assert(data.shape[1] == 7)
+        assert data.shape[1] == 7
         N = data.shape[0]
         ann = []
         for i in range(N):
             if i % 1000000 == 0:
-                print('{}/{}'.format(i,N))
-            ann += [{
-                'image_id'  : int(data[i, 0]),
-                'bbox'  : [ data[i, 1], data[i, 2], data[i, 3], data[i, 4] ],
-                'score' : data[i, 5],
-                'category_id': int(data[i, 6]),
-            }]
+                print("{}/{}".format(i, N))
+            ann += [
+                {
+                    "image_id": int(data[i, 0]),
+                    "bbox": [data[i, 1], data[i, 2], data[i, 3], data[i, 4]],
+                    "score": data[i, 5],
+                    "category_id": int(data[i, 6]),
+                }
+            ]
         return ann
 
     def annToRLE(self, ann):

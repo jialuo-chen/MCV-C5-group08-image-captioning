@@ -74,6 +74,17 @@ DEFAULTS: dict[str, Any] = {
         "entity": None,
         "tags": [],
     },
+    "lora": {
+        "enabled": False,
+        "r": 16,
+        "alpha": 32,
+        "dropout": 0.05,
+        "target": "all",  # "all" | "linear" | "attention"
+    },
+    "multimodal": {
+        "prompt": "Describe this image briefly.",
+        "max_new_tokens": 128,
+    },
 }
 
 ENCODER_REGISTRY: dict[str, dict[str, Any]] = {
@@ -82,6 +93,8 @@ ENCODER_REGISTRY: dict[str, dict[str, Any]] = {
     "resnet50": {"pretrained": "microsoft/resnet-50", "feature_dim": 2048},
     "vgg16": {"pretrained": "google/vgg-16", "feature_dim": 512},
     "vgg19": {"pretrained": "google/vgg-19", "feature_dim": 512},
+    "vit-base": {"pretrained": "google/vit-base-patch16-224", "feature_dim": 768},
+    "clip-vit-base": {"pretrained": "openai/clip-vit-base-patch16", "feature_dim": 768},
 }
 
 
