@@ -179,6 +179,8 @@ class ViTQwenLoRA(nn.Module):
         inputs_embeds = torch.cat(
             [vit_projected, caption_embeds], dim=1
         )  # (B, P+S, dec_dim)
+        # Keep decoder inputs in the same dtype as decoder embeddings (e.g. bf16).
+        inputs_embeds = inputs_embeds.to(caption_embeds.dtype)
 
         batch, prefix_len = pixel_values.size(0), vit_projected.size(1)
 
@@ -225,6 +227,8 @@ class ViTQwenLoRA(nn.Module):
         )
         start_embeds = self.decoder.get_input_embeddings()(start_ids)
         inputs_embeds = torch.cat([vit_projected, start_embeds], dim=1)
+        # Keep decoder inputs in the same dtype as decoder embeddings (e.g. bf16).
+        inputs_embeds = inputs_embeds.to(start_embeds.dtype)
 
         attention_mask = torch.ones(
             (batch, prefix_len + 1), dtype=torch.long, device=pixel_values.device
