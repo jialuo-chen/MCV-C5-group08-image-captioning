@@ -1,7 +1,7 @@
 # ViT-B/16 encoder + GPT2 decoder fine-tuning (Task 2)
 # Usage: uv run python main.py finetune --config configs/vit_gpt2.yaml
 
-run_name: vit-gpt2
+run_name: vit-gpt2-all
 seed: 42
 device: cuda
 output_dir: outputs
@@ -25,7 +25,7 @@ attention:
   enabled: false
 
 dataset:
-  root: /data/123-1/users/jchen/VizWiz
+  root: /ghome/group08/VizWiz-Captions/images
   train_ann: annotations/train.json
   val_ann: annotations/val.json
   train_img_dir: train

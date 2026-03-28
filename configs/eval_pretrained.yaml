@@ -12,7 +12,7 @@ device: cuda
 output_dir: outputs
 
 dataset:
-  root: /data/123-1/users/jchen/VizWiz
+  root: /ghome/group08/VizWiz-Captions/images
   train_ann: annotations/train.json
   val_ann: annotations/val.json
   train_img_dir: train
