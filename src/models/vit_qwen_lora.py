@@ -21,8 +21,9 @@ import torch.nn as nn
 from peft import LoraConfig, PeftModel, TaskType, get_peft_model
 from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
 
-LORA_TARGETS: dict[str, list[str] | None] = {
-    "all": None,
+LORA_TARGETS: dict[str, list[str]] = {
+    # "all" is resolved dynamically from decoder nn.Linear module names.
+    "all": [],
     "linear": [
         "gate_proj",
         "up_proj",
@@ -40,6 +41,34 @@ LORA_TARGETS: dict[str, list[str] | None] = {
         "out_proj",
     ],
 }
+
+
+def _resolve_lora_target_modules(
+    decoder: nn.Module,
+    lora_target: str,
+) -> list[str]:
+    """Resolve LoRA target_modules for PEFT.
+
+    For Qwen3.5 models, PEFT requires explicit ``target_modules``. For the
+    ``"all"`` preset, build this list from all ``nn.Linear`` module suffixes
+    present in the loaded decoder (e.g., q_proj, gate_proj, in_proj_qkv,
+    lm_head). This keeps behavior model-family aware across 0.8B/4B/etc.
+    """
+    if lora_target == "all":
+        linear_suffixes = {
+            name.rsplit(".", 1)[-1]
+            for name, module in decoder.named_modules()
+            if isinstance(module, nn.Linear)
+        }
+        if not linear_suffixes:
+            raise ValueError("No nn.Linear modules found to target for LoRA")
+        return sorted(linear_suffixes)
+
+    if lora_target in LORA_TARGETS:
+        return LORA_TARGETS[lora_target]
+
+    valid = ", ".join(sorted(LORA_TARGETS.keys()))
+    raise ValueError(f"Unknown lora target '{lora_target}'. Valid options: {valid}")
 
 
 class ViTQwenLoRA(nn.Module):
@@ -91,7 +120,7 @@ class ViTQwenLoRA(nn.Module):
 
         self.decoder = AutoModelForCausalLM.from_pretrained(
             decoder_id,
-            torch_dtype=torch.bfloat16,
+            dtype=torch.bfloat16,
             trust_remote_code=True,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -102,7 +131,7 @@ class ViTQwenLoRA(nn.Module):
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        target_modules = LORA_TARGETS.get(lora_target, None)
+        target_modules = _resolve_lora_target_modules(self.decoder, lora_target)
         lora_cfg = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
             r=lora_r,
@@ -249,7 +278,7 @@ class ViTQwenLoRA(nn.Module):
             model.tokenizer.pad_token = model.tokenizer.eos_token
 
         base_decoder = AutoModelForCausalLM.from_pretrained(
-            decoder_id, torch_dtype=torch.bfloat16, trust_remote_code=True
+            decoder_id, dtype=torch.bfloat16, trust_remote_code=True
         )
         model.decoder = PeftModel.from_pretrained(
             base_decoder, save_path / "lora_adapter"
