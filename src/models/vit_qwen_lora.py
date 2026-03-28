@@ -7,9 +7,9 @@ A learnable projection maps ViT patch tokens into the Qwen embedding space.
 Qwen3.5 has a hybrid architecture with GatedDeltaNet (linear attention) +
 Gated Attention layers + MLP (FFN) blocks.  LoRA target presets:
 
-* ``"all"``       – every nn.Linear (attention + linear + lm_head)
-* ``"linear"``    – MLP/FFN layers only (gate_proj, up_proj, down_proj)
-* ``"attention"`` – all attention layers (standard + GatedDeltaNet)
+* ``"all"``       – union of ``"attention"`` + ``"linear"`` (all targetable layers)
+* ``"linear"``    – non-attention layers: MLP (gate/up/down_proj) + output head (lm_head)
+* ``"attention"`` – all attention layers: standard (q/k/v/o_proj) + GatedDeltaNet
 """
 
 from __future__ import annotations
@@ -21,54 +21,55 @@ import torch.nn as nn
 from peft import LoraConfig, PeftModel, TaskType, get_peft_model
 from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
 
+# Qwen3.5 LoRA target presets — derived from inspecting nn.Linear modules
+# in Qwen/Qwen3.5-0.8B (same suffixes across 0.8B / 4B family variants).
+_ATTENTION_TARGETS: list[str] = [
+    # Standard self-attention (layers.*.self_attn)
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    # GatedDeltaNet linear attention (layers.*.linear_attn)
+    "in_proj_qkv",
+    "in_proj_z",
+    "in_proj_a",
+    "in_proj_b",
+    "out_proj",
+]
+
+_LINEAR_TARGETS: list[str] = [
+    # MLP / FFN (layers.*.mlp)
+    "gate_proj",
+    "up_proj",
+    "down_proj",
+    # Output head
+    # "lm_head",
+]
+
 LORA_TARGETS: dict[str, list[str]] = {
-    # "all" is resolved dynamically from decoder nn.Linear module names.
-    "all": [],
-    "linear": [
-        "gate_proj",
-        "up_proj",
-        "down_proj",
-    ],
-    "attention": [
-        "q_proj",
-        "k_proj",
-        "v_proj",
-        "o_proj",
-        "in_proj_qkv",
-        "in_proj_z",
-        "in_proj_a",
-        "in_proj_b",
-        "out_proj",
-    ],
+    "all": sorted({*_ATTENTION_TARGETS, *_LINEAR_TARGETS}),
+    "linear": _LINEAR_TARGETS,
+    "attention": _ATTENTION_TARGETS,
 }
 
 
-def _resolve_lora_target_modules(
-    decoder: nn.Module,
-    lora_target: str,
-) -> list[str]:
-    """Resolve LoRA target_modules for PEFT.
+def _requires_embedding_layer_save(target_modules: list[str]) -> bool:
+    """Return True when LoRA targets include embedding-related modules.
 
-    For Qwen3.5 models, PEFT requires explicit ``target_modules``. For the
-    ``"all"`` preset, build this list from all ``nn.Linear`` module suffixes
-    present in the loaded decoder (e.g., q_proj, gate_proj, in_proj_qkv,
-    lm_head). This keeps behavior model-family aware across 0.8B/4B/etc.
+    PEFT warns and flips save_embedding_layers automatically when targets include
+    modules such as ``lm_head`` / ``embed_tokens``. We set this explicitly to
+    match the selected LoRA targets.
     """
-    if lora_target == "all":
-        linear_suffixes = {
-            name.rsplit(".", 1)[-1]
-            for name, module in decoder.named_modules()
-            if isinstance(module, nn.Linear)
-        }
-        if not linear_suffixes:
-            raise ValueError("No nn.Linear modules found to target for LoRA")
-        return sorted(linear_suffixes)
+    embedding_related = {"lm_head", "embed_tokens"}
+    return any(module_name in embedding_related for module_name in target_modules)
 
-    if lora_target in LORA_TARGETS:
-        return LORA_TARGETS[lora_target]
 
-    valid = ", ".join(sorted(LORA_TARGETS.keys()))
-    raise ValueError(f"Unknown lora target '{lora_target}'. Valid options: {valid}")
+def _resolve_lora_target_modules(lora_target: str) -> list[str]:
+    """Return the explicit LoRA target_modules list for a Qwen3.5 preset."""
+    if lora_target not in LORA_TARGETS:
+        valid = ", ".join(sorted(LORA_TARGETS.keys()))
+        raise ValueError(f"Unknown lora target '{lora_target}'. Valid options: {valid}")
+    return LORA_TARGETS[lora_target]
 
 
 class ViTQwenLoRA(nn.Module):
@@ -131,7 +132,9 @@ class ViTQwenLoRA(nn.Module):
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        target_modules = _resolve_lora_target_modules(self.decoder, lora_target)
+        target_modules = _resolve_lora_target_modules(lora_target)
+        self.target_modules = target_modules
+        self.save_embedding_layers = _requires_embedding_layer_save(target_modules)
         lora_cfg = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
             r=lora_r,
@@ -248,7 +251,10 @@ class ViTQwenLoRA(nn.Module):
         """Save LoRA adapter + projection weights."""
         save_path = Path(save_dir)
         save_path.mkdir(parents=True, exist_ok=True)
-        self.decoder.save_pretrained(save_path / "lora_adapter")
+        self.decoder.save_pretrained(
+            save_path / "lora_adapter",
+            save_embedding_layers=self.save_embedding_layers,
+        )
         self.tokenizer.save_pretrained(save_path / "lora_adapter")
         torch.save(self.projection.state_dict(), save_path / "projection.pt")
 
@@ -287,6 +293,9 @@ class ViTQwenLoRA(nn.Module):
         model.decoder = PeftModel.from_pretrained(
             base_decoder, save_path / "lora_adapter"
         )
+        peft_cfg = model.decoder.peft_config.get("default")
+        model.target_modules = list(getattr(peft_cfg, "target_modules", []) or [])
+        model.save_embedding_layers = _requires_embedding_layer_save(model.target_modules)
 
         dec_embed_dim = model.decoder.get_input_embeddings().weight.shape[1]
         model.projection = nn.Linear(model.encoder_dim, dec_embed_dim)
