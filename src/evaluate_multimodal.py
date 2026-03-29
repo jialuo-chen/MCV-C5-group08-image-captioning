@@ -52,6 +52,9 @@ def evaluate_multimodal(
     max_new_tokens = cfg.get("multimodal", {}).get(
         "max_new_tokens", cfg.inference.get("max_length", 128)
     )
+    mm_cfg = cfg.get("multimodal", {})
+    loader_kwargs = mm_cfg.get("loader", {})
+    torch_dtype = mm_cfg.get("torch_dtype", None)
     batch_size = cfg.training.get("batch_size", 4)
     num_workers = cfg.training.get("num_workers", 4)
 
@@ -79,6 +82,8 @@ def evaluate_multimodal(
         device=device,
         prompt=prompt,
         max_new_tokens=max_new_tokens,
+        torch_dtype=torch_dtype,
+        loader_kwargs=loader_kwargs,
     )
 
     all_predictions: list[str] = []

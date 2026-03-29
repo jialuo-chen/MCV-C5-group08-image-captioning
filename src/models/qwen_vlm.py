@@ -12,9 +12,37 @@ ready for ``generate()``.  Thinking is disabled via
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 from PIL import Image
 from transformers import AutoProcessor, Qwen3_5ForConditionalGeneration
+
+
+def _resolve_torch_dtype(value: Any):
+    """Resolve config dtype value into a transformers-compatible dtype arg."""
+    if value is None:
+        return torch.bfloat16
+    if value == "auto":
+        return "auto"
+    if isinstance(value, torch.dtype):
+        return value
+    if isinstance(value, str):
+        key = value.strip().lower()
+        mapping = {
+            "bfloat16": torch.bfloat16,
+            "bf16": torch.bfloat16,
+            "float16": torch.float16,
+            "fp16": torch.float16,
+            "float32": torch.float32,
+            "fp32": torch.float32,
+        }
+        if key in mapping:
+            return mapping[key]
+    raise ValueError(
+        "Invalid torch_dtype for multimodal model loading. "
+        "Use one of: auto, bfloat16/bf16, float16/fp16, float32/fp32."
+    )
 
 
 class QwenVLMCaptioner:
@@ -27,29 +55,55 @@ class QwenVLMCaptioner:
         prompt: str = "Describe this image briefly.",
         max_new_tokens: int = 128,
         torch_dtype=None,
+        loader_kwargs: dict[str, Any] | None = None,
     ) -> None:
         self.model_name = model_name
         self.prompt = prompt
         self.max_new_tokens = max_new_tokens
-        self._dtype = torch_dtype or torch.bfloat16
+        self._dtype = _resolve_torch_dtype(torch_dtype)
+        self._loader_kwargs = dict(loader_kwargs or {})
 
         self.processor = AutoProcessor.from_pretrained(
             model_name,
             trust_remote_code=True,
             padding_side="left",  # decoder-only → left-pad for batched generation
         )
+
+        # For large MoE checkpoints (e.g. Qwen3.5-35B-A3B-FP8), callers can
+        # override device_map/max_memory/offload settings via loader_kwargs.
+        model_load_kwargs = {
+            "dtype": self._dtype,
+            "device_map": self._loader_kwargs.pop("device_map", device),
+            "trust_remote_code": True,
+        }
+        model_load_kwargs.update(self._loader_kwargs)
+
         self.model = Qwen3_5ForConditionalGeneration.from_pretrained(
             model_name,
-            dtype=self._dtype,
-            device_map=device,
-            trust_remote_code=True,
+            **model_load_kwargs,
         )
         self.model.eval()
+
+        self._input_device = self._infer_input_device()
 
         # Silence repeated "Setting pad_token_id to eos_token_id" warnings
         if self.processor.tokenizer.pad_token_id is None:
             self.processor.tokenizer.pad_token = self.processor.tokenizer.eos_token
         self._pad_token_id = self.processor.tokenizer.pad_token_id
+
+    def _infer_input_device(self) -> torch.device:
+        """Pick a safe input device, including for sharded device_map='auto'."""
+        hf_device_map = getattr(self.model, "hf_device_map", None)
+        if isinstance(hf_device_map, dict):
+            for mapped in hf_device_map.values():
+                if isinstance(mapped, int):
+                    return torch.device(f"cuda:{mapped}")
+                if isinstance(mapped, str) and mapped.startswith("cuda"):
+                    return torch.device(mapped)
+        try:
+            return next(self.model.parameters()).device
+        except StopIteration:
+            return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     @torch.no_grad()
     def generate_captions(self, images: list[Image.Image]) -> list[str]:
@@ -83,7 +137,7 @@ class QwenVLMCaptioner:
             return_dict=True,
             return_tensors="pt",
             processor_kwargs={"padding": True},
-        ).to(self.model.device)
+        ).to(self._input_device)
 
         output_ids = self.model.generate(
             **inputs,
