@@ -19,7 +19,13 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from peft import LoraConfig, PeftModel, TaskType, get_peft_model
-from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
+from transformers import (
+    AutoConfig,
+    AutoModel,
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    VisionEncoderDecoderModel,
+)
 
 # Qwen3.5 LoRA target presets — derived from inspecting nn.Linear modules
 # in Qwen/Qwen3.5-0.8B (same suffixes across 0.8B / 4B family variants).
@@ -72,6 +78,26 @@ def _resolve_lora_target_modules(lora_target: str) -> list[str]:
     return LORA_TARGETS[lora_target]
 
 
+def _load_encoder_from_path(enc_path: str) -> nn.Module:
+    """Load a ViT encoder from either a ViT or VisionEncoderDecoder checkpoint."""
+    cfg = AutoConfig.from_pretrained(enc_path, trust_remote_code=True)
+
+    if cfg.model_type == "vision-encoder-decoder":
+        ved_model = VisionEncoderDecoderModel.from_pretrained(
+            enc_path,
+            trust_remote_code=True,
+        )
+        encoder = ved_model.encoder
+        if getattr(encoder.config, "model_type", None) != "vit":
+            raise ValueError(
+                "Expected ViT encoder inside VisionEncoderDecoder checkpoint, "
+                f"got '{getattr(encoder.config, 'model_type', 'unknown')}'."
+            )
+        return encoder
+
+    return AutoModel.from_pretrained(enc_path, trust_remote_code=True)
+
+
 class ViTQwenLoRA(nn.Module):
     """Frozen ViT encoder + Qwen3.5 decoder with LoRA + learnable projection.
 
@@ -90,8 +116,10 @@ class ViTQwenLoRA(nn.Module):
     lora_target : str
         One of ``"all"``, ``"linear"``, ``"attention"``.
     encoder_checkpoint : str | None
-        Path to a fine-tuned ViT checkpoint directory (``save_pretrained``
-        format). If *None*, uses the pretrained ``encoder_id`` weights.
+        Path to a fine-tuned checkpoint directory. Supports either a pure ViT
+        ``save_pretrained`` checkpoint or a ``VisionEncoderDecoderModel``
+        checkpoint, in which case only the ViT encoder is extracted.
+        If *None*, uses the pretrained ``encoder_id`` weights.
     num_prefix_tokens : int
         Number of ViT patch tokens forwarded as visual prefix (0 = use all).
     """
@@ -110,7 +138,7 @@ class ViTQwenLoRA(nn.Module):
         super().__init__()
 
         enc_path = encoder_checkpoint or encoder_id
-        self.encoder = AutoModel.from_pretrained(enc_path, trust_remote_code=True)
+        self.encoder = _load_encoder_from_path(enc_path)
         for p in self.encoder.parameters():
             p.requires_grad = False
         self.encoder.eval()
@@ -272,7 +300,9 @@ class ViTQwenLoRA(nn.Module):
         model = cls.__new__(cls)
         nn.Module.__init__(model)
 
-        model.encoder = AutoModel.from_pretrained(encoder_id, trust_remote_code=True)
+        encoder_checkpoint = kwargs.get("encoder_checkpoint")
+        enc_path = encoder_checkpoint or encoder_id
+        model.encoder = _load_encoder_from_path(enc_path)
         for p in model.encoder.parameters():
             p.requires_grad = False
         model.encoder.eval()
