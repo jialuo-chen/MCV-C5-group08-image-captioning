@@ -1,0 +1,218 @@
+{
+  "model": "Qwen/Qwen3.5-9B",
+  "prompt": "Describe this image.",
+  "metrics": {
+    "bleu1": 0.14008160485058158,
+    "bleu2": 0.06989390430736532,
+    "rougeL": 0.15068616297857085,
+    "meteor": 0.27197138629983914
+  },
+  "num_images": 7542,
+  "average_inference_time_per_image_ms": 1632.567462,
+  "total_inference_time_s": 12312.823797,
+  "samples": [
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000000.jpg",
+      "prediction": "This image shows a close-up, slightly angled view of a computer monitor displaying an error message. The screen is dominated by a classic Windows-style dialog box with a blue header bar and white content area.\n\n**Key elements visible:**\n\n- **Top portion of the image:** A plain, light-colored wall (possibly beige or off-white) fills the upper half.\n- **Monitor bezel:** The black frame of the monitor is visible at the bottom edge of the photo. A small webcam lens is centered in the top bezel.\n- **Error message window:**\n  - The title bar (partially cut off) appears",
+      "references": [
+        "A computer screen shows a repair prompt on the screen.",
+        "a computer screen with a repair automatically pop up",
+        "partial computer screen showing the need of repairs",
+        "Part of a computer monitor showing a computer repair message.",
+        "The top of a laptop with a blue background and dark blue text."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000001.jpg",
+      "prediction": "This image shows a close-up of a person\u2019s hand holding a small, dark amber glass bottle with a white cap. The bottle contains a liquid and is labeled \u201cNight Time\u201d in green text on a white background, with additional blue and yellow design elements \u2014 suggesting it may be a sleep aid or nighttime medication.\n\nThe label also includes smaller text and possibly a logo (partially visible), though details are not fully legible. The bottle appears to be a standard over-the-counter medicine container.\n\nIn the background, there\u2019s a wooden floor and part of a dark leather couch or chair, indicating an indoor setting \u2014 likely a living",
+      "references": [
+        "A person is holding a bottle that has medicine for the night time.",
+        "A bottle of medication has a white twist top.",
+        "night time medication bottle being held by someone",
+        "a person holding a small black bottle of NIGHT TIME",
+        "A bottle of what appears to be cough syrup held in hand."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000002.jpg",
+      "prediction": "This image shows the cover of a book titled **\u201c10 Years\u201d** by **Markus Zusak**, with the subtitle **\u201ca memoir\u201d** printed in small green text near the bottom right. The cover art features a snowy, wintry scene: two dogs \u2014 one black and one golden-brown \u2014 are walking away from the viewer down a snow-covered street lined with houses and bare trees. A utility pole stands in the background under an overcast sky.\n\nThe book is part of the **Frona County Public Library** collection, as indicated by the white library due date sticker on the upper left corner. The sticker lists multiple due",
+      "references": [
+        "a white paper showing an image of black and brown dog",
+        "A library book with pictures of two dogs on the cover on a wooden table.",
+        "A book with a black and a tan dog walking down a snowy street.",
+        "The book cover shows two dogs in the snow",
+        "A book cover title Dog Years with an image of a black and brown dog walking up the street, on the left side it has a due date sticker from a library."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000003.jpg",
+      "prediction": "This image shows two small medication boxes placed side by side on a wooden surface with a visible vertical grain pattern.\n\n**Left Box (White with Red Top):**\n- Brand: **ALLERGAN** (in white text on the red band at the top)\n- Product Name: **PRED FORTE\u00ae 1.0 %**\n- Description: It is labeled as an \u201cOCTROPPEL SUSPENSION\u201d (eye drop suspension) and \u201cAUGENTROPFENSUSPENSION\u201d (German for eye drop suspension).\n- Active Ingredient: Prednisolone-21-acetat (",
+      "references": [
+        "A white box is to the left of a blue box on a wooden table.",
+        "A small rectangular red and white box next to a small rectangular blue box on a wooden surface.",
+        "two boxes of  medicine, one white and red and the other blue sitting on a table",
+        "Two boxes that appear to contain medication or eye drops",
+        "Two boxes of pharmaceutical products left in a table"
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000004.jpg",
+      "prediction": "This image shows a close-up photograph of an older computer monitor displaying a Windows operating system interface \u2014 likely Windows XP, given the classic blue taskbar and desktop wallpaper featuring a green field under a blue sky with clouds.\n\n### Key Elements:\n\n1. **Error Dialog Box (Foreground):**\n   - A standard Windows error dialog box is centered on the screen.\n   - The title bar reads: \u201c**ZoomText 9.1**\u201d (partially cut off as \u201cxt 9.1\u201d).\n   - The message inside says:\n     > \u201cSystem is using a standard VGA display driver, which is not supported",
+      "references": [
+        "close up of a computer monitor that is powered on.",
+        "A monitor has a message displayed on it.",
+        "Pictured here is a screenshot that shows an error message from an app.",
+        "Computer screen displaying an error saying the display driver is not supported by Zoom Text.",
+        "a screenshot of someone's monitor that is having issues"
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000005.jpg",
+      "prediction": "This image shows a computer monitor displaying the initial setup screen for **Windows 7 Home Premium**.\n\nHere\u2019s a detailed breakdown:\n\n- **Background**: The classic Windows 7 default blue wallpaper with abstract light streaks.\n- **Window Title**: \u201cSet Up Windows\u201d \u2014 indicating this is the out-of-box experience (OOBE) or first-time setup wizard.\n- **Main Text**:\n  - The Windows logo and \u201cWindows 7 Home Premium\u201d are prominently displayed.\n  - Below that, it says: *\u201cChoose a user name for your account and name your computer using the following information.\u201d*\n- **",
+      "references": [
+        "a DELL laptop computer screen  showing window 7 home premium",
+        "A computer screen with a windows dialogue box containing the login.",
+        "Computer screen showing a Windows 7 home premium window with a Dell logo on it.",
+        "A dell laptop with windows 7 home screen.",
+        "window screen of dell desktop or laptop showed box of windows 7"
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000007.jpg",
+      "prediction": "This image is a blurry, low-resolution photograph of what appears to be the packaging or label of a software product \u2014 specifically, **Microsoft Windows**.\n\nHere\u2019s a breakdown of what\u2019s visible:\n\n- **Text**: At the bottom, you can faintly make out the words \u201cMICROSOFT\u201d and possibly \u201cWINDOWS,\u201d though they\u2019re distorted by blur and glare.\n- **Graphics**: There are two stylized figures \u2014 one red and one blue \u2014 that resemble the classic Microsoft Windows logo (the four-pane window), but rendered as abstract human-like forms with glowing eyes or lights. The red figure has red eyes; the",
+      "references": [
+        "A close-up of a package of a computer-related item.",
+        "A device with Microsoft and Hewlett Packard logos, but too blurry to tell what it is"
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000008.jpg",
+      "prediction": "This image is a close-up, low-light photograph with significant motion blur and overexposure. The scene appears to be indoors, possibly in a dimly lit room or hallway.\n\nKey elements:\n\n- **Left side**: A large, flat surface \u2014 likely a wooden door or cabinet \u2014 occupies the left portion of the frame. It has a warm, yellowish-brown tone under the ambient lighting.\n  \n- **Center-left**: Attached to this surface is a small, rectangular object that is severely overexposed \u2014 glowing bright white-yellow. It resembles a light switch, a small electronic device, or perhaps a label or sticker",
+      "references": [
+        "A bottle of lotion on the table in front of someone sitting down wearing shorts.",
+        "A small bottle of lotion on a table above a person's lap."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000009.jpg",
+      "prediction": "This image shows the interior of a modern public transit vehicle \u2014 likely a light rail train or tram \u2014 viewed from a passenger\u2019s perspective, looking toward the front or side near the door.\n\n**Key elements in the image:**\n\n- **Ceiling and overhead features**: The ceiling is smooth and light gray, with a circular speaker grille visible near the center. A curved metallic handrail extends diagonally from the upper left, attached to the ceiling structure.\n  \n- **Signage**: Below the ceiling, mounted above the window, is a dark brown rectangular sign with white text and an icon. The icon depicts a person in a wheelchair",
+      "references": [
+        "The interior of a bus has a horizontal bar near the ceiling for passengers to hold on to and behind it there is a sign regarding handicapped passengers.",
+        "A curving metal handrail with a horizontal cross piece about a foot from the bus' ceiling is directly in front of the handicap exit.",
+        "The overhead handrails on a bus in the city are shown with a building right outside the window below them.",
+        "A vehicle has a window and a gray bar.",
+        "A gray frame around a window that indicates seating for disabled people."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000010.jpg",
+      "prediction": "This image captures a vibrant urban street scene, likely in Turkey, under a partly cloudy blue sky. The focal point is a large building under construction or renovation, its facade partially covered with white panels and an exposed red-tiled roof. Prominently displayed on the side of this building is a massive political billboard featuring a portrait of Mustafa Kemal Atat\u00fcrk \u2014 Turkey\u2019s founder and first president \u2014 with the Turkish slogan \u201c\u0130ST\u0130KRAR S\u00dcRS\u00dcN\u201d (meaning \u201cLet stability continue\u201d) above his head.\n\nIn the foreground, lush green trees partially obscure the view, adding depth to the composition. To the left, a",
+      "references": [
+        "A view of a building with a picture of a man on it with a couple big trees in front of it.",
+        "SKY VIEW SNAPSHOT OF TREES IN FRONT OF A GIANT BILLBOARD.",
+        "view of trees and a nearby sign promoting Istikrar Sursun",
+        "downtown photo of several buildings, trees people and automobiles",
+        "White building with a brick colored roof and a sign that reads 'istikrarsursun'"
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000011.jpg",
+      "prediction": "This image shows a close-up, slightly blurry photograph of a **disposable sanitary pad** resting on a dark brown wooden surface \u2014 likely a table or desk.\n\n### Key details:\n- The pad is white with light purple or lavender trim along the edges.\n- It appears to be a standard-length pad, possibly with wings (though they\u2019re not clearly visible due to the angle and blur).\n- The top portion of the pad (where it would attach to underwear) is folded over or tucked in, giving it a rounded, compact shape.\n- The background includes part of a person\u2019s lap or clothing at the bottom",
+      "references": [
+        "A white object with elastic sides sitting on a wooden surface.",
+        "A baby diaper keep in the table shown by the image.",
+        "A opened up Diaper laying on a wooden surface.",
+        "Clean maxi Pad over a dark wooden surface."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000012.jpg",
+      "prediction": "This image shows a close-up, slightly angled view of a person\u2019s left hand holding a small white envelope or card. The object appears to be an official or informational document, possibly from a government or service organization.\n\nKey visual details:\n\n- **Hand**: A light-skinned hand is gripping the bottom-left corner of the envelope. The thumb is visible on the front side, and fingers are curled around the back.\n  \n- **Envelope/Card Design**:\n  - It has a clean white background with a bold orange horizontal band across the middle.\n  - Text is printed in black, oriented upside-down relative to the viewer",
+      "references": [
+        "appears to be a picture of prepaid card",
+        "Large orange and white label with a person's hand holding it.",
+        "Someone is holding a white envelope with an orange strip down the length of it.",
+        "The package contains information about the enclosed medication",
+        "Pictured is the top left corner of a parcel of mail."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000013.jpg",
+      "prediction": "This image is a blurry, low-resolution photograph that appears to be taken in poor lighting or with a shaky hand. The main visual elements are:\n\n- A large, bright white glare or reflection dominates the center of the frame, likely from a light source hitting a glossy surface (possibly a screen or plastic).\n- In the bottom right corner, there\u2019s a partial view of what looks like a blue and white object \u2014 possibly part of a logo, a ball, or a graphic design. It has curved shapes and may include a small dark detail resembling a handle or connector.\n- In the bottom left corner, faint, out-of",
+      "references": [
+        "A white piece of paper with a blue emblem off to the side."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000014.jpg",
+      "prediction": "This image is extremely overexposed and blurry, making it difficult to discern any clear subject or detail. The dominant feature is a large area of bright white light that fills most of the frame, suggesting either an intense light source directly facing the camera or severe overexposure during capture.\n\nOn the left side, there are faint, out-of-focus shapes in warm tones \u2014 soft pinks, creams, and hints of brown \u2014 which may suggest skin tones or fabric, possibly part of a person\u2019s face or clothing. A small, dark, indistinct shape appears near the center-left, perhaps a shadow or a small object, but",
+      "references": [
+        "A bright blinding light is obstructing all view"
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000015.jpg",
+      "prediction": "This image shows two educational electronic devices from the brand **Franklin**, packaged in retail blister packs and placed on a wooden surface with a visible grain pattern.\n\n---\n\n### Top Package:\n- **Product Name**: *Spell Corrector & Puzzle Solver*\n- **Brand**: Franklin (logo in red on the left side)\n- **Color Scheme**: Red, black, and silver packaging.\n- **Device Appearance**: A small, handheld gray device with a small LCD screen and a QWERTY-style keyboard. It appears to be encased in clear plastic.\n- **Features Listed on Packaging**:\n  -",
+      "references": [
+        "A set of hand held electronic children's learning devices, one for puzzles and a dictionary.",
+        "Two packages with children's calculators in them are on the wooden table.",
+        "two kids learning toys still in package laying on a table",
+        "Two electronic learning toys for children, both in plastic packaging."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000016.jpg",
+      "prediction": "This image is a close-up, slightly out-of-focus photograph dominated by a large, blurred pinkish-red object in the foreground \u2014 most likely a human finger or thumb. The object occupies the right and lower-right portion of the frame, partially obscuring what appears to be a printed surface behind it.\n\nBehind the finger, you can see:\n\n- A dark brown curved edge, possibly the rim of a bowl or container.\n- Below that, a white rectangular area with faint vertical text (possibly Chinese characters) on the left side.\n- In the bottom center, there\u2019s a small cluster of yellow, textured material \u2014 perhaps",
+      "references": [
+        "A picture of what appears to be some kind of food label.",
+        "Obstructed view of some type of microwavable or frozen food",
+        "Package of frozen food on top of a white surface.",
+        "Some package food, looks like some kind of meat or pasta."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000017.jpg",
+      "prediction": "This image shows a close-up, slightly overhead view of a **Windows 7 Ultimate installation DVD** resting on its white paper sleeve. The disc is placed on a dark, textured surface \u2014 possibly a countertop or table \u2014 with a tiled floor visible in the lower right corner.\n\n### Key Details:\n\n- **Disc Label**:  \n  - The label is black with white text.\n  - It prominently displays the **Microsoft Windows logo** and the text:  \n    > **Windows 7**  \n    > **Ultimate**\n  - Below that, smaller text reads:  \n    > **DVD**  \n    >",
+      "references": [
+        "an image of a windows seven disk plate on the floor",
+        "A Windows 7 Ultimate Edition CD on a black counter top.",
+        "Windows 7 ultimate DVD and 64-bit software disc",
+        "Human stand beside table and CD titles windows 7",
+        "I see a disk for Windows 7 Ultimate."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000018.jpg",
+      "prediction": "This image shows a close-up, slightly angled view of an older model laptop \u2014 likely a ThinkPad or similar business-class machine \u2014 during its boot-up process. The screen displays a black background with white text, typical of a BIOS or POST (Power-On Self-Test) screen.\n\n### Screen Content (visible text):\n- Top left: \u201c60GHz\u201d \u2014 possibly part of a CPU speed specification (e.g., 2.60 GHz, though cut off).\n- Below that: \u201c4MB)\u201d \u2014 likely referring to cache or memory size.\n- Then:\n  - `Disk`\n ",
+      "references": [
+        "A laptop screen with system dialog on the screen,",
+        "The corner of a black computer with type of the screen and white type on the keyboard.",
+        "Partial view of laptop showing upper right portion of keyboard starting with F8 key all the way to the delete key and the screen is the right hand portion showing approximately half of the screen.",
+        "A black laptop with the computer's specs on the screen.",
+        "Part of the keyboard and screen on a laptop."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000019.jpg",
+      "prediction": "This image shows a close-up, slightly angled view of the bottom casing of a **Dell Inspiron 1545** laptop. The surface is matte black plastic with a fine textured finish.\n\nKey visible details include:\n\n- **Model Label**: A white sticker prominently displays \u201cINSPIRON 1545\u201d in bold black letters.\n- **Dell Branding**: Below that, the classic white \u201cDELL\u201d logo is printed, along with \u201cwww.dell.com\u201d and multilingual usage instructions (\u201cFOR USE W... PARA USO...\u201d).\n- **Technical Specifications Sticker**: A smaller black",
+      "references": [
+        "The underside of a Dell Inspiron laptop showing the device label including the text \"Inspiron 1545\".",
+        "A black substance  that has letters of the commodity.",
+        "The back of a Dell laptop which shows the label and serial number.",
+        "A Dell computer number and information on the side of a computer tower.",
+        "Part of a laptop's specs and barcode are shown on stickers attached to the back of the laptop."
+      ]
+    },
+    {
+      "image": "/data/123-1/users/jchen/VizWiz/val/VizWiz_val_00000020.jpg",
+      "prediction": "This image shows a dimly lit, blurry interior scene \u2014 likely inside a shopping mall or commercial building \u2014 featuring a small food kiosk or fast-food counter.\n\nKey elements:\n\n- **Foreground**: A reflective floor (possibly polished tile or marble) with bright, elongated reflections of overhead lights. A faint human hand is visible in the lower right corner, suggesting the photo was taken from a first-person perspective.\n  \n- **Midground**: The main subject is a brightly lit food stall or counter. It has a wooden or laminate front panel and displays various items under warm lighting \u2014 possibly food containers, condiments, or menu",
+      "references": [
+        "point of sale food or deli possibly inside of the mall or other retail outlet.",
+        "GLOOMY SNAPSHOT OF A SNACK BAR SITE",
+        "Some small mall food court restaurant is shown with two workers behind the counter and no one in line.",
+        "The entrance of a restaurant with a lighted sign above a counter.",
+        "An image of a fast food restaurant like one seen in a mall."
+      ]
+    }
+  ]
+}
