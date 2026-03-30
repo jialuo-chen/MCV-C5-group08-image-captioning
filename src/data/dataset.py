@@ -308,17 +308,48 @@ class VizWizVisionDataset(Dataset):
         else:
             caption_text = item["captions"][0]
 
-        encoding = self.tokenizer(
-            caption_text,
-            max_length=self.max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt",
-        )
-        input_ids = encoding.input_ids.squeeze(0)
-        attention_mask = encoding.attention_mask.squeeze(0)
-        labels = input_ids.clone()
-        labels[labels == self.tokenizer.pad_token_id] = -100
+        pad_id = self.tokenizer.pad_token_id
+        eos_id = self.tokenizer.eos_token_id
+        use_manual_eos = (pad_id is not None and eos_id is not None and pad_id == eos_id)
+
+        if use_manual_eos:
+            # Explicit EOS + attention-mask based label masking avoids EOS/PAD ambiguity
+            # for GPT-like tokenizers where both ids can be identical.
+            encoded = self.tokenizer(
+                caption_text,
+                add_special_tokens=False,
+                truncation=True,
+                max_length=max(self.max_length - 1, 1),
+            )
+            token_ids = list(encoded["input_ids"])
+            token_ids.append(eos_id)
+            token_ids = token_ids[: self.max_length]
+
+            attention = [1] * len(token_ids)
+            if len(token_ids) < self.max_length:
+                pad_len = self.max_length - len(token_ids)
+                token_ids.extend([pad_id] * pad_len)
+                attention.extend([0] * pad_len)
+
+            input_ids = torch.tensor(token_ids, dtype=torch.long)
+            attention_mask = torch.tensor(attention, dtype=torch.long)
+            labels = input_ids.clone()
+            labels[attention_mask == 0] = -100
+        else:
+            encoding = self.tokenizer(
+                caption_text,
+                max_length=self.max_length,
+                padding="max_length",
+                truncation=True,
+                return_tensors="pt",
+            )
+            input_ids = encoding.input_ids.squeeze(0)
+            attention_mask = encoding.attention_mask.squeeze(0)
+            labels = input_ids.clone()
+            if pad_id is not None:
+                labels[labels == pad_id] = -100
+            else:
+                labels[attention_mask == 0] = -100
 
         return {
             "pixel_values": pixel_values,

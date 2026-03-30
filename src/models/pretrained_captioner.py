@@ -52,11 +52,20 @@ class VitGPT2Captioner(PretrainedCaptioner):
         pixel_values = self.processor(images=images, return_tensors="pt").pixel_values.to(
             self.device
         )
+        batch_size = pixel_values.size(0)
+        bos_id = self.tokenizer.bos_token_id or self.tokenizer.eos_token_id
+        decoder_input_ids = torch.full(
+            (batch_size, 1), bos_id, dtype=torch.long, device=self.device
+        )
+        decoder_attention_mask = torch.ones_like(decoder_input_ids)
         output_ids = self.model.generate(
             pixel_values,
+            decoder_input_ids=decoder_input_ids,
+            decoder_attention_mask=decoder_attention_mask,
             max_new_tokens=self.max_new_tokens,
             max_length=None,
             pad_token_id=self.tokenizer.pad_token_id,
+            eos_token_id=self.tokenizer.eos_token_id,
         )
         return self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)
 

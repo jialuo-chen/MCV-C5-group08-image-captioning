@@ -137,12 +137,28 @@ class _FinetunedVEDCaptioner:
         pixel_values = self.processor(images=images, return_tensors="pt").pixel_values.to(
             self.device
         )
-        output_ids = self.model.generate(
-            pixel_values,
-            max_new_tokens=self.max_new_tokens,
-            max_length=None,
-            pad_token_id=self.tokenizer.pad_token_id,
+        generate_kwargs = {
+            "max_new_tokens": self.max_new_tokens,
+            "max_length": None,
+            "pad_token_id": self.tokenizer.pad_token_id,
+        }
+
+        if self.tokenizer.eos_token_id is not None:
+            generate_kwargs["eos_token_id"] = self.tokenizer.eos_token_id
+
+        start_id = (
+            self.model.generation_config.decoder_start_token_id
+            or self.model.config.decoder_start_token_id
         )
+        if start_id is not None:
+            batch_size = pixel_values.size(0)
+            decoder_input_ids = torch.full(
+                (batch_size, 1), start_id, dtype=torch.long, device=self.device
+            )
+            generate_kwargs["decoder_input_ids"] = decoder_input_ids
+            generate_kwargs["decoder_attention_mask"] = torch.ones_like(decoder_input_ids)
+
+        output_ids = self.model.generate(pixel_values, **generate_kwargs)
         return self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)
 
 

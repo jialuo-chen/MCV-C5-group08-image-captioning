@@ -62,15 +62,55 @@ def _build_scheduler(cfg: Config, optimizer):
 
 def _setup_tokenizer(tokenizer, model):
     """Configure special tokens for the decoder tokenizer & model."""
-    if tokenizer.pad_token is None:
+    if tokenizer.eos_token is None:
+        raise ValueError("Decoder tokenizer must define eos_token.")
+
+    tokenizer_name = str(getattr(tokenizer, "name_or_path", "")).lower()
+    enforce_distinct_pad_eos = "gpt2" in tokenizer_name
+
+    added_special_tokens = 0
+    if enforce_distinct_pad_eos and (
+        tokenizer.pad_token is None or tokenizer.pad_token_id == tokenizer.eos_token_id
+    ):
+        # Keep PAD distinct from EOS to avoid attention-mask ambiguity in generation.
+        added_special_tokens = tokenizer.add_special_tokens({"pad_token": "<|pad|>"})
+
+        # If token already exists and wasn't added, still force pad token to the dedicated id.
+        if added_special_tokens == 0:
+            pad_id = tokenizer.convert_tokens_to_ids("<|pad|>")
+            if pad_id is None or pad_id == tokenizer.eos_token_id:
+                raise ValueError(
+                    "Failed to create a PAD token distinct from EOS for decoder tokenizer."
+                )
+            tokenizer.pad_token = "<|pad|>"
+    elif tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+
     if tokenizer.bos_token is None:
         tokenizer.bos_token = tokenizer.eos_token
+
+    if added_special_tokens > 0:
+        model.decoder.resize_token_embeddings(len(tokenizer))
+
+    model.config.vocab_size = len(tokenizer)
+    model.config.decoder.vocab_size = len(tokenizer)
 
     model.config.pad_token_id = tokenizer.pad_token_id
     model.config.decoder_start_token_id = tokenizer.bos_token_id
     model.config.eos_token_id = tokenizer.eos_token_id
     model.config.bos_token_id = tokenizer.bos_token_id
+    model.generation_config.pad_token_id = tokenizer.pad_token_id
+    model.generation_config.decoder_start_token_id = tokenizer.bos_token_id
+    model.generation_config.eos_token_id = tokenizer.eos_token_id
+    model.generation_config.bos_token_id = tokenizer.bos_token_id
+
+    print(
+        "Tokenizer ids -> "
+        f"bos={tokenizer.bos_token_id}, eos={tokenizer.eos_token_id}, pad={tokenizer.pad_token_id}"
+    )
+    if enforce_distinct_pad_eos and tokenizer.pad_token_id == tokenizer.eos_token_id:
+        raise ValueError("Invalid tokenizer setup: pad_token_id must differ from eos_token_id.")
+
     return tokenizer
 
 
@@ -189,12 +229,17 @@ def train_vit_decoder(cfg: Config) -> float:
         for batch in pbar:
             pixel_values = batch["pixel_values"].to(device)
             labels = batch["labels"].to(device)
+            decoder_attention_mask = batch["attention_mask"].to(device)
 
             optimizer.zero_grad()
 
             if use_amp:
                 with torch.amp.autocast("cuda"):
-                    outputs = model(pixel_values=pixel_values, labels=labels)
+                    outputs = model(
+                        pixel_values=pixel_values,
+                        labels=labels,
+                        decoder_attention_mask=decoder_attention_mask,
+                    )
                     loss = outputs.loss
                 scaler.scale(loss).backward()
                 if cfg.training.grad_clip:
@@ -203,7 +248,11 @@ def train_vit_decoder(cfg: Config) -> float:
                 scaler.step(optimizer)
                 scaler.update()
             else:
-                outputs = model(pixel_values=pixel_values, labels=labels)
+                outputs = model(
+                    pixel_values=pixel_values,
+                    labels=labels,
+                    decoder_attention_mask=decoder_attention_mask,
+                )
                 loss = outputs.loss
                 loss.backward()
                 if cfg.training.grad_clip:
@@ -301,16 +350,33 @@ def _run_validation(
     for batch in val_loader:
         pixel_values = batch["pixel_values"].to(device)
         labels = batch["labels"].to(device)
+        decoder_attention_mask = batch["attention_mask"].to(device)
 
-        outputs = model(pixel_values=pixel_values, labels=labels)
+        outputs = model(
+            pixel_values=pixel_values,
+            labels=labels,
+            decoder_attention_mask=decoder_attention_mask,
+        )
         total_loss += outputs.loss.item()
         num_batches += 1
 
+        batch_size = pixel_values.size(0)
+        decoder_input_ids = torch.full(
+            (batch_size, 1),
+            tokenizer.bos_token_id,
+            dtype=torch.long,
+            device=device,
+        )
+        gen_decoder_attention_mask = torch.ones_like(decoder_input_ids)
+
         gen_ids = model.generate(
             pixel_values,
+            decoder_input_ids=decoder_input_ids,
+            decoder_attention_mask=gen_decoder_attention_mask,
             max_new_tokens=max_gen_length,
             max_length=None,
             pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id,
         )
         captions = tokenizer.batch_decode(gen_ids, skip_special_tokens=True)
         all_predictions.extend(captions)
