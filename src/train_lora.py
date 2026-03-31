@@ -122,6 +122,14 @@ def train_lora(cfg: Config) -> float:
         collate_fn=vision_collate_fn,
         pin_memory=True,
     )
+    test_loader = DataLoader(
+        test_ds,
+        batch_size=cfg.training.batch_size,
+        shuffle=False,
+        num_workers=cfg.training.num_workers,
+        collate_fn=vision_collate_fn,
+        pin_memory=True,
+    )
 
     exp_logger = ExperimentLogger(output_dir, dict(cfg))
     model_info = exp_logger.log_model_info(model, device=str(device))
@@ -150,6 +158,15 @@ def train_lora(cfg: Config) -> float:
     patience = cfg.training.get("early_stopping_patience")
     max_gen_length = cfg.inference.get("max_length", 128)
     exp_logger.start_training()
+
+    # --- Pre-fine-tuning evaluation on the VizWiz test set ---
+    print("\n" + "=" * 60)
+    print("PRE-FINETUNE EVALUATION (VizWiz test set)")
+    print("=" * 60)
+    pre_metrics = _run_evaluation(model, test_loader, device, max_gen_length)
+    exp_logger.log_pre_finetune_eval(pre_metrics)
+    print(f"  {format_metrics(pre_metrics)}")
+    print("=" * 60 + "\n")
 
     for epoch in range(cfg.training.epochs):
         exp_logger.start_epoch()
@@ -261,6 +278,39 @@ def train_lora(cfg: Config) -> float:
             break
 
     exp_logger.end_training(best_epoch=best_epoch, best_metrics=best_metrics_dict)
+
+    # --- Post-fine-tuning evaluation: load best checkpoint and evaluate on test set ---
+    print("\n" + "=" * 60)
+    print("POST-FINETUNE EVALUATION (VizWiz test set, best checkpoint)")
+    print("=" * 60)
+    best_ckpt_path = str(ckpt_dir / "best")
+    best_model = ViTQwenLoRA.load_checkpoint(
+        best_ckpt_path,
+        encoder_id=encoder_id,
+        decoder_id=decoder_id,
+        device=str(device),
+        encoder_checkpoint=cfg.encoder.get("checkpoint"),
+        num_prefix_tokens=cfg.encoder.get("num_prefix_tokens", 0),
+    )
+    best_model.eval()
+    post_metrics = _run_evaluation(best_model, test_loader, device, max_gen_length)
+    exp_logger.log_post_finetune_eval(post_metrics)
+    print(f"  {format_metrics(post_metrics)}")
+    print("=" * 60)
+
+    # --- Compute and log deltas ---
+    exp_logger.log_finetune_deltas(pre_metrics, post_metrics)
+    print("\nFINE-TUNING DELTAS (post - pre):")
+    for key in pre_metrics:
+        if key in post_metrics:
+            delta = post_metrics[key] - pre_metrics[key]
+            sign = "+" if delta >= 0 else ""
+            print(f"  {key}: {sign}{delta * 100:.2f}%")
+
+    # Clean up the reloaded model to free memory
+    del best_model
+    torch.cuda.empty_cache()
+
     log_path = exp_logger.save()
     print(f"\nTraining complete. Best METEOR: {best_metric * 100:.2f}%")
     print(f"Checkpoints saved to: {ckpt_dir}")
@@ -269,6 +319,34 @@ def train_lora(cfg: Config) -> float:
     if wandb_run:
         wandb_run.finish()
     return best_metric
+
+
+@torch.no_grad()
+def _run_evaluation(
+    model: ViTQwenLoRA,
+    loader: DataLoader,
+    device: torch.device,
+    max_gen_length: int,
+) -> dict[str, float]:
+    """Run generation-only evaluation on a dataset (no loss computation)."""
+    model.eval()
+    all_predictions: list[str] = []
+    all_references: list[list[str]] = []
+
+    for batch_idx, batch in enumerate(tqdm(loader, desc="Evaluating on test set")):
+        pixel_values = batch["pixel_values"].to(device)
+        captions = model.generate(pixel_values, max_new_tokens=max_gen_length)
+        all_predictions.extend(captions)
+
+        dataset = loader.dataset
+        batch_start = batch_idx * loader.batch_size
+        for i in range(len(captions)):
+            idx = batch_start + i
+            if idx < len(dataset):
+                refs = dataset.get_all_captions(idx)
+                all_references.append(refs)
+
+    return compute_metrics(all_predictions, all_references)
 
 
 @torch.no_grad()

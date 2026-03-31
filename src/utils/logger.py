@@ -51,18 +51,120 @@ def count_parameters(model: nn.Module) -> dict[str, int]:
 
 def estimate_flops(
     model: nn.Module, input_size: tuple = (1, 3, 224, 224), device: str = "cpu"
-) -> int | None:
-    try:
-        dummy_img = torch.randn(*input_size, device=device)
-        # Caption length doesn't matter much for FLOPs estimate; use short sequence
-        dummy_cap = torch.zeros(input_size[0], 20, dtype=torch.long, device=device)
+) -> dict[str, int | None]:
+    """Estimate FLOPs for the model, returning per-component and total counts.
 
-        flop_counter = FlopCounterMode(display=False)
-        with flop_counter:
-            model(dummy_img, dummy_cap)
-        return flop_counter.get_total_flops()
+    For ViTQwenLoRA models, computes encoder, projection, and decoder FLOPs
+    separately to avoid issues with PEFT wrappers and mixed dtypes.
+
+    Returns a dict with keys: ``encoder_flops``, ``projection_flops``,
+    ``decoder_flops``, ``total_flops``.
+    """
+    from src.models.vit_qwen_lora import ViTQwenLoRA
+
+    result: dict[str, int | None] = {
+        "encoder_flops": None,
+        "projection_flops": None,
+        "decoder_flops": None,
+        "total_flops": None,
+    }
+
+    if isinstance(model, ViTQwenLoRA):
+        result = _estimate_flops_vit_qwen(model, input_size, device)
+    else:
+        try:
+            dummy_img = torch.randn(*input_size, device=device)
+            dummy_cap = torch.zeros(input_size[0], 20, dtype=torch.long, device=device)
+            flop_counter = FlopCounterMode(display=False)
+            with flop_counter:
+                model(dummy_img, dummy_cap)
+            total = flop_counter.get_total_flops()
+            result["total_flops"] = total
+        except Exception:
+            pass
+
+    return result
+
+
+@torch.no_grad()
+def _estimate_flops_vit_qwen(
+    model, input_size: tuple, device: str
+) -> dict[str, int | None]:
+    """Component-wise FLOPs for ViTQwenLoRA (encoder + projection + decoder)."""
+    batch = input_size[0]
+    seq_len = 20  # short caption for estimation
+    encoder_flops = None
+    projection_flops = None
+    decoder_flops = None
+
+    dummy_pixels = torch.randn(*input_size, device=device)
+
+    # --- Encoder FLOPs ---
+    try:
+        counter = FlopCounterMode(display=False)
+        with counter:
+            enc_out = model.encoder(pixel_values=dummy_pixels)
+        encoder_flops = counter.get_total_flops()
+        vit_features = enc_out.last_hidden_state
     except Exception:
-        return None
+        # Fall back: run encoder without counting to get features for next steps
+        try:
+            enc_out = model.encoder(pixel_values=dummy_pixels)
+            vit_features = enc_out.last_hidden_state
+        except Exception:
+            return {
+                "encoder_flops": None,
+                "projection_flops": None,
+                "decoder_flops": None,
+                "total_flops": None,
+            }
+
+    if model.num_prefix_tokens > 0:
+        vit_features = vit_features[:, 1 : 1 + model.num_prefix_tokens, :]
+
+    # --- Projection FLOPs ---
+    try:
+        proj_input = vit_features.to(model.projection.weight.dtype)
+        counter = FlopCounterMode(display=False)
+        with counter:
+            vit_projected = model.projection(proj_input)
+        projection_flops = counter.get_total_flops()
+    except Exception:
+        try:
+            vit_projected = model.projection(
+                vit_features.to(model.projection.weight.dtype)
+            )
+        except Exception:
+            vit_projected = None
+
+    # --- Decoder FLOPs ---
+    if vit_projected is not None:
+        try:
+            dummy_ids = torch.zeros(batch, seq_len, dtype=torch.long, device=device)
+            caption_embeds = model.decoder.get_input_embeddings()(dummy_ids)
+            inputs_embeds = torch.cat([vit_projected, caption_embeds], dim=1).to(
+                caption_embeds.dtype
+            )
+            prefix_len = vit_projected.size(1)
+            attn_mask = torch.ones(
+                batch, prefix_len + seq_len, dtype=torch.long, device=device
+            )
+            counter = FlopCounterMode(display=False)
+            with counter:
+                model.decoder(inputs_embeds=inputs_embeds, attention_mask=attn_mask)
+            decoder_flops = counter.get_total_flops()
+        except Exception:
+            pass
+
+    parts = [encoder_flops, projection_flops, decoder_flops]
+    total_flops = sum(f for f in parts if f is not None) if any(parts) else None
+
+    return {
+        "encoder_flops": encoder_flops,
+        "projection_flops": projection_flops,
+        "decoder_flops": decoder_flops,
+        "total_flops": total_flops,
+    }
 
 
 class ExperimentLogger:
@@ -96,11 +198,33 @@ class ExperimentLogger:
 
     def log_model_info(self, model: nn.Module, device: str = "cpu") -> dict:
         param_info = count_parameters(model)
-        flops = estimate_flops(model, device=device)
+        flops_info = estimate_flops(model, device=device)
         info = {
             **param_info,
-            "flops": flops,
-            "flops_readable": _format_number(flops) if flops else "N/A",
+            "encoder_flops": flops_info.get("encoder_flops"),
+            "encoder_flops_readable": (
+                _format_number(flops_info["encoder_flops"])
+                if flops_info.get("encoder_flops")
+                else "N/A"
+            ),
+            "projection_flops": flops_info.get("projection_flops"),
+            "projection_flops_readable": (
+                _format_number(flops_info["projection_flops"])
+                if flops_info.get("projection_flops")
+                else "N/A"
+            ),
+            "decoder_flops": flops_info.get("decoder_flops"),
+            "decoder_flops_readable": (
+                _format_number(flops_info["decoder_flops"])
+                if flops_info.get("decoder_flops")
+                else "N/A"
+            ),
+            "total_flops": flops_info.get("total_flops"),
+            "total_flops_readable": (
+                _format_number(flops_info["total_flops"])
+                if flops_info.get("total_flops")
+                else "N/A"
+            ),
         }
         self.data["model_info"] = info
         return info
@@ -160,6 +284,27 @@ class ExperimentLogger:
     def log_inference(self, info: dict) -> None:
         self.data["inference"] = info
 
+    def log_pre_finetune_eval(self, metrics: dict[str, float]) -> None:
+        self.data["pre_finetune_eval"] = {
+            k: round(float(v), 6) for k, v in metrics.items()
+        }
+
+    def log_post_finetune_eval(self, metrics: dict[str, float]) -> None:
+        self.data["post_finetune_eval"] = {
+            k: round(float(v), 6) for k, v in metrics.items()
+        }
+
+    def log_finetune_deltas(
+        self,
+        pre_metrics: dict[str, float],
+        post_metrics: dict[str, float],
+    ) -> None:
+        deltas: dict[str, float] = {}
+        for key in pre_metrics:
+            if key in post_metrics:
+                deltas[key] = round(float(post_metrics[key]) - float(pre_metrics[key]), 6)
+        self.data["finetune_deltas"] = deltas
+
     def save(self) -> Path:
         self.log_path.write_text(json.dumps(self.data, indent=2, default=_json_default))
         return self.log_path
@@ -211,6 +356,16 @@ def print_model_summary(info: dict) -> None:
     if info.get("other_total_params", 0) > 0:
         print(f"  ─ Other total:         {info['other_total_params']:>12}")
         print(f"  ─ Other trainable:     {info['other_trainable_params']:>12}")
-    flops = info.get("flops_readable", "N/A")
-    print(f"  FLOPs (single fwd):    {flops:>12}")
+    # Per-component FLOPs (new format)
+    if info.get("encoder_flops_readable") and info["encoder_flops_readable"] != "N/A":
+        print(f"  FLOPs (encoder):       {info['encoder_flops_readable']:>12}")
+    if (
+        info.get("projection_flops_readable")
+        and info["projection_flops_readable"] != "N/A"
+    ):
+        print(f"  FLOPs (projection):    {info['projection_flops_readable']:>12}")
+    if info.get("decoder_flops_readable") and info["decoder_flops_readable"] != "N/A":
+        print(f"  FLOPs (decoder):       {info['decoder_flops_readable']:>12}")
+    total_flops = info.get("total_flops_readable") or info.get("flops_readable", "N/A")
+    print(f"  FLOPs (total fwd):     {total_flops:>12}")
     print("=" * 60)

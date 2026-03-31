@@ -6,6 +6,7 @@ import wandb
 import yaml
 
 from src.evaluate import evaluate
+from src.evaluate_lora import evaluate_lora
 from src.evaluate_multimodal import evaluate_multimodal
 from src.evaluate_pretrained import evaluate_pretrained
 from src.generate_presentation_plots import generate_all_plots
@@ -127,6 +128,15 @@ def cmd_evaluate_multimodal(args: argparse.Namespace) -> None:
 def cmd_finetune_lora(args: argparse.Namespace) -> None:
     cfg = load_config(args.config, overrides=args.override)
     train_lora(cfg)
+
+
+def cmd_evaluate_lora(args: argparse.Namespace) -> None:
+    cfg = load_config(args.config, overrides=args.override)
+    evaluate_lora(
+        cfg,
+        checkpoint_path=args.checkpoint,
+        output_dir=getattr(args, "output_dir", None),
+    )
 
 
 def main() -> None:
@@ -266,6 +276,21 @@ def main() -> None:
     )
     _add_common_args(p_lora)
 
+    p_eval_lora = subparsers.add_parser(
+        "evaluate-lora",
+        help="Evaluate a LoRA-finetuned ViT+Qwen checkpoint on VizWiz.",
+    )
+    _add_common_args(p_eval_lora)
+    p_eval_lora.add_argument(
+        "--checkpoint",
+        type=str,
+        required=True,
+        help="Path to LoRA checkpoint directory (e.g. outputs/lora-vit-qwen-2b/checkpoints/best).",
+    )
+    p_eval_lora.add_argument(
+        "--output-dir", type=str, default=None, help="Output directory for results."
+    )
+
     args = parser.parse_args()
 
     commands = {
@@ -281,6 +306,7 @@ def main() -> None:
         "finetune": cmd_finetune,
         "evaluate-multimodal": cmd_evaluate_multimodal,
         "finetune-lora": cmd_finetune_lora,
+        "evaluate-lora": cmd_evaluate_lora,
     }
     commands[args.command](args)
 
