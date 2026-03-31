@@ -1,0 +1,218 @@
+{
+  "model": "/export/home/group08/miguel/models/Qwen3.5-4B",
+  "prompt": "Describe this image in a short sentence.",
+  "metrics": {
+    "bleu1": 0.1345276509247359,
+    "bleu2": 0.07807843318869424,
+    "rougeL": 0.16547808408446507,
+    "meteor": 0.294411158359979
+  },
+  "num_images": 7542,
+  "average_inference_time_per_image_ms": 2470.568358,
+  "total_inference_time_s": 18633.026554,
+  "samples": [
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000000.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a close-up photo of a computer screen.\n2.  **Identify the specific content:** The screen displays a Windows error message.\n3.  **Read the text:** I can see \"not repair this computer automatically\" and \"recently attached a device to this computer, such as a camera or portable music...\". This is a classic Windows error message about a device causing a conflict.\n4.  **Identify the hardware:** There's a webcam visible at the top of the bezel. The",
+      "references": [
+        "A computer screen shows a repair prompt on the screen.",
+        "a computer screen with a repair automatically pop up",
+        "partial computer screen showing the need of repairs",
+        "Part of a computer monitor showing a computer repair message.",
+        "The top of a laptop with a blue background and dark blue text."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000001.jpg",
+      "prediction": "The user wants a short sentence describing the image.\n\n1.  **Identify the main subject:** A hand holding a small bottle.\n2.  **Identify the object:** It's a bottle of \"Night Time\" liquid, likely a sleep aid or melatonin supplement. The label is green and blue.\n3.  **Identify the background:** A wooden floor and a dark piece of furniture (looks like a leather chair or sofa).\n4.  **Synthesize:** A hand is holding a small bottle of \"Night Time\" liquid against a background of a wooden floor and a dark chair.\n\nLet",
+      "references": [
+        "A person is holding a bottle that has medicine for the night time.",
+        "A bottle of medication has a white twist top.",
+        "night time medication bottle being held by someone",
+        "a person holding a small black bottle of NIGHT TIME",
+        "A bottle of what appears to be cough syrup held in hand."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000002.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a book cover.\n2.  **Identify key details:**\n    *   There's a library sticker on the top left with due dates.\n    *   The title is partially visible: \"forgotten years\" (or similar, looks like \"forg years\" or \"dog years\" - actually, looking closer at the bottom, it says \"forgotten years\" but the \"got\" is cut off, and \"years\" is clear. Wait, let me re-examine. The letters visible are",
+      "references": [
+        "a white paper showing an image of black and brown dog",
+        "A library book with pictures of two dogs on the cover on a wooden table.",
+        "A book with a black and a tan dog walking down a snowy street.",
+        "The book cover shows two dogs in the snow",
+        "A book cover title Dog Years with an image of a black and brown dog walking up the street, on the left side it has a due date sticker from a library."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000003.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subjects:** There are two small boxes of medication.\n2.  **Identify the setting:** They are placed on a wooden surface (likely a table).\n3.  **Identify the specific items (optional but helpful for detail):**\n    *   Left box: White with a red top, labeled \"PRED FORTE 1.0%\".\n    *   Right box: Blue, labeled \"Omni-Sorb\".\n4.  **Drafting the sentence:**\n    *   *Draft 1:*",
+      "references": [
+        "A white box is to the left of a blue box on a wooden table.",
+        "A small rectangular red and white box next to a small rectangular blue box on a wooden surface.",
+        "two boxes of  medicine, one white and red and the other blue sitting on a table",
+        "Two boxes that appear to contain medication or eye drops",
+        "Two boxes of pharmaceutical products left in a table"
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000004.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a computer screen showing a software error message.\n2.  **Identify the software:** The logo says \"ZoomText\" and the text below says \"Magnifier/Reader\". The version is 9.1.\n3.  **Identify the error message:** A blue dialog box is overlaying the screen. It says \"Item is using a standard VGA display driver, which is not supported by ZoomText. Please use the Hardware Update to change to the driver supplied with your display adapter, then reinstall Zoom",
+      "references": [
+        "close up of a computer monitor that is powered on.",
+        "A monitor has a message displayed on it.",
+        "Pictured here is a screenshot that shows an error message from an app.",
+        "Computer screen displaying an error saying the display driver is not supported by Zoom Text.",
+        "a screenshot of someone's monitor that is having issues"
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000005.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a computer screen.\n2.  **Identify the content on the screen:** It shows the Windows 7 setup screen.\n3.  **Identify specific details:**\n    *   The text \"Windows 7 Home Premium\" is visible.\n    *   There are input fields for \"User name\" and \"Computer name\".\n    *   The Dell logo is visible at the bottom of the setup window.\n    *   The background is the classic blue Windows 7 wallpaper.\n    *",
+      "references": [
+        "a DELL laptop computer screen  showing window 7 home premium",
+        "A computer screen with a windows dialogue box containing the login.",
+        "Computer screen showing a Windows 7 home premium window with a Dell logo on it.",
+        "A dell laptop with windows 7 home screen.",
+        "window screen of dell desktop or laptop showed box of windows 7"
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000007.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a close-up, blurry photo of a computer screen.\n2.  **Identify specific details:**\n    *   There's text visible but out of focus. I can make out \"Micros\" (likely Microsoft) and \"NEWELL-PACKARD\" at the bottom.\n    *   There are two vertical objects, possibly pens or styluses, one red and one blue.\n    *   There are lens flares/glare reflecting light.\n    *   The image is very out of focus",
+      "references": [
+        "A close-up of a package of a computer-related item.",
+        "A device with Microsoft and Hewlett Packard logos, but too blurry to tell what it is"
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000008.jpg",
+      "prediction": "The user wants a short sentence description of the image.\n\n1.  **Identify the main subject:** The most prominent object is a white, rectangular item, likely a bottle or container, lying on a wooden surface.\n2.  **Identify the background/context:** To the right, there's a dark area (possibly a person's clothing or shadow) and a bright, blurry light source on the far right. The surface looks like wood.\n3.  **Note the quality:** The image is blurry, grainy, and has a yellowish tint, suggesting low light or a flash.\n4.  **",
+      "references": [
+        "A bottle of lotion on the table in front of someone sitting down wearing shorts.",
+        "A small bottle of lotion on a table above a person's lap."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000009.jpg",
+      "prediction": "The user wants a short sentence describing the image.\n\n1.  **Identify the main subject:** The image shows the interior of a public transit vehicle, likely a bus or train.\n2.  **Identify key elements:**\n    *   There's a grab handle (vertical and horizontal).\n    *   There's a speaker grille on the ceiling.\n    *   There's a sign above the window.\n    *   The sign has text in English and Spanish.\n    *   The text says \"You are required to give up seats below to passengers using...\" and \"C\u00e9dale el asiento a",
+      "references": [
+        "The interior of a bus has a horizontal bar near the ceiling for passengers to hold on to and behind it there is a sign regarding handicapped passengers.",
+        "A curving metal handrail with a horizontal cross piece about a foot from the bus' ceiling is directly in front of the handicap exit.",
+        "The overhead handrails on a bus in the city are shown with a building right outside the window below them.",
+        "A vehicle has a window and a gray bar.",
+        "A gray frame around a window that indicates seating for disabled people."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000010.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** A large building with a prominent billboard.\n2.  **Identify key details on the billboard:** It features a portrait of a man (Mustafa Kemal Atat\u00fcrk) and the text \"ISTIKRAR S\u00dcRS\u00dcN\".\n3.  **Identify the setting:** It's an urban street scene with trees in the foreground, other buildings in the background, and a blue sky with clouds. There are flags on the left.\n4.  **Synthesize into a sentence:** A large building with a billboard featuring",
+      "references": [
+        "A view of a building with a picture of a man on it with a couple big trees in front of it.",
+        "SKY VIEW SNAPSHOT OF TREES IN FRONT OF A GIANT BILLBOARD.",
+        "view of trees and a nearby sign promoting Istikrar Sursun",
+        "downtown photo of several buildings, trees people and automobiles",
+        "White building with a brick colored roof and a sign that reads 'istikrarsursun'"
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000011.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a sanitary pad.\n2.  **Identify the setting/background:** It's lying on a dark, wooden surface (likely a table).\n3.  **Identify other details:** There's a glimpse of blue fabric (maybe jeans or pants) at the very bottom.\n4.  **Synthesize into a sentence:** A white sanitary pad is lying on a dark wooden table.\n\nRefining for brevity and accuracy:\n- \"A close-up shot of a white sanitary pad lying on a dark",
+      "references": [
+        "A white object with elastic sides sitting on a wooden surface.",
+        "A baby diaper keep in the table shown by the image.",
+        "A opened up Diaper laying on a wooden surface.",
+        "Clean maxi Pad over a dark wooden surface."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000012.jpg",
+      "prediction": "The user wants a short sentence describing the image.\n\n1.  **Identify the main subject:** A hand holding a small white envelope or card.\n2.  **Identify key details:** The card has an orange stripe and text that reads \"ADDRESS SERVICE REQUESTED\" and \"IMPORTANT\". There is also a QR code visible.\n3.  **Identify the background:** A plain, light blue wall.\n4.  **Synthesize into a sentence:** A hand is holding a white envelope with an orange stripe and the text \"Address Service Requested\" against a blue wall.\n\nRefining for brevity",
+      "references": [
+        "appears to be a picture of prepaid card",
+        "Large orange and white label with a person's hand holding it.",
+        "Someone is holding a white envelope with an orange strip down the length of it.",
+        "The package contains information about the enclosed medication",
+        "Pictured is the top left corner of a parcel of mail."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000013.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a close-up, blurry photo of a screen or paper.\n2.  **Identify key elements:**\n    *   There's a bright, overexposed light reflection in the center.\n    *   In the bottom right, there's a blue curved shape (part of a logo or graphic).\n    *   There's a blurry object that looks like a fork or a pen tip near the blue shape.\n    *   In the bottom left, there are some blurry, dark letters or symbols.",
+      "references": [
+        "A white piece of paper with a blue emblem off to the side."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000014.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Analyze the image:** The image is extremely overexposed. It is almost entirely white. There are faint, blurry hints of color on the left edge (brownish/orange tones) and a small, dark, blurry shape in the lower-left quadrant. It looks like a blown-out photo, possibly of a person or an object, but the details are completely lost due to the brightness.\n\n2.  **Identify key features:**\n    *   Dominant color: White.\n    *   Condition: Overexposed, blown out.\n",
+      "references": [
+        "A bright blinding light is obstructing all view"
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000015.jpg",
+      "prediction": "The user wants a short sentence describing the image.\n\n1.  **Identify the main subjects:** There are two educational electronic devices in their packaging.\n2.  **Identify the specific items:**\n    *   Top item: A red package labeled \"Spell Corrector & Puzzle Solver\".\n    *   Bottom item: A green and blue package labeled \"Speaking Children's Dictionary\".\n3.  **Identify the setting:** They are sitting on a wooden surface (likely a table).\n4.  **Synthesize into a sentence:** Two Franklin Educational electronic learning tools, a spell corrector and a children's",
+      "references": [
+        "A set of hand held electronic children's learning devices, one for puzzles and a dictionary.",
+        "Two packages with children's calculators in them are on the wooden table.",
+        "two kids learning toys still in package laying on a table",
+        "Two electronic learning toys for children, both in plastic packaging."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000016.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** The most prominent object is a blurry, pinkish finger in the foreground.\n2.  **Identify the background:** Behind the finger, there's a white surface (likely a wall or table) and a dark object, possibly a box or container, with some yellowish contents visible at the bottom.\n3.  **Assess the quality:** The image is very blurry and out of focus, likely due to the finger being too close to the lens.\n4.  **Synthesize the description:** A blurry finger",
+      "references": [
+        "A picture of what appears to be some kind of food label.",
+        "Obstructed view of some type of microwavable or frozen food",
+        "Package of frozen food on top of a white surface.",
+        "Some package food, looks like some kind of meat or pasta."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000017.jpg",
+      "prediction": "The user wants a short sentence describing the image.\n\n1.  **Identify the main subject:** It's a computer CD/DVD.\n2.  **Identify specific details:** The label says \"Windows 7 Ultimate\". It's resting on a white paper sleeve or card.\n3.  **Identify the background:** It's on a dark, speckled surface (likely a countertop) with a glimpse of tiled floor and a person's legs/shoes at the bottom.\n4.  **Synthesize into a sentence:** A Windows 7 Ultimate installation disc is lying on a white paper sleeve on",
+      "references": [
+        "an image of a windows seven disk plate on the floor",
+        "A Windows 7 Ultimate Edition CD on a black counter top.",
+        "Windows 7 ultimate DVD and 64-bit software disc",
+        "Human stand beside table and CD titles windows 7",
+        "I see a disk for Windows 7 Ultimate."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000018.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a laptop computer.\n2.  **Identify the state:** The screen is on, showing a black background with white text, which looks like a BIOS or POST (Power-On Self-Test) screen.\n3.  **Identify specific details:** I can see parts of the keyboard (F-keys, number row, letter row) and the screen bezel. The text on the screen mentions \"Disk\", \"PBBDC60N\", \"A.R.T. Capable and Status OK\", and",
+      "references": [
+        "A laptop screen with system dialog on the screen,",
+        "The corner of a black computer with type of the screen and white type on the keyboard.",
+        "Partial view of laptop showing upper right portion of keyboard starting with F8 key all the way to the delete key and the screen is the right hand portion showing approximately half of the screen.",
+        "A black laptop with the computer's specs on the screen.",
+        "Part of the keyboard and screen on a laptop."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000019.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's the bottom of a black laptop.\n2.  **Identify key details:**\n    *   There's a sticker with text.\n    *   The text is upside down relative to the camera angle.\n    *   I can read \"DELL\", \"INSPIRON 1545\", \"Model No: PP41L\", and power input specs.\n    *   The surface is textured plastic.\n    *   There are screw holes visible.\n\n3.  **Drafting",
+      "references": [
+        "The underside of a Dell Inspiron laptop showing the device label including the text \"Inspiron 1545\".",
+        "A black substance  that has letters of the commodity.",
+        "The back of a Dell laptop which shows the label and serial number.",
+        "A Dell computer number and information on the side of a computer tower.",
+        "Part of a laptop's specs and barcode are shown on stickers attached to the back of the laptop."
+      ]
+    },
+    {
+      "image": "/export/home/group08/VizWiz-Captions/images/val/VizWiz_val_00000020.jpg",
+      "prediction": "The user wants a short description of the image.\n\n1.  **Identify the main subject:** It's a food counter or kiosk, likely in a mall or public building.\n2.  **Identify key details:**\n    *   There's a sign above the counter. It looks like it says \"KETCHUP\" or something similar, but it's blurry. Wait, looking closer at the blue sign, it has a logo and text. The orange sign below it says \"KETCHUP\".\n    *   There are lights on the counter (blue and red).\n    *   There's a",
+      "references": [
+        "point of sale food or deli possibly inside of the mall or other retail outlet.",
+        "GLOOMY SNAPSHOT OF A SNACK BAR SITE",
+        "Some small mall food court restaurant is shown with two workers behind the counter and no one in line.",
+        "The entrance of a restaurant with a lighted sign above a counter.",
+        "An image of a fast food restaurant like one seen in a mall."
+      ]
+    }
+  ]
+}
