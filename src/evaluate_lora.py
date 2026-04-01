@@ -57,6 +57,7 @@ def evaluate_lora(
 
     all_predictions: list[str] = []
     all_references: list[list[str]] = []
+    all_image_paths: list[str] = []
     total_time = 0.0
 
     with torch.no_grad():
@@ -68,6 +69,7 @@ def evaluate_lora(
             total_time += time.perf_counter() - t0
 
             all_predictions.extend(captions)
+            all_image_paths.extend(batch["image_paths"])
 
             batch_start = batch_idx * test_loader.batch_size
             for i in range(len(captions)):
@@ -90,6 +92,20 @@ def evaluate_lora(
     )
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    import random as _rng
+
+    rng = _rng.Random(42)
+    indices = list(range(num_images))
+    rng.shuffle(indices)
+    samples = [
+        {
+            "image": Path(all_image_paths[i]).name,
+            "prediction": all_predictions[i],
+            "references": all_references[i],
+        }
+        for i in indices[:15]
+    ]
+
     results = {
         "model": f"LoRA({cfg.encoder.name}+{cfg.decoder.name})",
         "checkpoint": checkpoint_path,
@@ -97,6 +113,7 @@ def evaluate_lora(
         "num_images": num_images,
         "average_inference_time_per_image_ms": round(avg_ms, 6),
         "total_inference_time_s": round(total_time, 6),
+        "samples": samples,
     }
     results_file = out_dir / "eval_results.json"
     results_file.write_text(json.dumps(results, indent=2))

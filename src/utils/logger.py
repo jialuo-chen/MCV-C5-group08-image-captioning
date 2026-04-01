@@ -284,8 +284,14 @@ class ExperimentLogger:
     def log_inference(self, info: dict) -> None:
         self.data["inference"] = info
 
-    def log_test_eval(self, metrics: dict[str, float]) -> None:
+    def log_test_eval(
+        self,
+        metrics: dict[str, float],
+        samples: list[dict] | None = None,
+    ) -> None:
         self.data["test_eval"] = {k: round(float(v), 6) for k, v in metrics.items()}
+        if samples:
+            self.data["test_eval"]["samples"] = samples
 
     def save(self) -> Path:
         self.log_path.write_text(json.dumps(self.data, indent=2, default=_json_default))

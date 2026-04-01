@@ -291,8 +291,10 @@ def train_lora(cfg: Config) -> float:
         num_prefix_tokens=cfg.encoder.get("num_prefix_tokens", 0),
     )
     best_model.eval()
-    post_metrics = _run_evaluation(best_model, test_loader, device, max_gen_length)
-    exp_logger.log_test_eval(post_metrics)
+    post_metrics, post_samples = _run_evaluation(
+        best_model, test_loader, device, max_gen_length
+    )
+    exp_logger.log_test_eval(post_metrics, samples=post_samples)
     print(f"  {format_metrics(post_metrics)}")
     print("=" * 60)
 
@@ -315,16 +317,19 @@ def _run_evaluation(
     loader: DataLoader,
     device: torch.device,
     max_gen_length: int,
-) -> dict[str, float]:
-    """Run generation-only evaluation on a dataset (no loss computation)."""
+    num_samples: int = 15,
+) -> tuple[dict[str, float], list[dict]]:
+    """Run generation-only evaluation. Returns (metrics, sample_predictions)."""
     model.eval()
     all_predictions: list[str] = []
     all_references: list[list[str]] = []
+    all_image_paths: list[str] = []
 
     for batch_idx, batch in enumerate(tqdm(loader, desc="Evaluating on test set")):
         pixel_values = batch["pixel_values"].to(device)
         captions = model.generate(pixel_values, max_new_tokens=max_gen_length)
         all_predictions.extend(captions)
+        all_image_paths.extend(batch["image_paths"])
 
         dataset = loader.dataset
         batch_start = batch_idx * loader.batch_size
@@ -334,7 +339,20 @@ def _run_evaluation(
                 refs = dataset.get_all_captions(idx)
                 all_references.append(refs)
 
-    return compute_metrics(all_predictions, all_references)
+    metrics = compute_metrics(all_predictions, all_references)
+
+    rng = random.Random(42)
+    indices = list(range(len(all_predictions)))
+    rng.shuffle(indices)
+    samples = [
+        {
+            "image": Path(all_image_paths[i]).name,
+            "prediction": all_predictions[i],
+            "references": all_references[i],
+        }
+        for i in indices[:num_samples]
+    ]
+    return metrics, samples
 
 
 @torch.no_grad()
