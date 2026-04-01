@@ -284,26 +284,8 @@ class ExperimentLogger:
     def log_inference(self, info: dict) -> None:
         self.data["inference"] = info
 
-    def log_pre_finetune_eval(self, metrics: dict[str, float]) -> None:
-        self.data["pre_finetune_eval"] = {
-            k: round(float(v), 6) for k, v in metrics.items()
-        }
-
-    def log_post_finetune_eval(self, metrics: dict[str, float]) -> None:
-        self.data["post_finetune_eval"] = {
-            k: round(float(v), 6) for k, v in metrics.items()
-        }
-
-    def log_finetune_deltas(
-        self,
-        pre_metrics: dict[str, float],
-        post_metrics: dict[str, float],
-    ) -> None:
-        deltas: dict[str, float] = {}
-        for key in pre_metrics:
-            if key in post_metrics:
-                deltas[key] = round(float(post_metrics[key]) - float(pre_metrics[key]), 6)
-        self.data["finetune_deltas"] = deltas
+    def log_test_eval(self, metrics: dict[str, float]) -> None:
+        self.data["test_eval"] = {k: round(float(v), 6) for k, v in metrics.items()}
 
     def save(self) -> Path:
         self.log_path.write_text(json.dumps(self.data, indent=2, default=_json_default))

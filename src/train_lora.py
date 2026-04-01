@@ -159,15 +159,6 @@ def train_lora(cfg: Config) -> float:
     max_gen_length = cfg.inference.get("max_length", 128)
     exp_logger.start_training()
 
-    # --- Pre-fine-tuning evaluation on the VizWiz test set ---
-    print("\n" + "=" * 60)
-    print("PRE-FINETUNE EVALUATION (VizWiz test set)")
-    print("=" * 60)
-    pre_metrics = _run_evaluation(model, test_loader, device, max_gen_length)
-    exp_logger.log_pre_finetune_eval(pre_metrics)
-    print(f"  {format_metrics(pre_metrics)}")
-    print("=" * 60 + "\n")
-
     for epoch in range(cfg.training.epochs):
         exp_logger.start_epoch()
         model.train()
@@ -294,20 +285,10 @@ def train_lora(cfg: Config) -> float:
     )
     best_model.eval()
     post_metrics = _run_evaluation(best_model, test_loader, device, max_gen_length)
-    exp_logger.log_post_finetune_eval(post_metrics)
+    exp_logger.log_test_eval(post_metrics)
     print(f"  {format_metrics(post_metrics)}")
     print("=" * 60)
 
-    # --- Compute and log deltas ---
-    exp_logger.log_finetune_deltas(pre_metrics, post_metrics)
-    print("\nFINE-TUNING DELTAS (post - pre):")
-    for key in pre_metrics:
-        if key in post_metrics:
-            delta = post_metrics[key] - pre_metrics[key]
-            sign = "+" if delta >= 0 else ""
-            print(f"  {key}: {sign}{delta * 100:.2f}%")
-
-    # Clean up the reloaded model to free memory
     del best_model
     torch.cuda.empty_cache()
 
