@@ -64,8 +64,13 @@ def train_lora(cfg: Config) -> float:
     encoder_id = cfg.encoder.pretrained
     decoder_id = cfg.decoder.pretrained
     lora_cfg = cfg.get("lora", {})
+    proj_cfg = cfg.get("projection", {})
     print(f"Encoder: {encoder_id} (frozen)")
     print(f"Decoder: {decoder_id} + LoRA (r={lora_cfg.get('r', 16)})")
+    print(f"Projection: {proj_cfg.get('type', 'linear')}")
+
+    proj_type = proj_cfg.get("type", "linear")
+    proj_kwargs = {k: v for k, v in proj_cfg.items() if k != "type"}
 
     model = ViTQwenLoRA(
         encoder_id=encoder_id,
@@ -76,6 +81,8 @@ def train_lora(cfg: Config) -> float:
         lora_target=lora_cfg.get("target", "all"),
         encoder_checkpoint=cfg.encoder.get("checkpoint"),
         num_prefix_tokens=cfg.encoder.get("num_prefix_tokens", 0),
+        projection_type=proj_type,
+        projection_kwargs=proj_kwargs,
     )
     model = model.to(device)
 

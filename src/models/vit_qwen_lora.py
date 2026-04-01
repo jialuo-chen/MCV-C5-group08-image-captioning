@@ -14,6 +14,7 @@ Gated Attention layers + MLP (FFN) blocks.  LoRA target presets:
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import torch
@@ -26,6 +27,8 @@ from transformers import (
     AutoTokenizer,
     VisionEncoderDecoderModel,
 )
+
+from src.models.qformer import QFormerBridge
 
 # Qwen3.5 LoRA target presets — derived from inspecting nn.Linear modules
 # in Qwen/Qwen3.5-0.8B (same suffixes across 0.8B / 4B family variants).
@@ -76,6 +79,30 @@ def _resolve_lora_target_modules(lora_target: str) -> list[str]:
         valid = ", ".join(sorted(LORA_TARGETS.keys()))
         raise ValueError(f"Unknown lora target '{lora_target}'. Valid options: {valid}")
     return LORA_TARGETS[lora_target]
+
+
+def _build_projection(
+    projection_type: str,
+    encoder_dim: int,
+    decoder_dim: int,
+    **kwargs,
+) -> nn.Module:
+    if projection_type == "linear":
+        return nn.Linear(encoder_dim, decoder_dim)
+    elif projection_type == "qformer":
+        return QFormerBridge(
+            encoder_dim=encoder_dim,
+            decoder_dim=decoder_dim,
+            num_queries=kwargs.get("num_queries", 32),
+            num_layers=kwargs.get("num_layers", 2),
+            num_heads=kwargs.get("num_heads", 8),
+            ffn_dim=kwargs.get("ffn_dim", 2048),
+            dropout=kwargs.get("dropout", 0.1),
+        )
+    else:
+        raise ValueError(
+            f"Unknown projection type '{projection_type}'. Use 'linear' or 'qformer'."
+        )
 
 
 def _load_encoder_from_path(enc_path: str) -> nn.Module:
@@ -133,7 +160,9 @@ class ViTQwenLoRA(nn.Module):
         lora_dropout: float = 0.05,
         lora_target: str = "all",
         encoder_checkpoint: str | None = None,
-        num_prefix_tokens: int = 0,  # 0 means use all patch tokens
+        num_prefix_tokens: int = 0,
+        projection_type: str = "linear",
+        projection_kwargs: dict | None = None,
     ) -> None:
         super().__init__()
 
@@ -174,7 +203,11 @@ class ViTQwenLoRA(nn.Module):
         self.decoder.print_trainable_parameters()
 
         dec_embed_dim: int = self.decoder.get_input_embeddings().weight.shape[1]
-        self.projection = nn.Linear(self.encoder_dim, dec_embed_dim)
+        self.projection_type = projection_type
+        self.projection_kwargs = projection_kwargs or {}
+        self.projection = _build_projection(
+            projection_type, self.encoder_dim, dec_embed_dim, **self.projection_kwargs
+        )
 
     def _encode_images(self, pixel_values: torch.Tensor) -> torch.Tensor:
         """Extract ViT patch tokens.  Returns ``(batch, num_patches, encoder_dim)``."""
@@ -202,9 +235,7 @@ class ViTQwenLoRA(nn.Module):
         labels : ``(batch, seq_len)`` — same as input_ids with ``-100`` for padding.
         """
         vit_features = self._encode_images(pixel_values)  # (B, P, enc_dim)
-        vit_projected = self.projection(
-            vit_features.to(self.projection.weight.dtype)
-        )  # (B, P, dec_dim)
+        vit_projected = self._project_features(vit_features)  # (B, N, dec_dim)
 
         caption_embeds = self.decoder.get_input_embeddings()(input_ids)  # (B, S, dec_dim)
         inputs_embeds = torch.cat(
@@ -247,7 +278,7 @@ class ViTQwenLoRA(nn.Module):
     ) -> list[str]:
         """Generate captions for a batch of images."""
         vit_features = self._encode_images(pixel_values)
-        vit_projected = self.projection(vit_features.to(self.projection.weight.dtype))
+        vit_projected = self._project_features(vit_features)
 
         batch = pixel_values.size(0)
         prefix_len = vit_projected.size(1)
@@ -275,6 +306,10 @@ class ViTQwenLoRA(nn.Module):
         )
         return self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)
 
+    def _project_features(self, vit_features: torch.Tensor) -> torch.Tensor:
+        proj_dtype = next(self.projection.parameters()).dtype
+        return self.projection(vit_features.to(proj_dtype))
+
     def save_checkpoint(self, save_dir: str) -> None:
         """Save LoRA adapter + projection weights."""
         save_path = Path(save_dir)
@@ -285,6 +320,8 @@ class ViTQwenLoRA(nn.Module):
         )
         self.tokenizer.save_pretrained(save_path / "lora_adapter")
         torch.save(self.projection.state_dict(), save_path / "projection.pt")
+        meta = {"type": self.projection_type, **self.projection_kwargs}
+        (save_path / "projection_meta.json").write_text(json.dumps(meta))
 
     @classmethod
     def load_checkpoint(
@@ -328,7 +365,21 @@ class ViTQwenLoRA(nn.Module):
         model.save_embedding_layers = _requires_embedding_layer_save(model.target_modules)
 
         dec_embed_dim = model.decoder.get_input_embeddings().weight.shape[1]
-        model.projection = nn.Linear(model.encoder_dim, dec_embed_dim)
+
+        meta_path = save_path / "projection_meta.json"
+        if meta_path.exists():
+            meta = json.loads(meta_path.read_text())
+            proj_type = meta.pop("type", "linear")
+            proj_kwargs = meta
+        else:
+            proj_type = "linear"
+            proj_kwargs = {}
+
+        model.projection_type = proj_type
+        model.projection_kwargs = proj_kwargs
+        model.projection = _build_projection(
+            proj_type, model.encoder_dim, dec_embed_dim, **proj_kwargs
+        )
         model.projection.load_state_dict(
             torch.load(
                 save_path / "projection.pt", map_location=device, weights_only=True

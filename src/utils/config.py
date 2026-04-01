@@ -81,6 +81,14 @@ DEFAULTS: dict[str, Any] = {
         "dropout": 0.05,
         "target": "all",  # "all" | "linear" | "attention"
     },
+    "projection": {
+        "type": "linear",  # "linear" | "qformer"
+        "num_queries": 32,
+        "num_layers": 2,
+        "num_heads": 8,
+        "ffn_dim": 2048,
+        "dropout": 0.1,
+    },
     "multimodal": {
         "prompt": "Describe this image briefly.",
         "max_new_tokens": 128,
