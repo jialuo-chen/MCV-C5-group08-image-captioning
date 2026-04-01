@@ -1,0 +1,13 @@
+{
+  "model": "LoRA(vit-base+qwen3.5-0.8b)",
+  "checkpoint": "outputs/lora-vit-qwen-0.8b/checkpoints/target_linear",
+  "metrics": {
+    "bleu1": 0.16258375703932074,
+    "bleu2": 0.0983311612183734,
+    "rougeL": 0.2054448877556393,
+    "meteor": 0.25750609010287523
+  },
+  "num_images": 7542,
+  "average_inference_time_per_image_ms": 138.174444,
+  "total_inference_time_s": 1042.111659
+}
