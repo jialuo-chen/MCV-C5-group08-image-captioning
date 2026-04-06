@@ -308,17 +308,25 @@ class VizWizVisionDataset(Dataset):
         else:
             caption_text = item["captions"][0]
 
-        encoding = self.tokenizer(
-            caption_text,
-            max_length=self.max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt",
+        # Tokenize + append EOS so the model learns when to stop generating.
+        # Qwen3.5 tokenizer has add_eos_token=False by default.
+        token_ids = self.tokenizer.encode(caption_text, add_special_tokens=False)
+        token_ids.append(self.tokenizer.eos_token_id)
+        token_ids = token_ids[: self.max_length]
+
+        # RIGHT-pad: caption tokens first, then padding.  This is critical
+        # because the visual prefix is prepended in the model's forward().
+        # With right-padding the last visual token directly precedes the first
+        # caption token — matching generation where there is no padding.
+        pad_len = self.max_length - len(token_ids)
+        input_ids = torch.tensor(
+            token_ids + [self.tokenizer.pad_token_id] * pad_len, dtype=torch.long
         )
-        input_ids = encoding.input_ids.squeeze(0)
-        attention_mask = encoding.attention_mask.squeeze(0)
+        attention_mask = torch.tensor(
+            [1] * len(token_ids) + [0] * pad_len, dtype=torch.long
+        )
         labels = input_ids.clone()
-        labels[labels == self.tokenizer.pad_token_id] = -100
+        labels[attention_mask == 0] = -100
 
         return {
             "pixel_values": pixel_values,

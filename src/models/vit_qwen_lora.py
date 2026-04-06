@@ -38,6 +38,14 @@ _ATTENTION_TARGETS: list[str] = [
     "k_proj",
     "v_proj",
     "o_proj",
+]
+_ALL_ATTENTION_TARGETS: list[str] = [
+    # All attention layers, including GatedDeltaNet (layers.*.linear_attn)
+    # Standard self-attention (layers.*.self_attn)
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
     # GatedDeltaNet linear attention (layers.*.linear_attn)
     "in_proj_qkv",
     "in_proj_z",
@@ -51,14 +59,17 @@ _LINEAR_TARGETS: list[str] = [
     "gate_proj",
     "up_proj",
     "down_proj",
-    # Output head
-    # "lm_head",
 ]
 
+_LINEAR_AND_HEAD_TARGETS: list[str] = _LINEAR_TARGETS + ["lm_head"]
+
 LORA_TARGETS: dict[str, list[str]] = {
-    "all": sorted({*_ATTENTION_TARGETS, *_LINEAR_TARGETS}),
+    "all": sorted({*_ALL_ATTENTION_TARGETS, *_LINEAR_TARGETS}),
+    "all_and_head": sorted({*_ALL_ATTENTION_TARGETS, *_LINEAR_AND_HEAD_TARGETS}),
     "linear": _LINEAR_TARGETS,
     "attention": _ATTENTION_TARGETS,
+    "full_attention": _ALL_ATTENTION_TARGETS,  # for ablation
+    "linear_and_head": _LINEAR_AND_HEAD_TARGETS,
 }
 
 
@@ -283,18 +294,16 @@ class ViTQwenLoRA(nn.Module):
         batch = pixel_values.size(0)
         prefix_len = vit_projected.size(1)
 
-        bos_id = self.tokenizer.bos_token_id or self.tokenizer.eos_token_id
-        start_ids = torch.full(
-            (batch, 1), bos_id, dtype=torch.long, device=pixel_values.device
-        )
-        start_embeds = self.decoder.get_input_embeddings()(start_ids)
-        inputs_embeds = torch.cat([vit_projected, start_embeds], dim=1)
-        # Keep decoder inputs in the same dtype as decoder embeddings (e.g. bf16).
-        inputs_embeds = inputs_embeds.to(start_embeds.dtype)
-
+        inputs_embeds = vit_projected.to(self.decoder.get_input_embeddings().weight.dtype)
         attention_mask = torch.ones(
-            (batch, prefix_len + 1), dtype=torch.long, device=pixel_values.device
+            (batch, prefix_len), dtype=torch.long, device=pixel_values.device
         )
+
+        # Apply sensible defaults; callers can override via generate_kwargs.
+        gen_defaults = {
+            "repetition_penalty": 1.2,
+        }
+        gen_defaults.update(generate_kwargs)
 
         output_ids = self.decoder.generate(
             inputs_embeds=inputs_embeds,
@@ -302,7 +311,7 @@ class ViTQwenLoRA(nn.Module):
             max_new_tokens=max_new_tokens,
             pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
-            **generate_kwargs,
+            **gen_defaults,
         )
         return self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)
 

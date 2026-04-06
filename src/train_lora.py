@@ -28,12 +28,13 @@ def _build_optimizer(cfg: Config, params) -> torch.optim.Optimizer:
     name = cfg.training.optimizer.lower()
     lr = cfg.training.lr
     wd = cfg.training.get("weight_decay", 0.0)
+    mo = cfg.training.get("momentum", 0.9)
     if name == "adam":
         return torch.optim.Adam(params, lr=lr, weight_decay=wd)
     elif name == "adamw":
         return torch.optim.AdamW(params, lr=lr, weight_decay=wd)
     elif name == "sgd":
-        return torch.optim.SGD(params, lr=lr, weight_decay=wd, momentum=0.9)
+        return torch.optim.SGD(params, lr=lr, weight_decay=wd, momentum=mo)
     raise ValueError(f"Unknown optimizer: {name}")
 
 
@@ -47,14 +48,28 @@ def _build_scheduler(cfg: Config, optimizer):
             optimizer, T_max=cfg.training.epochs, **params
         )
     elif sched == "step":
-        return torch.optim.lr_scheduler.StepLR(optimizer, **params)
+        return torch.optim.lr_scheduler.StepLR(
+            optimizer, step_size=cfg.training.get("step_size", 2), **params
+        )
+    elif sched == "plateau":
+        return torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="max", factor=0.5, patience=2, **params
+        )
+    elif sched == "none":
+        return None
     raise ValueError(f"Unknown scheduler: {sched}")
 
 
-def train_lora(cfg: Config) -> float:
+def train_lora(cfg: Config, epoch_callback=None) -> float:
     """Fine-tune a Qwen3.5 decoder with LoRA on VizWiz.
 
     Returns the best METEOR score achieved during training.
+
+    Parameters
+    ----------
+    epoch_callback : callable | None
+        Called after each epoch as ``epoch_callback(metric_value, epoch)``.
+        If it returns ``True`` the training loop stops (used by Optuna pruning).
     """
     device = torch.device(cfg.device)
     print(f"Device: {device}")
@@ -76,7 +91,7 @@ def train_lora(cfg: Config) -> float:
         encoder_id=encoder_id,
         decoder_id=decoder_id,
         lora_r=lora_cfg.get("r", 16),
-        lora_alpha=lora_cfg.get("alpha", 32),
+        lora_alpha=lora_cfg.get("r", 16) * lora_cfg.get("alpha", 32),
         lora_dropout=lora_cfg.get("dropout", 0.05),
         lora_target=lora_cfg.get("target", "all"),
         encoder_checkpoint=cfg.encoder.get("checkpoint"),
@@ -270,6 +285,12 @@ def train_lora(cfg: Config) -> float:
             patience_counter = 0
         else:
             patience_counter += 1
+
+        if epoch_callback is not None:
+            should_stop = epoch_callback(current_metric, epoch + 1)
+            if should_stop:
+                print(f"Trial pruned at epoch {epoch + 1}.")
+                break
 
         if patience and patience_counter >= patience:
             print(f"Early stopping after {patience} epochs without improvement.")
