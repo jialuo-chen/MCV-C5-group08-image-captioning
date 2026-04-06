@@ -102,6 +102,10 @@ def evaluate_multimodal(
         all_references.extend(batch_refs)
         all_image_paths.extend(batch_paths)
 
+        # Print first prediction so we can verify output quality early.
+        if len(all_predictions) == len(captions):
+            print(f"\n[Sample prediction] {captions[0][:200]}")
+
     metrics = compute_metrics(all_predictions, all_references)
     num_images = len(all_predictions)
     avg_ms = (total_time / num_images * 1000.0) if num_images else 0.0
