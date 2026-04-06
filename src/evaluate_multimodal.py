@@ -102,9 +102,19 @@ def evaluate_multimodal(
         all_references.extend(batch_refs)
         all_image_paths.extend(batch_paths)
 
-        # Print first prediction so we can verify output quality early.
+        # Print first 3 predictions so we can verify output quality early.
         if len(all_predictions) == len(captions):
-            print(f"\n[Sample prediction] {captions[0][:200]}")
+            print("\n" + "=" * 60)
+            print("FIRST BATCH — verifying output quality")
+            print("=" * 60)
+            for i, cap in enumerate(captions[:3]):
+                print(f"  [{i+1}] {cap[:250]}")
+            if enable_thinking:
+                print("-" * 60)
+                print("Thinking is ON — predictions above should be clean captions,")
+                print("NOT reasoning chains. If you see 'The user wants...' or")
+                print("numbered steps, the thinking was NOT stripped correctly.")
+            print("=" * 60)
 
     metrics = compute_metrics(all_predictions, all_references)
     num_images = len(all_predictions)

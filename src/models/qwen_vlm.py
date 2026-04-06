@@ -167,11 +167,20 @@ class QwenVLMCaptioner:
             pad_token_id=self._pad_token_id,
         )
         generated = output_ids[:, inputs["input_ids"].shape[1] :]
-        captions = self.processor.batch_decode(generated, skip_special_tokens=True)
 
-        # When thinking is enabled, strip <think>...</think> blocks so only
-        # the final answer is returned as the caption.
         if self.enable_thinking:
-            captions = [_THINK_RE.sub("", c).strip() for c in captions]
+            # Decode preserving special tokens so <think>...</think> tags
+            # are visible, then extract only the final answer after </think>.
+            raw = self.processor.batch_decode(generated, skip_special_tokens=False)
+            captions = []
+            for text in raw:
+                if "</think>" in text:
+                    text = text.split("</think>", 1)[1]
+                text = _THINK_RE.sub("", text)
+                for tok in self.processor.tokenizer.all_special_tokens:
+                    text = text.replace(tok, "")
+                captions.append(text.strip())
+        else:
+            captions = self.processor.batch_decode(generated, skip_special_tokens=True)
 
         return captions
