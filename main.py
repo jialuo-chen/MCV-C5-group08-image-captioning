@@ -117,9 +117,12 @@ def cmd_finetune(args: argparse.Namespace) -> None:
 
 def cmd_evaluate_multimodal(args: argparse.Namespace) -> None:
     cfg = load_config(args.config, overrides=args.override)
+    model_name = args.model or cfg.get("multimodal", {}).get("model")
+    if not model_name:
+        raise ValueError("Model must be specified via --model or multimodal.model in config.")
     evaluate_multimodal(
         cfg,
-        model_name=args.model,
+        model_name=model_name,
         output_dir=args.output_dir,
         prompt=getattr(args, "prompt", None),
     )
@@ -257,8 +260,8 @@ def main() -> None:
     p_eval_mm.add_argument(
         "--model",
         type=str,
-        required=True,
-        help="HuggingFace multimodal model id (e.g. Qwen/Qwen3.5-9B).",
+        default=None,
+        help="HuggingFace multimodal model id (e.g. Qwen/Qwen3.5-9B). Falls back to multimodal.model in config.",
     )
     p_eval_mm.add_argument(
         "--output-dir", type=str, default=None, help="Output directory for results."

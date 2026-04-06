@@ -6,17 +6,25 @@ vision and text inputs.  It must be loaded with
 maps to the text-only ``Qwen3_5ForCausalLM``).  The processor's
 ``apply_chat_template`` with ``tokenize=True, return_dict=True`` returns
 all required tensors (input_ids, pixel_values, image_grid_thw, etc.)
-ready for ``generate()``.  Thinking is disabled via
-``enable_thinking=False``.
+ready for ``generate()``.
+
+Thinking (chain-of-thought reasoning) can be toggled via the
+``enable_thinking`` flag.  When enabled, ``<think>…</think>`` blocks are
+stripped from the output so that only the final answer is used as the
+caption.
 """
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 import torch
 from PIL import Image
 from transformers import AutoProcessor, Qwen3_5ForConditionalGeneration
+
+# Regex to strip <think>...</think> blocks from model output.
+_THINK_RE = re.compile(r"<think>.*?</think>\s*", re.DOTALL)
 
 
 def _resolve_torch_dtype(value: Any):
@@ -56,10 +64,12 @@ class QwenVLMCaptioner:
         max_new_tokens: int = 128,
         torch_dtype=None,
         loader_kwargs: dict[str, Any] | None = None,
+        enable_thinking: bool = False,
     ) -> None:
         self.model_name = model_name
         self.prompt = prompt
         self.max_new_tokens = max_new_tokens
+        self.enable_thinking = enable_thinking
         self._dtype = _resolve_torch_dtype(torch_dtype)
         self._loader_kwargs = dict(loader_kwargs or {})
 
@@ -134,17 +144,14 @@ class QwenVLMCaptioner:
             for img in images
         ]
 
-        # Qwen3.5 ≥9B uses a processor that supports enable_thinking and
-        # processor_kwargs; smaller models (4B, 2B) use the qwen3_vl
-        # processor which needs padding passed directly.
         template_kwargs: dict[str, Any] = {
             "tokenize": True,
             "add_generation_prompt": True,
+            "enable_thinking": self.enable_thinking,
             "return_dict": True,
             "return_tensors": "pt",
         }
         if self._supports_thinking:
-            template_kwargs["enable_thinking"] = False
             template_kwargs["processor_kwargs"] = {"padding": True}
         else:
             template_kwargs["padding"] = True
@@ -161,4 +168,10 @@ class QwenVLMCaptioner:
         )
         generated = output_ids[:, inputs["input_ids"].shape[1] :]
         captions = self.processor.batch_decode(generated, skip_special_tokens=True)
+
+        # When thinking is enabled, strip <think>...</think> blocks so only
+        # the final answer is returned as the caption.
+        if self.enable_thinking:
+            captions = [_THINK_RE.sub("", c).strip() for c in captions]
+
         return captions

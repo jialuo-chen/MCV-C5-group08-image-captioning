@@ -55,6 +55,7 @@ def evaluate_multimodal(
     mm_cfg = cfg.get("multimodal", {})
     loader_kwargs = mm_cfg.get("loader", {})
     torch_dtype = mm_cfg.get("torch_dtype", None)
+    enable_thinking = mm_cfg.get("enable_thinking", False)
     batch_size = cfg.training.get("batch_size", 4)
     num_workers = cfg.training.get("num_workers", 4)
 
@@ -75,7 +76,7 @@ def evaluate_multimodal(
     )
 
     print(f"Test set: {len(test_ds)} images  |  batch_size={batch_size}")
-    print(f'Model: {model_name}  |  prompt: "{prompt}"')
+    print(f'Model: {model_name}  |  prompt: "{prompt}"  |  thinking: {enable_thinking}')
 
     captioner = QwenVLMCaptioner(
         model_name=model_name,
@@ -84,6 +85,7 @@ def evaluate_multimodal(
         max_new_tokens=max_new_tokens,
         torch_dtype=torch_dtype,
         loader_kwargs=loader_kwargs,
+        enable_thinking=enable_thinking,
     )
 
     all_predictions: list[str] = []
@@ -117,6 +119,7 @@ def evaluate_multimodal(
     results = {
         "model": model_name,
         "prompt": prompt,
+        "enable_thinking": enable_thinking,
         "metrics": metrics,
         "num_images": num_images,
         "average_inference_time_per_image_ms": round(avg_ms, 6),

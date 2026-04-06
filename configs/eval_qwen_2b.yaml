@@ -1,0 +1,29 @@
+# Qwen3.5-2B evaluation — thinking disabled
+# Usage: python3 main.py evaluate-multimodal --config configs/eval_qwen_2b.yaml
+
+seed: 42
+device: cuda
+output_dir: outputs
+
+dataset:
+  root: /export/home/group08/VizWiz-Captions/images
+  train_ann: annotations/train.json
+  val_ann: annotations/val.json
+  train_img_dir: train
+  val_img_dir: val
+  ignore_rejected: true
+  ignore_precanned: true
+  val_split_ratio: 0.1
+
+training:
+  batch_size: 4
+  num_workers: 4
+
+inference:
+  max_length: 128
+
+multimodal:
+  model: /export/home/group08/miguel/models/Qwen3.5-2B
+  prompt: "Describe this image in a short sentence."
+  max_new_tokens: 128
+  enable_thinking: false
