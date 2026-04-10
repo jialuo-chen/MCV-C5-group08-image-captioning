@@ -1,0 +1,161 @@
+{
+  "model": "LoRA(vit-base+qwen3.5-2b)",
+  "checkpoint": "outputs/optuna_lora_qwen_2b/trials/optuna_trial_0027/checkpoints/best",
+  "metrics": {
+    "bleu1": 0.6791796772238045,
+    "bleu2": 0.4308646138798968,
+    "rougeL": 0.4430760331752507,
+    "meteor": 0.41967403458569197
+  },
+  "num_images": 7542,
+  "average_inference_time_per_image_ms": 11.118622,
+  "total_inference_time_s": 83.856646,
+  "samples": [
+    {
+      "image": "VizWiz_val_00000475.jpg",
+      "prediction": "A computer monitor is on a desk with the screen turned off.",
+      "references": [
+        "A Dell brand black computer monitor with white windows on the screen.",
+        "A Dell computer screen with a screen shot that has a list of dates at the bottom.",
+        "The screen is displaying multiple dates on the screen of a computer.",
+        "The display of a Dell computer shows a screen malfunction.",
+        "An internet window turned sideways on a Dell monitor"
+      ]
+    },
+    {
+      "image": "VizWiz_val_00000655.jpg",
+      "prediction": "A blue piece of paper with some black writing on it.",
+      "references": [
+        "A piece of paper has some words printed on it.",
+        "a white page with black text printed on it",
+        "typed out letters on a white piece of paper.",
+        "five lines written on a white page and the writing is unclear."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00006752.jpg",
+      "prediction": "A computer keyboard is on a black table.",
+      "references": [
+        "a shiny keyboard and cable on a black surface",
+        "An apple wireless keyboard on a black surface.",
+        "A small Apple keyboard with white keys and metallic backsplash.",
+        "A wireless keyboard on a smooth desk near a single cable",
+        "A silver apple keyboard on a black background"
+      ]
+    },
+    {
+      "image": "VizWiz_val_00001532.jpg",
+      "prediction": "A person holding a picture of George Washington.",
+      "references": [
+        "A hand holds up the face of a piece of American currency.",
+        "Abraham Lincoln as seen on a five dollar bill - only the portrait visible.",
+        "A picture of someone holding a 5 dollar bill.",
+        "Abraham Lincoln pictured on a 5 dollar bill.",
+        "Currency with a photo of Abraham Lincoln held up to the camera."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00006487.jpg",
+      "prediction": "A white device with black and red buttons is on a carpet.",
+      "references": [
+        "A white extension cord is lying on the carpet floor, there are many different cables inside of the extension cord.",
+        "A white European style six outlet power strip with individual switches for each outlet and two outlets unused sits on an African style rug",
+        "White outlet cord with many wires plugged in and switches.",
+        "A white power strip with five plugins and switches beside each one that has a red USB and three black AC adapters plugged into it."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00005001.jpg",
+      "prediction": "A white sign with a blue logo and text in the middle.",
+      "references": [
+        "A label on a box reads the quantity and the item number.",
+        "A label for item NO:39653 QT: 1 set Made in China",
+        "An upside down image of a label on a white box.",
+        "A label on a box identified this set was made half way around the world.",
+        "The label on a white box listing the item number and quantity."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00002358.jpg",
+      "prediction": "A blurry image with a white background and some black spots.",
+      "references": [
+        "A brownish object sits around a bright white flash."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00007011.jpg",
+      "prediction": "A DVD case for a show called \"The Big Bang Theory\"",
+      "references": [
+        "the front cover of a DVD with a man in a white suit",
+        "A blue DVD with a man wearing yellow on a wooden flat surface.",
+        "A DVD cover has the image of a dancing man",
+        "A dark blue DVD box with a man in a yellow suit dancing on the front.",
+        "A case for a DVD sitting on a brown wooden surface."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00006521.jpg",
+      "prediction": "A box of frozen food that is being held in someone's hand.",
+      "references": [
+        "Red and yellow Barilla pasta box of whole grain penne pasta.",
+        "A partial image of a box that contains the words \"Barilla Whole Grain Penne\".",
+        "a person hand holding an orange package of barilla",
+        "A box of Barilla whole grain Penne is held up for the camera.",
+        "Box of Barilla brand whole grain penne pasta"
+      ]
+    },
+    {
+      "image": "VizWiz_val_00006800.jpg",
+      "prediction": "A black remote control for a TV is on the table.",
+      "references": [
+        "A close up of a JVC brand remote control.",
+        "Universal remote control for a home entertainment center sitting on a piece of wood.",
+        "An older, dusty, JVC remote with basic buttons."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00006584.jpg",
+      "prediction": "A silver laptop with a black keyboard and trackpad.",
+      "references": [
+        "Apple Mac laptop computer with black keyboard keys",
+        "Showing most of a keyboard from a computer.",
+        "Computer keyboard that starts at the number 5 in the upper left corner and ends in backspace in the upper right corner.",
+        "A beige computer keyboard with a white sticker on the top right side.",
+        "Most of an older keyboard from a laptop is a little dusty"
+      ]
+    },
+    {
+      "image": "VizWiz_val_00007401.jpg",
+      "prediction": "A black screen with nothing on it.",
+      "references": [
+        "Image is completely black and there are no items visible."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00003209.jpg",
+      "prediction": "A pink and white shoe with a heart on it.",
+      "references": [
+        "A pink brown and white coach handbag",
+        "A multi-colored bag on a table in a living room.",
+        "A circle shape pink, brown and white something with coach written on it and there's a different things behind it."
+      ]
+    },
+    {
+      "image": "VizWiz_val_00001618.jpg",
+      "prediction": "A grey piece of fabric with a dark blue line down the middle.",
+      "references": [
+        "A plain light grey piece of fabric that looks like a sheet.",
+        "A grayish bluish sheet is wrinkled  and speckled white"
+      ]
+    },
+    {
+      "image": "VizWiz_val_00000043.jpg",
+      "prediction": "A white wall with a brown door in the background.",
+      "references": [
+        "The back of a person who is wearing a white shirt",
+        "Someone facing away from the camera in a sitting position",
+        "an object that has black rectangles in it with a large square object above it"
+      ]
+    }
+  ]
+}

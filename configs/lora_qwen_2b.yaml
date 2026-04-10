@@ -1,0 +1,74 @@
+# ViT encoder (frozen) + Qwen3.5-2B decoder with LoRA (Task 4)
+# Usage: uv run python main.py finetune-lora --config configs/lora_qwen_2b.yaml
+
+run_name: lora-vit-qwen-2b
+seed: 42
+device: cuda
+output_dir: outputs
+
+encoder:
+  name: vit-base
+  pretrained: google/vit-base-patch16-224
+  freeze: true
+  feature_dim: 768
+  checkpoint: outputs/best_T1-2/best   # ← uncomment to use Task 2 fine-tuned ViT
+  num_prefix_tokens: 0    # 0 = use all patch tokens
+
+decoder:
+  name: qwen3.5-2b
+  pretrained: Qwen/Qwen3.5-2B # Qwen/Qwen3.5-2B
+
+tokenizer:
+  type: hf
+  max_length: 128
+
+attention:
+  enabled: false
+
+lora:
+  enabled: true
+  r: 16
+  alpha: 64
+  dropout: 0.1
+  target: linear            # "all" | "linear" | "attention"
+
+projection:
+  type: qformer
+  num_queries: 32 # BLIP-2 style default is 32, but for image captioning on VizWiz, 16 or even 8 might suffice
+  num_layers: 1
+  num_heads: 8
+  ffn_dim: 2048
+  dropout: 0.1
+
+dataset:
+  root: /data/113-2/users/jchen/VizWiz-Captions/images
+  train_ann: annotations/train.json
+  val_ann: annotations/val.json
+  train_img_dir: train
+  val_img_dir: val
+  ignore_rejected: true
+  ignore_precanned: true
+  val_split_ratio: 0.1
+
+training:
+  epochs: 20
+  batch_size: 64
+  lr: 0.0002
+  optimizer: adamw
+  weight_decay: 0.0
+  momentum: 0.9
+  scheduler: cosine
+  grad_clip: 1.0
+  mixed_precision: false
+  num_workers: 4
+  freeze_encoder: true
+  freeze_decoder: false
+  early_stopping_patience: 5
+  gradient_accumulation_steps: 4
+
+inference:
+  max_length: 128
+
+wandb:
+  enabled: false
+  project: c5-image-caption

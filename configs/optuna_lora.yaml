@@ -1,0 +1,79 @@
+# Optuna Hyperparameter Sweep for LoRA fine-tuning
+# Run with: uv run python main.py optuna-sweep --config configs/optuna_lora.yaml
+
+base_config: configs/lora_qwen_0.8b_qformer.yaml
+task: train_lora
+
+study_name: lora-optuna-qwen-0.8b-qformer
+n_trials: 30
+storage: null
+output_dir: outputs/optuna_lora_qwen_0.8b_qformer
+
+metric:
+  name: meteor
+  direction: maximize
+
+sampler:
+  name: tpe
+  seed: 42
+  n_startup_trials: 8
+
+pruner:
+  name: hyperband
+  min_resource: 2
+  max_resource: 10
+  reduction_factor: 3
+
+wandb:
+  enabled: false
+  project: c5-image-caption-optuna
+
+parameters:
+  training.lr:
+    type: log_float
+    low: 0.00001
+    high: 0.002
+  
+  tokenizer.max_length:
+    type: categorical
+    choices: [128, 256]
+
+  lora.r:
+    type: categorical
+    choices: [4, 8, 16, 32]
+
+  lora.alpha:
+    type: categorical
+    choices: [2, 4]
+
+  lora.target:
+    type: categorical
+    choices: [all, linear, attention, full_attention, linear_and_head, all_and_head]
+
+  training.optimizer:
+    type: categorical
+    choices: [adam, adamw, sgd]
+
+  training.weight_decay:
+    type: categorical
+    choices: [0.0, 0.0001, 0.001, 0.01, 0.1]
+  
+  training.scheduler:
+    type: categorical
+    choices: [none, cosine, step]
+  
+  projection.type:
+    type: categorical
+    choices: [qformer, linear]
+
+  projection.num_queries:
+    type: categorical
+    choices: [4, 8, 16, 32]
+
+  projection.num_layers:
+    type: categorical
+    choices: [1, 2]
+  
+  projection.ffn_dim:
+    type: categorical
+    choices: [1024, 2048]
