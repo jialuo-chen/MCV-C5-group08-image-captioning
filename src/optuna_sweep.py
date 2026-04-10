@@ -328,8 +328,11 @@ def _make_objective(
             cfg.wandb.project = wandb_cfg.get("project", "c5-image-caption-optuna")
             cfg.wandb["tags"] = [f"optuna-trial-{trial.number}"]
 
+        reported_intermediates: list[tuple[int, float]] = []
+
         def epoch_callback(metric_value: float, epoch: int) -> bool:
             trial.report(metric_value, step=epoch)
+            reported_intermediates.append((epoch, metric_value))
             return trial.should_prune()
 
         best_metric = train_fn(cfg, epoch_callback=epoch_callback)
@@ -337,9 +340,7 @@ def _make_objective(
         # Save params + metric for easy recovery on future crashes
         trial_dir = output_dir / "trials" / trial_name
         trial_dir.mkdir(parents=True, exist_ok=True)
-        intermediates = [
-            (step, val) for step, val in sorted(trial.intermediate_values.items())
-        ]
+        intermediates = sorted(reported_intermediates)
         with open(trial_dir / "optuna_params.json", "w") as f:
             json.dump(
                 {

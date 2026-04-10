@@ -99,7 +99,9 @@ class QwenVLMCaptioner:
         # Detect processor type: qwen3_5 supports enable_thinking/processor_kwargs,
         # qwen3_vl (used by 4B, 2B, 0.8B) does not.
         proc_cls = type(self.processor).__name__.lower()
-        self._supports_thinking = "qwen3_5" in proc_cls or "qwen3_5" in type(self.processor).__module__
+        self._supports_thinking = (
+            "qwen3_5" in proc_cls or "qwen3_5" in type(self.processor).__module__
+        )
 
         # Silence repeated "Setting pad_token_id to eos_token_id" warnings
         if self.processor.tokenizer.pad_token_id is None:
@@ -151,14 +153,11 @@ class QwenVLMCaptioner:
             "return_dict": True,
             "return_tensors": "pt",
         }
-        if self._supports_thinking:
-            template_kwargs["processor_kwargs"] = {"padding": True}
-        else:
-            template_kwargs["padding"] = True
+        template_kwargs["processor_kwargs"] = {"padding": True}
 
-        inputs = self.processor.apply_chat_template(
-            batch_messages, **template_kwargs
-        ).to(self._input_device)
+        inputs = self.processor.apply_chat_template(batch_messages, **template_kwargs).to(
+            self._input_device
+        )
 
         output_ids = self.model.generate(
             **inputs,
