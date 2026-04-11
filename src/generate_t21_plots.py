@@ -387,7 +387,7 @@ def plot_thinking_time_penalty(out_dir: Path) -> None:
     ax.set_xlabel("Inference Time (ms / image)")
     ax.set_title("Thinking Mode — Inference Time Penalty", pad=15)
     ax.invert_yaxis()
-    ax.legend(loc="lower right", fontsize=12)
+    ax.legend(loc="upper right", fontsize=12)
 
     # Time labels + multiplier badges
     for i, (bar_n, bar_y, mult) in enumerate(zip(bars_no, bars_yes, multipliers)):
