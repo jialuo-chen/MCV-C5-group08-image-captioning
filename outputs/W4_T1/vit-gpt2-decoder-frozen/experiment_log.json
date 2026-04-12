@@ -1,0 +1,3 @@
+He perdut el document però fent inferencia s'aconsegueixen els següents resultats:
+
+best_epoch=10 best_metrics=["bleu1": 0.06258, "bleu2": 0.033794, "rougeL": 0.081393, "meteor": 0.155032]
