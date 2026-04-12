@@ -36,10 +36,6 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 
-# ─────────────────────────────────────────────────────────────────────
-# Constants
-# ─────────────────────────────────────────────────────────────────────
-
 METRICS = ["bleu1", "bleu2", "rougeL", "meteor"]
 METRIC_LABELS = {
     "bleu1": "BLEU-1",
@@ -48,7 +44,6 @@ METRIC_LABELS = {
     "meteor": "METEOR",
 }
 
-# Color palettes
 COLORS_MULTIMODAL = {
     "0.8B": "#42A5F5",
     "2B": "#66BB6A",
@@ -68,8 +63,6 @@ COLORS_METHOD = {
     "LoRA 2B": "#2E7D32",
     "Task 1 Best": "#9E9E9E",
 }
-
-# ─── Hardcoded results (from eval_results.json files) ───
 
 MULTIMODAL_RESULTS = {
     "Qwen3.5-0.8B": {
@@ -106,7 +99,6 @@ MULTIMODAL_RESULTS = {
     },
 }
 
-# 9B prompt comparison
 PROMPT_RESULTS_9B = {
     "Describe this image.": {
         "bleu1": 0.1401,
@@ -158,7 +150,6 @@ TASK1_BEST = {
     },
 }
 
-# ─── HPO best parameters ───
 
 HPO_BEST_0_8B = {
     "study": "lora-optuna-qwen-0.8b-qformer",
@@ -200,7 +191,6 @@ HPO_BEST_2B = {
     },
 }
 
-# ─── Qualitative samples (from eval JSONs) ───
 
 QUALITATIVE_SAMPLES = [
     {
@@ -266,11 +256,6 @@ def setup_style() -> None:
     )
 
 
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 1: Multimodal results grouped bar chart
-# ─────────────────────────────────────────────────────────────────────
-
-
 def plot_multimodal_results_bar(out_dir: Path) -> None:
     models = list(MULTIMODAL_RESULTS.keys())
     n_metrics = len(METRICS)
@@ -316,11 +301,6 @@ def plot_multimodal_results_bar(out_dir: Path) -> None:
     print("  ✓  01_multimodal_results_bar.png")
 
 
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 2: Prompt comparison on 9B
-# ─────────────────────────────────────────────────────────────────────
-
-
 def plot_prompt_comparison_9b(out_dir: Path) -> None:
     prompts = list(PROMPT_RESULTS_9B.keys())
     short_labels = [
@@ -332,7 +312,6 @@ def plot_prompt_comparison_9b(out_dir: Path) -> None:
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
-    # Left: metric bars
     ax = axes[0]
     n_prompts = len(prompts)
     x = np.arange(len(METRICS))
@@ -367,7 +346,6 @@ def plot_prompt_comparison_9b(out_dir: Path) -> None:
     ax.legend(loc="upper right", fontsize=9)
     ax.set_ylim(5, 65)
 
-    # Right: inference time + verbosity note
     ax2 = axes[1]
     ms_vals = [PROMPT_RESULTS_9B[p]["ms_per_img"] for p in prompts]
     bars2 = ax2.barh(
@@ -389,7 +367,6 @@ def plot_prompt_comparison_9b(out_dir: Path) -> None:
             fontweight="bold",
         )
 
-    # Add annotation about verbose output
     ax2.annotate(
         "Verbose prompts → longer\noutputs → lower metrics\n(mismatch with references)",
         xy=(1600, 0.5),
@@ -406,11 +383,6 @@ def plot_prompt_comparison_9b(out_dir: Path) -> None:
     fig.savefig(out_dir / "02_prompt_comparison_9b.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  02_prompt_comparison_9b.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 3: Architecture diagram (ViT + Projection + LoRA Decoder)
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_architecture_diagram(out_dir: Path) -> None:
@@ -494,26 +466,19 @@ def plot_architecture_diagram(out_dir: Path) -> None:
                 ),
             )
 
-    # Input image
     draw_box(0.3, 3.0, 2.0, 2.0, "Input\nImage", "#78909C", subtext="224×224×3")
 
-    # Arrow → ViT
     draw_arrow(2.3, 4.0, 3.5, 4.0)
 
-    # ViT Encoder (frozen)
     draw_box(3.5, 2.5, 2.5, 3.0, "ViT-Base\nEncoder", "#2196F3", subtext="FROZEN")
-    # Frozen indicator
     ax.text(
         5.6, 5.3, "[FROZEN]", fontsize=8, ha="center", color="#1565C0", fontweight="bold"
     )
 
-    # Arrow → Projection
     draw_arrow(6.0, 4.0, 7.2, 4.0, "197 × 768")
 
-    # Projection module
     draw_box(7.2, 2.5, 2.8, 3.0, "Projection\nModule", "#FF9800", subtext="TRAINABLE")
 
-    # Two sub-options inside projection
     draw_box(
         7.2,
         1.0,
@@ -547,17 +512,13 @@ def plot_architecture_diagram(out_dir: Path) -> None:
         color="#E65100",
     )
 
-    # Arrow → Decoder
     draw_arrow(10.0, 4.0, 11.2, 4.0, "N × D")
 
-    # Qwen Decoder (LoRA)
     draw_box(11.2, 2.0, 3.0, 4.0, "Qwen3.5\nDecoder", "#4CAF50", subtext="LoRA-adapted")
-    # Trainable indicator
     ax.text(
         13.8, 5.8, "[TRAIN]", fontsize=8, ha="center", color="#2E7D32", fontweight="bold"
     )
 
-    # LoRA detail boxes
     draw_box(
         11.2, 0.5, 0.8, 1.0, "Frozen\nWeights", "#C8E6C9", text_color="#333", fontsize=8
     )
@@ -583,13 +544,10 @@ def plot_architecture_diagram(out_dir: Path) -> None:
         color="#333",
     )
 
-    # Arrow → Output
     draw_arrow(14.2, 4.0, 15.4, 4.0)
 
-    # Output caption
     draw_box(15.4, 3.0, 2.2, 2.0, "Generated\nCaption", "#7E57C2", subtext="text output")
 
-    # Legend at bottom
     legend_y = 7.2
     for i, (label, color) in enumerate(
         [
@@ -613,11 +571,6 @@ def plot_architecture_diagram(out_dir: Path) -> None:
     fig.savefig(out_dir / "03_architecture_diagram.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  03_architecture_diagram.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 4: LoRA target modules diagram
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_lora_targets_diagram(out_dir: Path) -> None:
@@ -667,7 +620,6 @@ def plot_lora_targets_diagram(out_dir: Path) -> None:
         x = 1.0 + col * 4.3
         y = 4.5 - row * 3.0
 
-        # Box
         rect = mpatches.FancyBboxPatch(
             (x, y),
             3.5,
@@ -690,7 +642,6 @@ def plot_lora_targets_diagram(out_dir: Path) -> None:
         )
         ax.add_patch(rect_border)
 
-        # Target name
         ax.text(
             x + 1.75,
             y + 1.75,
@@ -702,7 +653,6 @@ def plot_lora_targets_diagram(out_dir: Path) -> None:
             color=color,
             fontfamily="monospace",
         )
-        # What modules
         ax.text(
             x + 1.75,
             y + 1.15,
@@ -712,7 +662,6 @@ def plot_lora_targets_diagram(out_dir: Path) -> None:
             fontsize=10,
             color="#333",
         )
-        # Description
         ax.text(
             x + 1.75,
             y + 0.4,
@@ -724,33 +673,10 @@ def plot_lora_targets_diagram(out_dir: Path) -> None:
             style="italic",
         )
 
-    # Winner annotations
-    # ax.annotate(
-    #     "✓ Best for 0.8B",
-    #     xy=(5.7, 2.0),
-    #     fontsize=11,
-    #     fontweight="bold",
-    #     color="#2E7D32",
-    #     ha="center",
-    # )
-    # ax.annotate(
-    #     "✓ Best for 2B",
-    #     xy=(1.0 + 1.75, 5.0),
-    #     fontsize=11,
-    #     fontweight="bold",
-    #     color="#1565C0",
-    #     ha="center",
-    # )
-
     fig.tight_layout()
     fig.savefig(out_dir / "04_lora_targets_diagram.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  04_lora_targets_diagram.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 5 & 6: HPO trial scatter plots
-# ─────────────────────────────────────────────────────────────────────
 
 
 def _load_all_trials(path: Path) -> list[dict]:
@@ -765,7 +691,6 @@ def plot_hpo_trial_scatter(
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
-    # Left: METEOR by trial number, colored by optimizer
     ax = axes[0]
     optimizer_colors = {"adamw": "#4CAF50", "adam": "#FF9800", "sgd": "#F44336"}
     for trial in trials:
@@ -814,7 +739,6 @@ def plot_hpo_trial_scatter(
     ax.set_ylabel("METEOR (%)")
     ax.set_title(f"{model_name} — METEOR by Trial (colored by optimizer)")
 
-    # Right: METEOR by learning rate (log scale)
     ax2 = axes[1]
     for trial in trials:
         if trial["state"] != "COMPLETE":
@@ -845,11 +769,6 @@ def plot_hpo_trial_scatter(
     fig.savefig(out_dir / filename, bbox_inches="tight")
     plt.close(fig)
     print(f"  ✓  {filename}")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 7: Best params comparison table (0.8B vs 2B)
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_hpo_best_params_comparison(out_dir: Path) -> None:
@@ -893,7 +812,6 @@ def plot_hpo_best_params_comparison(out_dir: Path) -> None:
         else:
             cell_colors.append(["white", "white", "white", "white"])
 
-    # Add summary rows
     cell_text.append(["", "", "", ""])
     cell_colors.append(["#F5F5F5"] * 4)
     cell_text.append(
@@ -917,12 +835,10 @@ def plot_hpo_best_params_comparison(out_dir: Path) -> None:
     table.set_fontsize(11)
     table.scale(1, 1.8)
 
-    # Color header
     for j in range(len(headers)):
         table[0, j].set_facecolor("#37474F")
         table[0, j].set_text_props(color="white", fontweight="bold")
 
-    # Color cells
     for i, row_colors in enumerate(cell_colors):
         for j, color in enumerate(row_colors):
             table[i + 1, j].set_facecolor(color)
@@ -933,11 +849,6 @@ def plot_hpo_best_params_comparison(out_dir: Path) -> None:
     print("  ✓  07_hpo_best_params_comparison.png")
 
 
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 8: LoRA final eval bar chart
-# ─────────────────────────────────────────────────────────────────────
-
-
 def plot_lora_results_bar(out_dir: Path) -> None:
     models = list(LORA_RESULTS.keys())
     short_labels = ["ViT+Qwen3.5-0.8B", "ViT+Qwen3.5-2B"]
@@ -945,7 +856,6 @@ def plot_lora_results_bar(out_dir: Path) -> None:
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Left: metrics
     ax = axes[0]
     x = np.arange(len(METRICS))
     width = 0.35
@@ -977,7 +887,6 @@ def plot_lora_results_bar(out_dir: Path) -> None:
     ax.legend()
     ax.set_ylim(0, 80)
 
-    # Right: inference time comparison
     ax2 = axes[1]
     all_models_ms = {
         "Multimodal 0.8B": MULTIMODAL_RESULTS["Qwen3.5-0.8B"]["ms_per_img"],
@@ -1010,7 +919,6 @@ def plot_lora_results_bar(out_dir: Path) -> None:
             fontweight="bold",
         )
 
-    # Add speedup annotation
     speedup_08 = (
         MULTIMODAL_RESULTS["Qwen3.5-0.8B"]["ms_per_img"]
         / LORA_RESULTS["LoRA(ViT+Qwen3.5-0.8B)"]["ms_per_img"]
@@ -1041,11 +949,6 @@ def plot_lora_results_bar(out_dir: Path) -> None:
     print("  ✓  08_lora_results_bar.png")
 
 
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 9: Full comparison table (T2.3)
-# ─────────────────────────────────────────────────────────────────────
-
-
 def plot_full_comparison_table(out_dir: Path) -> None:
     fig, ax = plt.subplots(figsize=(16, 8))
     ax.axis("off")
@@ -1058,7 +961,6 @@ def plot_full_comparison_table(out_dir: Path) -> None:
     rows = []
     row_colors = []
 
-    # Multimodal rows
     for name, data in MULTIMODAL_RESULTS.items():
         rows.append(
             [
@@ -1073,7 +975,6 @@ def plot_full_comparison_table(out_dir: Path) -> None:
         )
         row_colors.append("#E3F2FD")
 
-    # LoRA rows
     for name, data in LORA_RESULTS.items():
         short_name = name.replace("LoRA(", "").replace(")", "")
         rows.append(
@@ -1089,7 +990,6 @@ def plot_full_comparison_table(out_dir: Path) -> None:
         )
         row_colors.append("#E8F5E9")
 
-    # Previous week reference
     for name, data in TASK1_BEST.items():
         rows.append(
             [
@@ -1115,18 +1015,14 @@ def plot_full_comparison_table(out_dir: Path) -> None:
     table.set_fontsize(11)
     table.scale(1, 2.0)
 
-    # Header styling
     for j in range(len(headers)):
         table[0, j].set_facecolor("#263238")
         table[0, j].set_text_props(color="white", fontweight="bold")
 
-    # Row colors
     for i, color in enumerate(row_colors):
         for j in range(len(headers)):
             table[i + 1, j].set_facecolor(color)
 
-    # Bold the best values
-    # Find best in each metric column
     metric_cols = {2: "bleu1", 3: "bleu2", 4: "rougeL", 5: "meteor"}
     for col_idx, metric_key in metric_cols.items():
         all_vals = []
@@ -1140,7 +1036,6 @@ def plot_full_comparison_table(out_dir: Path) -> None:
         cell.set_text_props(fontweight="bold", color="#1B5E20")
         cell.set_facecolor("#C8E6C9")
 
-    # Best (lowest) inference time
     ms_vals = []
     for row in rows:
         try:
@@ -1155,11 +1050,6 @@ def plot_full_comparison_table(out_dir: Path) -> None:
     fig.savefig(out_dir / "09_full_comparison_table.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  09_full_comparison_table.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 10: METEOR vs Inference Time scatter (trade-off)
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_method_tradeoff_scatter(out_dir: Path) -> None:
@@ -1190,7 +1080,6 @@ def plot_method_tradeoff_scatter(out_dir: Path) -> None:
             zorder=5,
             label=label,
         )
-        # Label offset
         offset_x = 40 if data["ms_per_img"] > 50 else 3
         ax.annotate(
             label,
@@ -1206,7 +1095,6 @@ def plot_method_tradeoff_scatter(out_dir: Path) -> None:
         "Quality vs Speed Trade-off — All Methods", fontsize=16, fontweight="bold"
     )
 
-    # Add quadrant annotations
     ax.axhline(y=pct(0.45), color="#DDD", linestyle="--", alpha=0.5)
     ax.axvline(x=100, color="#DDD", linestyle="--", alpha=0.5)
     ax.text(
@@ -1235,11 +1123,6 @@ def plot_method_tradeoff_scatter(out_dir: Path) -> None:
     fig.savefig(out_dir / "10_method_tradeoff_scatter.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  10_method_tradeoff_scatter.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 11: Radar chart of top methods
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_metric_profile_radar(out_dir: Path) -> None:
@@ -1281,11 +1164,6 @@ def plot_metric_profile_radar(out_dir: Path) -> None:
     print("  ✓  11_metric_profile_radar.png")
 
 
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 12: Qualitative examples comparison
-# ─────────────────────────────────────────────────────────────────────
-
-
 def plot_qualitative_examples(out_dir: Path) -> None:
     n_samples = len(QUALITATIVE_SAMPLES)
     fig, axes = plt.subplots(n_samples, 1, figsize=(16, 4 * n_samples))
@@ -1296,7 +1174,6 @@ def plot_qualitative_examples(out_dir: Path) -> None:
         ax = axes[i]
         ax.axis("off")
 
-        # Build text content
         lines = []
         lines.append(f"Image: {sample['image_name']}")
         lines.append("")
@@ -1309,7 +1186,6 @@ def plot_qualitative_examples(out_dir: Path) -> None:
 
         text = "\n".join(lines)
 
-        # Background
         rect = mpatches.FancyBboxPatch(
             (0.02, 0.02),
             0.96,
@@ -1322,7 +1198,6 @@ def plot_qualitative_examples(out_dir: Path) -> None:
         )
         ax.add_patch(rect)
 
-        # Image name header
         ax.text(
             0.05,
             0.92,
@@ -1334,7 +1209,6 @@ def plot_qualitative_examples(out_dir: Path) -> None:
             color="#333",
         )
 
-        # Reference
         ax.text(
             0.05,
             0.78,
@@ -1356,7 +1230,6 @@ def plot_qualitative_examples(out_dir: Path) -> None:
             style="italic",
         )
 
-        # Predictions with color coding
         methods = [
             ("Multimodal 9B:", sample["multimodal_9b"], "#EF5350"),
             ("Multimodal 0.8B:", sample["multimodal_0_8b"], "#42A5F5"),
@@ -1393,11 +1266,6 @@ def plot_qualitative_examples(out_dir: Path) -> None:
     fig.savefig(out_dir / "12_qualitative_examples.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  12_qualitative_examples.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 13: Optimizer impact boxplot (SGD vs Adam vs AdamW)
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_hpo_optimizer_impact(
@@ -1440,7 +1308,6 @@ def plot_hpo_optimizer_impact(
             patch.set_facecolor(color)
             patch.set_alpha(0.6)
 
-        # Scatter individual points
         for i, (vals, color) in enumerate(zip(box_data, colors)):
             jitter = np.random.uniform(-0.15, 0.15, len(vals))
             ax.scatter(
@@ -1471,11 +1338,6 @@ def plot_hpo_optimizer_impact(
     print("  ✓  13_hpo_optimizer_impact.png")
 
 
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 14: Linear vs Q-Former projection comparison
-# ─────────────────────────────────────────────────────────────────────
-
-
 def plot_projection_comparison(
     trials_0_8b_path: Path, trials_2b_path: Path, out_dir: Path
 ) -> None:
@@ -1490,7 +1352,6 @@ def plot_projection_comparison(
         for trial in trials:
             if trial["state"] != "COMPLETE":
                 continue
-            # Skip SGD trials (they are outliers that mask the projection effect)
             if trial["params"]["training.optimizer"] == "sgd":
                 continue
             proj = trial["params"]["projection.type"]
@@ -1531,7 +1392,6 @@ def plot_projection_comparison(
         ax.set_ylabel("METEOR (%)")
         ax.set_title(model_name)
 
-        # Annotate winner
         mean_linear = np.mean(proj_data["linear"]) if proj_data["linear"] else 0
         mean_qformer = np.mean(proj_data["qformer"]) if proj_data["qformer"] else 0
         winner = "Linear" if mean_linear >= mean_qformer else "Q-Former"
@@ -1562,11 +1422,6 @@ def plot_projection_comparison(
     fig.savefig(out_dir / "14_projection_comparison.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  14_projection_comparison.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 15: Challenges & solutions visual table
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_challenges_solutions_table(out_dir: Path) -> None:
@@ -1642,18 +1497,12 @@ def plot_challenges_solutions_table(out_dir: Path) -> None:
     print("  ✓  15_challenges_solutions_table.png")
 
 
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 16: Multimodal scaling analysis
-# ─────────────────────────────────────────────────────────────────────
-
-
 def plot_multimodal_scaling(out_dir: Path) -> None:
     sizes = [0.8, 2, 4, 9]
     size_labels = ["0.8B", "2B", "4B", "9B"]
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    # Left: Metrics by model size
     ax = axes[0]
     for m in METRICS:
         vals = [pct(MULTIMODAL_RESULTS[f"Qwen3.5-{s}"][m]) for s in size_labels]
@@ -1666,7 +1515,6 @@ def plot_multimodal_scaling(out_dir: Path) -> None:
     ax.set_xticklabels(size_labels)
     ax.legend()
 
-    # Highlight 4B dip
     ax.annotate(
         "4B underperforms 2B!\n(verbose output)",
         xy=(4, pct(0.319)),
@@ -1678,7 +1526,6 @@ def plot_multimodal_scaling(out_dir: Path) -> None:
         bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE"),
     )
 
-    # Right: Inference time by model size
     ax2 = axes[1]
     ms_vals = [MULTIMODAL_RESULTS[f"Qwen3.5-{s}"]["ms_per_img"] for s in size_labels]
     bars = ax2.bar(
@@ -1704,7 +1551,6 @@ def plot_multimodal_scaling(out_dir: Path) -> None:
             fontweight="bold",
         )
 
-    # Note about 9B being faster than 4B
     ax2.annotate(
         "9B faster than 4B!\n(better batching/optimization?)",
         xy=(3, 1002),
@@ -1723,11 +1569,6 @@ def plot_multimodal_scaling(out_dir: Path) -> None:
     fig.savefig(out_dir / "16_multimodal_scaling.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  16_multimodal_scaling.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 17: LoRA target comparison across trials
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_lora_target_comparison(
@@ -1767,7 +1608,6 @@ def plot_lora_target_comparison(
             if target in target_data:
                 target_data[target].append(pct(trial["value"]))
 
-        # Only plot targets with data
         plot_targets = [t for t in target_order if target_data[t]]
         positions = range(len(plot_targets))
         box_data = [target_data[t] for t in plot_targets]
@@ -1805,7 +1645,6 @@ def plot_lora_target_comparison(
         ax.set_ylabel("METEOR (%)")
         ax.set_title(model_name)
 
-        # Mark the best target
         if best_target in plot_targets:
             best_idx = plot_targets.index(best_target)
             ax.annotate(
@@ -1827,11 +1666,6 @@ def plot_lora_target_comparison(
     fig.savefig(out_dir / "17_lora_target_comparison.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  17_lora_target_comparison.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 18: Search space overview / HPO setup diagram
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_hpo_search_space_table(out_dir: Path) -> None:
@@ -1889,7 +1723,6 @@ def plot_hpo_search_space_table(out_dir: Path) -> None:
         for j in range(4):
             table[i + 1, j].set_facecolor(color)
 
-    # Footer text
     ax.text(
         0.5,
         -0.02,
@@ -1907,11 +1740,6 @@ def plot_hpo_search_space_table(out_dir: Path) -> None:
     fig.savefig(out_dir / "18_hpo_search_space_table.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  18_hpo_search_space_table.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 19: Metrics explanation table
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_metrics_explanation_table(out_dir: Path) -> None:
@@ -1966,7 +1794,6 @@ def plot_metrics_explanation_table(out_dir: Path) -> None:
         for j in range(4):
             table[i + 1, j].set_facecolor("#E3F2FD" if i % 2 == 0 else "#BBDEFB")
 
-    # Highlight METEOR row
     for j in range(4):
         table[4, j].set_facecolor("#C8E6C9")
 
@@ -1974,11 +1801,6 @@ def plot_metrics_explanation_table(out_dir: Path) -> None:
     fig.savefig(out_dir / "19_metrics_explanation_table.png", bbox_inches="tight")
     plt.close(fig)
     print("  ✓  19_metrics_explanation_table.png")
-
-
-# ─────────────────────────────────────────────────────────────────────
-# PLOT 20: Projection architectures side-by-side
-# ─────────────────────────────────────────────────────────────────────
 
 
 def plot_projection_architectures(out_dir: Path) -> None:
@@ -2035,7 +1857,6 @@ def plot_projection_architectures(out_dir: Path) -> None:
         if text:
             ax.text((x1 + x2) / 2 + 0.3, (y1 + y2) / 2, text, fontsize=8, color="#555")
 
-    # ─── Left: Linear Projection ───
     ax = axes[0]
     ax.set_title("Linear Projection", fontsize=14, fontweight="bold", pad=15)
 
@@ -2064,7 +1885,6 @@ def plot_projection_architectures(out_dir: Path) -> None:
         fontweight="bold",
     )
 
-    # ─── Right: Q-Former Bridge ───
     ax = axes[1]
     ax.set_title(
         "Q-Former Bridge (BLIP-2 inspired)", fontsize=14, fontweight="bold", pad=15
@@ -2119,11 +1939,6 @@ def plot_projection_architectures(out_dir: Path) -> None:
     print("  ✓  20_projection_architectures.png")
 
 
-# ─────────────────────────────────────────────────────────────────────
-# Main
-# ─────────────────────────────────────────────────────────────────────
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Generate Task 2 presentation plots & tables"
@@ -2146,24 +1961,20 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
     outputs_root = Path(args.outputs_root)
 
-    # Paths to HPO trial data
     trials_0_8b = outputs_root / "optuna_lora_qwen_0.8b_qformer" / "all_trials.json"
     trials_2b = outputs_root / "optuna_lora_qwen_2b" / "all_trials.json"
 
     setup_style()
     print(f"\nGenerating Task 2 presentation plots → {out_dir}/\n")
 
-    # T2.1 plots
     plot_multimodal_results_bar(out_dir)
     plot_prompt_comparison_9b(out_dir)
     plot_multimodal_scaling(out_dir)
 
-    # T2.2 architecture diagrams
     plot_architecture_diagram(out_dir)
     plot_lora_targets_diagram(out_dir)
     plot_projection_architectures(out_dir)
 
-    # T2.2 HPO plots
     plot_hpo_search_space_table(out_dir)
     if trials_0_8b.exists():
         plot_hpo_trial_scatter(
@@ -2179,15 +1990,12 @@ def main():
         plot_projection_comparison(trials_0_8b, trials_2b, out_dir)
         plot_lora_target_comparison(trials_0_8b, trials_2b, out_dir)
 
-    # T2.2 final eval
     plot_lora_results_bar(out_dir)
 
-    # T2.3 comparison table + analysis
     plot_full_comparison_table(out_dir)
     plot_method_tradeoff_scatter(out_dir)
     plot_metric_profile_radar(out_dir)
 
-    # T2.4 Discussion / supporting
     plot_qualitative_examples(out_dir)
     plot_challenges_solutions_table(out_dir)
     plot_metrics_explanation_table(out_dir)

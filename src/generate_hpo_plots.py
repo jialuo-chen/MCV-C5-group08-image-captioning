@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
-
-import re
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,10 +26,10 @@ METRICS_B6 = {"bleu1": 0.6088, "bleu2": 0.3782, "rougeL": 0.4116, "meteor": 0.37
 METRICS_C1 = {"bleu1": 0.5020, "bleu2": 0.2885, "rougeL": 0.3572, "meteor": 0.3254}
 METRICS_C2 = {"bleu1": 0.6382, "bleu2": 0.4078, "rougeL": 0.4287, "meteor": 0.3826}
 
-COL_A0 = "#90CAF9"  # light blue  — baseline, no HPO
-COL_C1 = "#1565C0"  # dark blue   — baseline, with HPO
-COL_B6 = "#A5D6A7"  # light green — best arch, no HPO
-COL_C2 = "#2E7D32"  # dark green  — best arch, with HPO
+COL_A0 = "#90CAF9"
+COL_C1 = "#1565C0"
+COL_B6 = "#A5D6A7"
+COL_C2 = "#2E7D32"
 
 
 def pct(v: float) -> float:

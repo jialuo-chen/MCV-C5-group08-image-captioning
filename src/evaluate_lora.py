@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import random
 import time
 from pathlib import Path
 
@@ -92,9 +93,7 @@ def evaluate_lora(
     )
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    import random as _rng
-
-    rng = _rng.Random(42)
+    rng = random.Random(42)
     indices = list(range(num_images))
     rng.shuffle(indices)
     samples = [

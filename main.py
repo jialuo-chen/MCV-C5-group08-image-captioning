@@ -33,19 +33,16 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
 
 
 def cmd_train(args: argparse.Namespace) -> None:
-
     cfg = load_config(args.config, overrides=args.override)
     train(cfg)
 
 
 def cmd_evaluate(args: argparse.Namespace) -> None:
-
     cfg = load_config(args.config, overrides=args.override)
     evaluate(cfg, checkpoint_path=args.checkpoint)
 
 
 def cmd_infer(args: argparse.Namespace) -> None:
-
     cfg = load_config(args.config, overrides=args.override)
     image_paths = collect_image_paths(args.image)
     infer(
@@ -119,7 +116,9 @@ def cmd_evaluate_multimodal(args: argparse.Namespace) -> None:
     cfg = load_config(args.config, overrides=args.override)
     model_name = args.model or cfg.get("multimodal", {}).get("model")
     if not model_name:
-        raise ValueError("Model must be specified via --model or multimodal.model in config.")
+        raise ValueError(
+            "Model must be specified via --model or multimodal.model in config."
+        )
     evaluate_multimodal(
         cfg,
         model_name=model_name,

@@ -9,6 +9,8 @@ import torch
 import torch.nn as nn
 from torch.utils.flop_counter import FlopCounterMode
 
+from src.models.vit_qwen_lora import ViTQwenLoRA
+
 
 def count_parameters(model: nn.Module) -> dict[str, int]:
     encoder_total = 0
@@ -60,8 +62,6 @@ def estimate_flops(
     Returns a dict with keys: ``encoder_flops``, ``projection_flops``,
     ``decoder_flops``, ``total_flops``.
     """
-    from src.models.vit_qwen_lora import ViTQwenLoRA
-
     result: dict[str, int | None] = {
         "encoder_flops": None,
         "projection_flops": None,
@@ -99,7 +99,6 @@ def _estimate_flops_vit_qwen(
 
     dummy_pixels = torch.randn(*input_size, device=device)
 
-    # --- Encoder FLOPs ---
     try:
         counter = FlopCounterMode(display=False)
         with counter:
@@ -122,7 +121,6 @@ def _estimate_flops_vit_qwen(
     if model.num_prefix_tokens > 0:
         vit_features = vit_features[:, 1 : 1 + model.num_prefix_tokens, :]
 
-    # --- Projection FLOPs ---
     try:
         proj_input = vit_features.to(model.projection.weight.dtype)
         counter = FlopCounterMode(display=False)
@@ -137,7 +135,6 @@ def _estimate_flops_vit_qwen(
         except Exception:
             vit_projected = None
 
-    # --- Decoder FLOPs ---
     if vit_projected is not None:
         try:
             dummy_ids = torch.zeros(batch, seq_len, dtype=torch.long, device=device)

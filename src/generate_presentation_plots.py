@@ -190,8 +190,6 @@ def setup_style() -> None:
             "savefig.pad_inches": 0.2,
         }
     )
-    # Note: savefig.bbox_inches is not a valid rcParam — we pass
-    # bbox_inches="tight" directly in each fig.savefig() call instead.
 
 
 def load_all_data(outputs_dir: Path) -> dict[str, dict]:
@@ -835,7 +833,6 @@ def plot_component_impact_bars(data: dict, out_dir: Path) -> None:
             deltas.append(d)
             colors.append(color)
 
-        # Sort by delta descending
         order = np.argsort(deltas)[::-1]
         names = [names[i] for i in order]
         deltas = [deltas[i] for i in order]
@@ -854,7 +851,6 @@ def plot_component_impact_bars(data: dict, out_dir: Path) -> None:
         axes[ax_i].set_title(METRIC_LABELS[m], fontsize=14, fontweight="bold")
         axes[ax_i].axvline(x=0, color="black", linewidth=0.8)
 
-        # Annotate values
         for bar, d in zip(bars, deltas):
             sign = "+" if d >= 0 else ""
             axes[ax_i].text(

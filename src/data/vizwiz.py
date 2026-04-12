@@ -45,20 +45,15 @@ __version__ = "1.0"
 
 import itertools
 import json
-
-# from . import mask as maskUtils
 import os
 import sys
 import time
 from collections import defaultdict
+from urllib.request import urlretrieve
 
 import numpy as np
 
 PYTHON_VERSION = sys.version_info[0]
-if PYTHON_VERSION == 2:
-    from urllib import urlretrieve
-elif PYTHON_VERSION == 3:
-    from urllib.request import urlretrieve
 
 
 def _isArrayLike(obj):
@@ -73,7 +68,6 @@ class VizWiz:
         :param image_folder (str): location to the folder that hosts images.
         :return:
         """
-        # load dataset
         self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(), dict()
         self.imgToAnns, self.catToImgs = defaultdict(list), defaultdict(list)
         if not annotation_file == None:
@@ -97,11 +91,9 @@ class VizWiz:
                     self.dataset["annotations"].append(annotation)
 
             print("Done (t={:0.2f}s)".format(time.time() - tic))
-            # self.dataset = dataset
             self.createIndex()
 
     def createIndex(self):
-        # create index
         print("creating index...")
         anns, cats, imgs = {}, {}, {}
         imgToAnns, catToImgs = defaultdict(list), defaultdict(list)
@@ -122,7 +114,6 @@ class VizWiz:
             for ann in self.dataset["annotations"]:
                 catToImgs[ann["category_id"]].append(ann["image_id"])
 
-        # create class members
         self.anns = anns
         self.imgToAnns = imgToAnns
         self.catToImgs = catToImgs

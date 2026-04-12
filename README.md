@@ -1,197 +1,95 @@
-# C5 — Image Captioning on VizWiz
+# C5 Image Captioning (VizWiz)
 
-Image captioning framework built for the VizWiz dataset. Train, evaluate, and compare different encoder–decoder architectures for generating image descriptions, all driven by YAML config files and a single CLI.
+A modular image-captioning project with multiple workflows:
+- classic encoder-decoder training
+- VisionEncoderDecoder fine-tuning
+- multimodal VLM evaluation (Qwen)
+- ViT + Qwen LoRA fine-tuning and evaluation
+- Optuna sweep and plot generation
 
-## Requirements
+## Reviewer Quick Start
 
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/) (Python package & project manager)
-- CUDA-capable GPU (recommended)
+If you only have a few minutes, start here:
+
+1. Read `main.py` to understand all supported commands and entrypoints.
+2. Read `src/utils/config.py` to see how YAML configs are loaded and overridden.
+3. Read the specific pipeline module:
+   - `src/train.py` and `src/evaluate.py` for classic captioning pipeline.
+   - `src/train_vit_decoder.py` and `src/evaluate_pretrained.py` for VisionEncoderDecoder pipeline.
+   - `src/train_lora.py` and `src/evaluate_lora.py` for LoRA pipeline.
+   - `src/evaluate_multimodal.py` and `src/models/qwen_vlm.py` for direct multimodal evaluation.
+4. Inspect example configs in `configs/` matching the pipeline you are reviewing.
 
 ## Setup
 
-```bash
-# Clone the repo
-git clone <repo-url>
-cd c5_image_caption
+Requirements:
+- Python 3.12+
+- uv
+- CUDA GPU recommended
 
-# Install all dependencies
+Install dependencies:
+
 uv sync
-```
 
-That's it — `uv sync` reads `pyproject.toml` and installs everything into a local `.venv`.
+Run commands through uv so the local environment is used:
 
-## Project Structure
+uv run python main.py --help
 
-```
-c5_image_caption/
-├── main.py                  # CLI entry point (train / evaluate / infer / sweep / visualize)
-├── pyproject.toml           # Dependencies and project metadata
-├── configs/                 # YAML configuration files for each experiment
-│   ├── baseline.yaml            # Baseline: ResNet-18 + GRU + character-level
-│   ├── baseline_lstm.yaml       # Decoder swap: LSTM instead of GRU
-│   ├── baseline_subword.yaml    # Text swap: BPE subword tokenizer
-│   ├── baseline_word.yaml       # Text swap: word-level tokenizer
-│   ├── baseline_attention.yaml  # Adds Bahdanau attention to baseline
-│   ├── resnet50_gru.yaml        # Encoder swap: ResNet-50
-│   ├── resnet50_xlstm.yaml      # ResNet-50 + xLSTM (HuggingFace pretrained)
-│   └── sweep.yaml               # WandB hyperparameter sweep definition
-├── src/
-│   ├── data/
-│   │   ├── vizwiz.py            # VizWiz API for loading annotations
-│   │   ├── dataset.py           # PyTorch Dataset & data splitting logic
-│   │   └── tokenizer.py         # Character / word / subword tokenizers
-│   ├── models/
-│   │   ├── encoders.py          # Image encoders (ResNet-18/34/50, VGG-16/19)
-│   │   ├── decoders.py          # RNN decoders (GRU/LSTM) & HuggingFace LM decoder
-│   │   ├── attention.py         # Bahdanau & Luong attention modules
-│   │   └── captioner.py         # Puts encoder + decoder together into one model
-│   ├── evaluation/
-│   │   └── metrics.py           # BLEU-1, BLEU-2, ROUGE-L, METEOR
-│   ├── utils/
-│   │   ├── config.py            # YAML config loader with defaults & CLI overrides
-│   │   └── logger.py            # Experiment logger (params, FLOPs, epoch stats)
-│   ├── train.py                 # Training loop (loss, checkpoints, WandB logging)
-│   ├── evaluate.py              # Run evaluation on the test set
-│   ├── infer.py                 # Generate captions for individual images
-│   └── visualize.py             # Generate captioning visualization plots
-├── notebooks/                   # Reference notebooks (baseline model, demo eval)
-├── outputs/                     # Training outputs: checkpoints & results (gitignored)
-└── .gitignore
-```
+## Main Commands
 
-## How It Works
+Training and evaluation:
+- `uv run python main.py train --config <config.yaml>`
+- `uv run python main.py evaluate --config <config.yaml> --checkpoint <path>`
+- `uv run python main.py infer --config <config.yaml> --checkpoint <path> --image <img_or_dir>`
+- `uv run python main.py visualize --config <config.yaml> --checkpoint <path>`
 
-### Configs
+Pretrained and multimodal:
+- `uv run python main.py finetune --config configs/vit_gpt2.yaml`
+- `uv run python main.py evaluate-pretrained --config configs/eval_pretrained.yaml --model nlpconnect/vit-gpt2-image-captioning`
+- `uv run python main.py evaluate-multimodal --config configs/eval_qwen_multimodal.yaml --model Qwen/Qwen3.5-0.8B`
 
-Every experiment is defined by a YAML file in `configs/`. A config specifies:
+LoRA:
+- `uv run python main.py finetune-lora --config configs/lora_qwen_0.8b.yaml`
+- `uv run python main.py evaluate-lora --config configs/lora_qwen_0.8b.yaml --checkpoint outputs/<run>/checkpoints/best`
 
-- **Encoder** — which image backbone to use (e.g. ResNet-18, ResNet-50)
-- **Decoder** — which text generator to use (GRU, LSTM, or a pretrained HuggingFace LM like xLSTM)
-- **Tokenizer** — how to represent text (character-level, subword BPE, or word-level)
-- **Attention** — optionally enable Bahdanau or Luong attention
-- **Training** — learning rate, batch size, epochs, optimizer, grad clipping, etc.
-- **WandB** — enable logging to Weights & Biases
+Optuna and analysis:
+- `uv run python main.py optuna-sweep --config configs/optuna_lora_2b.yaml`
+- `uv run python main.py optuna-viz --study-dir outputs/optuna_lora_qwen_2b`
+- `uv run python main.py quantitative-plots --outputs-dir outputs --out-dir outputs/presentation_plots`
 
-To try a different model combination, just pick a different config or create a new one.
+## Minimal Smoke Checks
 
-### Data Splits
+There is no dedicated unit-test suite in this repository. For quick verification:
 
-- **Training data** — 90% of the VizWiz training set
-- **Validation data** — 10% of the VizWiz training set (for monitoring during training)
-- **Test data** — the full VizWiz validation set (used for final evaluation / inference)
+1. Syntax/compile check:
 
-### Metrics
+uv run python -m compileall main.py src
 
-All models are evaluated using: **BLEU-1**, **BLEU-2**, **ROUGE-L**, and **METEOR**.
+2. CLI wiring check:
 
-## CLI Usage
+uv run python main.py --help
 
-### Train a model
+3. Pipeline command check:
 
-```bash
-uv run python main.py train --config configs/baseline.yaml
-```
+uv run python main.py evaluate-multimodal --help
+uv run python main.py evaluate-lora --help
 
-Override any config value from the command line:
+## Project Layout
 
-```bash
-uv run python main.py train --config configs/baseline.yaml \
-    --override training.lr=0.0001 training.epochs=10 training.batch_size=32
-```
+- `main.py`: single CLI dispatcher
+- `configs/`: experiment/eval/sweep config files
+- `src/data/`: VizWiz access, datasets, tokenizers
+- `src/models/`: captioning models, VLM wrappers, LoRA bridge modules
+- `src/train.py`: classic encoder-decoder training
+- `src/train_vit_decoder.py`: VisionEncoderDecoder fine-tuning
+- `src/train_lora.py`: LoRA fine-tuning for ViT+Qwen
+- `src/evaluate.py`, `src/evaluate_pretrained.py`, `src/evaluate_multimodal.py`, `src/evaluate_lora.py`: evaluation entrypoints
+- `src/optuna_sweep.py`, `src/optuna_visualize.py`: hyperparameter search and visualization
+- `src/generate_*plots.py`, `src/generate_task2_presentation.py`: report/presentation figures
+- `outputs/`: run artifacts and evaluation JSON files
 
-Checkpoints are saved to `outputs/<run_name>/checkpoints/` (both `best.pt` and `last.pt`).
+## Notes For Reviewers
 
-### Evaluate a trained model
-
-```bash
-uv run python main.py evaluate \
-    --config configs/baseline.yaml \
-    --checkpoint outputs/<run_name>/checkpoints/best.pt
-```
-
-Prints BLEU-1, BLEU-2, ROUGE-L, METEOR scores and saves a results JSON.
-
-### Generate captions (inference)
-
-For a single image:
-
-```bash
-uv run python main.py infer \
-    --config configs/baseline.yaml \
-    --checkpoint outputs/<run_name>/checkpoints/best.pt \
-    --image /path/to/image.jpg
-```
-
-For a whole folder of images:
-
-```bash
-uv run python main.py infer \
-    --config configs/baseline.yaml \
-    --checkpoint outputs/<run_name>/checkpoints/best.pt \
-    --image /path/to/images/ \
-    --output results.json
-```
-
-### Run a WandB hyperparameter sweep
-
-```bash
-uv run python main.py sweep --config configs/sweep.yaml
-```
-
-The sweep config (`configs/sweep.yaml`) defines which parameters to search and references a base experiment config.
-
-### Visualize model predictions
-
-Generate side-by-side plots of ground-truth vs predicted captions on test images:
-
-```bash
-uv run python main.py visualize \
-    --config configs/baseline.yaml \
-    --checkpoint outputs/<run_name>/checkpoints/best.pt
-```
-
-Customize the number of samples and add a model label:
-
-```bash
-uv run python main.py visualize \
-    --config configs/baseline.yaml \
-    --checkpoint outputs/<run_name>/checkpoints/best.pt \
-    --num-images 10 \
-    --model-type "Baseline" \
-    --output outputs/plots/
-```
-
-Saves a grid image plus individual per-image plots.
-
-## Experiment Logger
-
-Every training run automatically produces an `experiment_log.json` inside the output directory with:
-
-- **Model info** — total / trainable parameters (broken down by encoder and decoder), estimated FLOPs
-- **Hyperparameters** — full config snapshot (encoder, decoder, attention, tokenizer, training)
-- **Per-epoch stats** — train loss, val loss, BLEU-1, BLEU-2, ROUGE-L, METEOR, learning rate, epoch wall-clock time
-- **Training summary** — best epoch, best metrics, total training time, min losses, average epoch time
-
-Inference runs also log checkpoint path, number of images, total time, and average latency.
-
-## Available Configs
-
-| Config | Encoder | Decoder | Tokenizer | Attention | Purpose |
-|--------|---------|---------|-----------|-----------|---------|
-| `baseline.yaml` | ResNet-18 | GRU | char | — | Baseline model |
-| `baseline_lstm.yaml` | ResNet-18 | LSTM | char | — | Decoder change |
-| `baseline_subword.yaml` | ResNet-18 | GRU | subword (BPE) | — | Text representation change |
-| `baseline_word.yaml` | ResNet-18 | GRU | word | — | Text representation change |
-| `baseline_attention.yaml` | ResNet-18 | GRU | char | Bahdanau | + Attention mechanism |
-| `resnet50_gru.yaml` | ResNet-50 | GRU | char | — | Encoder change |
-| `resnet50_xlstm.yaml` | ResNet-50 | xLSTM (HF) | model's own | — | Pretrained LM decoder |
-
-## WandB Integration
-
-To enable Weights & Biases logging for any training run, either:
-
-1. Set `wandb.enabled: true` in your config YAML, or
-2. Override from CLI: `--override wandb.enabled=true`
-
-Make sure you're logged in (`wandb login`) before running.
+- Config overrides are supported via `--override key=value` on commands that accept configs.
+- Most workflows write outputs under `outputs/` unless an explicit output directory is passed.
+- Some workflows assume GPU availability for practical runtime.

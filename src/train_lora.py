@@ -298,7 +298,6 @@ def train_lora(cfg: Config, epoch_callback=None) -> float:
 
     exp_logger.end_training(best_epoch=best_epoch, best_metrics=best_metrics_dict)
 
-    # --- Post-fine-tuning evaluation: load best checkpoint and evaluate on test set ---
     print("\n" + "=" * 60)
     print("POST-FINETUNE EVALUATION (VizWiz test set, best checkpoint)")
     print("=" * 60)
