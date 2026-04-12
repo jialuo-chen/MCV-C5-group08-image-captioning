@@ -11,12 +11,12 @@ encoder:
   pretrained: google/vit-base-patch16-224
   freeze: true
   feature_dim: 768
-  # checkpoint: outputs/vit-gpt2/checkpoints/best   # ← uncomment to use Task 2 fine-tuned ViT
+  checkpoint: outputs/best_T1-2/best   # ← uncomment to use Task 2 fine-tuned ViT
   num_prefix_tokens: 0    # 0 = use all patch tokens
 
 decoder:
   name: qwen3.5-0.8b
-  pretrained: Qwen/Qwen3.5-0.8B
+  pretrained: Qwen/Qwen3.5-0.8B # Qwen/Qwen3.5-2B
 
 tokenizer:
   type: hf
@@ -28,9 +28,9 @@ attention:
 lora:
   enabled: true
   r: 16
-  alpha: 32
+  alpha: 64
   dropout: 0.05
-  target: all            # "all" | "linear" | "attention"
+  target: linear            # "all" | "linear" | "attention"
 
 dataset:
   root: /data/123-1/users/jchen/VizWiz
@@ -43,19 +43,19 @@ dataset:
   val_split_ratio: 0.1
 
 training:
-  epochs: 5
-  batch_size: 4
+  epochs: 10
+  batch_size: 32
   lr: 0.0002
   optimizer: adamw
-  weight_decay: 0.01
+  weight_decay: 0.0
   scheduler: cosine
   grad_clip: 1.0
-  mixed_precision: true
+  mixed_precision: false
   num_workers: 4
   freeze_encoder: true
   freeze_decoder: false
   early_stopping_patience: 3
-  gradient_accumulation_steps: 4
+  gradient_accumulation_steps: 1
 
 inference:
   max_length: 128

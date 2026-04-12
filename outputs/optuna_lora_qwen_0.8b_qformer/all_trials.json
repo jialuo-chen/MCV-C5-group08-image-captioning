@@ -1,0 +1,642 @@
+[
+  {
+    "number": 0,
+    "value": 0.101757,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 7.274917088027814e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "attention",
+      "training.optimizer": "sgd",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "step",
+      "projection.type": "linear",
+      "projection.num_queries": 16,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 1,
+    "value": 0.409071,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 5.022563311994765e-05,
+      "tokenizer.max_length": 256,
+      "lora.r": 16,
+      "lora.alpha": 2,
+      "lora.target": "all_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "cosine",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 2,
+    "value": 0.389944,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 1.0296901472345191e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 8,
+      "lora.alpha": 4,
+      "lora.target": "all_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.1,
+      "training.scheduler": "cosine",
+      "projection.type": "linear",
+      "projection.num_queries": 8,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 4e-06
+  },
+  {
+    "number": 3,
+    "value": 0.093509,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 3.3610226697378736e-05,
+      "tokenizer.max_length": 256,
+      "lora.r": 8,
+      "lora.alpha": 2,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "sgd",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 4,
+    "value": 0.38622,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 4.522999310516458e-05,
+      "tokenizer.max_length": 256,
+      "lora.r": 32,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "adam",
+      "training.weight_decay": 0.01,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 16,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 5,
+    "value": 0.075443,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 6.0926173694724706e-05,
+      "tokenizer.max_length": 256,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "full_attention",
+      "training.optimizer": "sgd",
+      "training.weight_decay": 0.0,
+      "training.scheduler": "none",
+      "projection.type": "linear",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 4e-06
+  },
+  {
+    "number": 6,
+    "value": 0.412577,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 5.607308700117546e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 7,
+    "value": 0.390391,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0009088474887951092,
+      "tokenizer.max_length": 128,
+      "lora.r": 8,
+      "lora.alpha": 4,
+      "lora.target": "all",
+      "training.optimizer": "adam",
+      "training.weight_decay": 0.01,
+      "training.scheduler": "cosine",
+      "projection.type": "linear",
+      "projection.num_queries": 4,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 8,
+    "value": 0.394239,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 8.184002205506551e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "all",
+      "training.optimizer": "adam",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "linear",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 9,
+    "value": 0.405427,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 2.6091753957814954e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 32,
+      "lora.alpha": 2,
+      "lora.target": "all_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 10,
+    "value": 0.379596,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0008308384824642156,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "all",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 16,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 2e-06
+  },
+  {
+    "number": 11,
+    "value": 0.405057,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 9.641264700772363e-05,
+      "tokenizer.max_length": 256,
+      "lora.r": 16,
+      "lora.alpha": 2,
+      "lora.target": "all_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "cosine",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 12,
+    "value": 0.412346,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 9.222259227413001e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 8,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 13,
+    "value": 0.254051,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.000354158764260736,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "sgd",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 8,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 14,
+    "value": 0.405195,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 2.5492119179265434e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 4,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 4e-06
+  },
+  {
+    "number": 15,
+    "value": 0.409113,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00027126154083969954,
+      "tokenizer.max_length": 256,
+      "lora.r": 4,
+      "lora.alpha": 4,
+      "lora.target": "attention",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 8,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 16,
+    "value": 0.386057,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0008417881949997453,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "adam",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 3e-06
+  },
+  {
+    "number": 17,
+    "value": null,
+    "state": "FAIL",
+    "params": {
+      "training.lr": 7.197226893152498e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "cosine",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 8895.870665
+  },
+  {
+    "number": 18,
+    "value": 0.4106008638297099,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 7.197226893152498e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "cosine",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 2718.983075
+  },
+  {
+    "number": 19,
+    "value": 0.40508849130582936,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 4.438308246517662e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 8,
+      "lora.alpha": 4,
+      "lora.target": "linear",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 3842.365922
+  },
+  {
+    "number": 20,
+    "value": 0.34231556366387417,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 2.0338332068990517e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.01,
+      "training.scheduler": "none",
+      "projection.type": "linear",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 4858.064055
+  },
+  {
+    "number": 21,
+    "value": 0.4024487281866306,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 3.3417803319227275e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "all_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 8,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 3293.620552
+  },
+  {
+    "number": 22,
+    "value": 0.41085270760120657,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0002102525264733667,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "cosine",
+      "projection.type": "qformer",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 4119.030549
+  },
+  {
+    "number": 23,
+    "value": 0.3956417081161376,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0005735892185463855,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.01,
+      "training.scheduler": "cosine",
+      "projection.type": "qformer",
+      "projection.num_queries": 4,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 2713.605532
+  },
+  {
+    "number": 24,
+    "value": 0.07421912521331041,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 2.774999668734031e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear",
+      "training.optimizer": "sgd",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "step",
+      "projection.type": "qformer",
+      "projection.num_queries": 8,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 3141.812063
+  },
+  {
+    "number": 25,
+    "value": 0.4053822184831325,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 9.703362361179934e-05,
+      "tokenizer.max_length": 128,
+      "lora.r": 32,
+      "lora.alpha": 2,
+      "lora.target": "attention",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "cosine",
+      "projection.type": "qformer",
+      "projection.num_queries": 8,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 2048
+    },
+    "duration_s": 871.934746
+  },
+  {
+    "number": 26,
+    "value": 0.41448241007050113,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0007839380084289693,
+      "tokenizer.max_length": 128,
+      "lora.r": 8,
+      "lora.alpha": 2,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "cosine",
+      "projection.type": "linear",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 6724.033419
+  },
+  {
+    "number": 27,
+    "value": null,
+    "state": "FAIL",
+    "params": {
+      "training.lr": 0.0015615749761121675,
+      "tokenizer.max_length": 256,
+      "lora.r": 32,
+      "lora.alpha": 2,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "cosine",
+      "projection.type": "linear",
+      "projection.num_queries": 16,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 8.972864
+  },
+  {
+    "number": 28,
+    "value": 0.3992775034955206,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00185618367683602,
+      "tokenizer.max_length": 128,
+      "lora.r": 8,
+      "lora.alpha": 2,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "cosine",
+      "projection.type": "linear",
+      "projection.num_queries": 32,
+      "projection.num_layers": 1,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 5972.949419
+  },
+  {
+    "number": 29,
+    "value": 0.41332516587348794,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0009207699104033815,
+      "tokenizer.max_length": 256,
+      "lora.r": 4,
+      "lora.alpha": 2,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "cosine",
+      "projection.type": "linear",
+      "projection.num_queries": 16,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 13857.430592
+  },
+  {
+    "number": 30,
+    "value": 0.4060981820262057,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.00039049962690066353,
+      "tokenizer.max_length": 256,
+      "lora.r": 4,
+      "lora.alpha": 4,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "adamw",
+      "training.weight_decay": 0.0001,
+      "training.scheduler": "cosine",
+      "projection.type": "linear",
+      "projection.num_queries": 16,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 2817.282892
+  },
+  {
+    "number": 31,
+    "value": 0.32237939505956514,
+    "state": "COMPLETE",
+    "params": {
+      "training.lr": 0.0015414094491625172,
+      "tokenizer.max_length": 256,
+      "lora.r": 16,
+      "lora.alpha": 2,
+      "lora.target": "linear_and_head",
+      "training.optimizer": "sgd",
+      "training.weight_decay": 0.001,
+      "training.scheduler": "cosine",
+      "projection.type": "linear",
+      "projection.num_queries": 16,
+      "projection.num_layers": 2,
+      "projection.ffn_dim": 1024
+    },
+    "duration_s": 7242.0292
+  }
+]

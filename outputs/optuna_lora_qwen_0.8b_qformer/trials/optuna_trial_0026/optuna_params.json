@@ -1,0 +1,47 @@
+{
+  "params": {
+    "training.lr": 0.0007839380084289693,
+    "tokenizer.max_length": 128,
+    "lora.r": 8,
+    "lora.alpha": 2,
+    "lora.target": "linear_and_head",
+    "training.optimizer": "adamw",
+    "training.weight_decay": 0.0001,
+    "training.scheduler": "cosine",
+    "projection.type": "linear",
+    "projection.num_queries": 32,
+    "projection.num_layers": 1,
+    "projection.ffn_dim": 1024
+  },
+  "metric": 0.41448241007050113,
+  "intermediates": [
+    [
+      1,
+      0.3926295008785469
+    ],
+    [
+      2,
+      0.41448241007050113
+    ],
+    [
+      3,
+      0.4087025899231069
+    ],
+    [
+      4,
+      0.4091184060032307
+    ],
+    [
+      5,
+      0.4113839029948771
+    ],
+    [
+      6,
+      0.40505847544961143
+    ],
+    [
+      7,
+      0.3962223021966592
+    ]
+  ]
+}

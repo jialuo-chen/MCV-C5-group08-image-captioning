@@ -1,0 +1,55 @@
+{
+  "params": {
+    "training.lr": 4.019237202699583e-05,
+    "tokenizer.max_length": 128,
+    "lora.r": 4,
+    "lora.alpha": 4,
+    "lora.target": "attention",
+    "training.optimizer": "adamw",
+    "training.weight_decay": 0.1,
+    "training.scheduler": "step",
+    "projection.type": "qformer",
+    "projection.num_queries": 32,
+    "projection.num_layers": 1,
+    "projection.ffn_dim": 2048
+  },
+  "metric": 0.4214836161989771,
+  "intermediates": [
+    [
+      1,
+      0.3971966526770725
+    ],
+    [
+      2,
+      0.41872683346249595
+    ],
+    [
+      3,
+      0.4173160258638387
+    ],
+    [
+      4,
+      0.4214836161989771
+    ],
+    [
+      5,
+      0.41904632954666393
+    ],
+    [
+      6,
+      0.41873132219706355
+    ],
+    [
+      7,
+      0.41789323916011917
+    ],
+    [
+      8,
+      0.418025061897675
+    ],
+    [
+      9,
+      0.41863089189355646
+    ]
+  ]
+}
