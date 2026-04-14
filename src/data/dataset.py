@@ -5,7 +5,7 @@ from pathlib import Path
 
 import torch
 from PIL import Image
-from torch.utils.data import Dataset
+from torch.utils.data import ConcatDataset, Dataset
 from torchvision.transforms import v2
 
 from src.data.tokenizer import BaseTokenizer
@@ -362,6 +362,10 @@ def vision_collate_fn(batch: list[dict]) -> dict:
 def build_vision_datasets(cfg, image_processor, tokenizer):
     """Build train/val/test datasets for VisionEncoderDecoder / LoRA training.
 
+    If ``cfg.synthetic_data.enabled`` is set, a synthetic dataset is
+    concatenated to the training split via ``ConcatDataset``.
+    Val and test remain VizWiz-only for fair evaluation.
+
     Returns ``(train_ds, val_ds, test_ds)``.
     """
     root = Path(cfg.dataset.root)
@@ -395,6 +399,24 @@ def build_vision_datasets(cfg, image_processor, tokenizer):
         split="train",
         indices=train_indices,
     )
+
+    syn_cfg = cfg.get("synthetic_data", {})
+    if isinstance(syn_cfg, dict) and syn_cfg.get("enabled", False):
+        syn_root = Path(syn_cfg["root"])
+        syn_ann = str(syn_root / syn_cfg.get("annotation", "annotations/synthetic.json"))
+        syn_img_dir = str(syn_root / syn_cfg.get("image_dir", "images"))
+        syn_ds = VizWizVisionDataset(
+            annotation_file=syn_ann,
+            image_dir=syn_img_dir,
+            image_processor=image_processor,
+            tokenizer=tokenizer,
+            max_length=max_length,
+            split="train",
+            indices=None,
+        )
+        print(f"Synthetic data: {len(syn_ds)} samples from {syn_root}")
+        train_ds = ConcatDataset([train_ds, syn_ds])
+
     val_ds = VizWizVisionDataset(
         annotation_file=train_ann,
         image_dir=train_img_dir,
