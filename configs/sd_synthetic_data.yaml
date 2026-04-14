@@ -1,0 +1,126 @@
+# Synthetic training data generation for image captioning
+# Prompts target weaknesses identified in Task C analysis
+# Usage: uv run python main.py generate-synthetic --config configs/sd_synthetic_data.yaml
+
+run_name: synthetic_data
+seed: 42
+output_dir: outputs
+
+stable_diffusion:
+  model_id: stabilityai/stable-diffusion-3.5-large-turbo
+  scheduler: default
+  negative_prompt: "blurry, low quality, distorted, watermark, text overlay"
+  guidance_scale: 0.0
+  num_inference_steps: 4
+  images_per_prompt: 3
+  width: 1024
+  height: 1024
+  seed: 42
+  dtype: bfloat16
+
+# Each prompt also acts as the ground-truth caption for that image.
+# caption field overrides prompt as GT when provided (for cleaner captions).
+prompts:
+  # --- Currency / bills (model confused Washington for Lincoln) ---
+  - prompt: "A close-up photograph of a five dollar bill showing Abraham Lincoln's portrait"
+    caption: "A five dollar bill with Abraham Lincoln's portrait."
+    category: currency
+  - prompt: "A hand holding a one dollar bill with George Washington's portrait clearly visible"
+    caption: "A hand holding a one dollar bill with George Washington's portrait."
+    category: currency
+  - prompt: "A twenty dollar bill laid flat on a wooden table, Andrew Jackson portrait visible"
+    caption: "A twenty dollar bill on a wooden table showing Andrew Jackson."
+    category: currency
+
+  # --- Specific products / packaging (model too generic) ---
+  - prompt: "A box of Barilla whole grain penne pasta on a kitchen counter"
+    caption: "A box of Barilla whole grain penne pasta on a kitchen counter."
+    category: product_packaging
+  - prompt: "A can of Coca-Cola sitting on a white table, red label clearly visible"
+    caption: "A can of Coca-Cola on a white table."
+    category: product_packaging
+  - prompt: "A bottle of Heinz ketchup next to a plate of food"
+    caption: "A bottle of Heinz ketchup next to a plate."
+    category: product_packaging
+
+  # --- Power strips / electronics (model called it 'white device') ---
+  - prompt: "A white power strip with multiple outlets and switches plugged in on carpet floor"
+    caption: "A white power strip with multiple outlets plugged in on carpet."
+    category: electronics
+  - prompt: "A black surge protector with six outlets and indicator lights"
+    caption: "A black surge protector with six outlets."
+    category: electronics
+  - prompt: "A USB charging hub with multiple cables connected on a desk"
+    caption: "A USB charging hub with cables on a desk."
+    category: electronics
+
+  # --- DVD/media covers (model hallucinated specific shows) ---
+  - prompt: "A DVD case with a man dancing on a blue cover laying on a wooden surface"
+    caption: "A DVD case with a man dancing on the blue cover on a wooden surface."
+    category: media
+  - prompt: "A stack of DVD cases on a shelf showing various movie covers"
+    caption: "A stack of DVD cases on a shelf."
+    category: media
+
+  # --- Bags / accessories (model confused shoe for handbag) ---
+  - prompt: "A pink and brown Coach handbag with the Coach logo pattern on a table"
+    caption: "A pink and brown Coach handbag on a table."
+    category: accessories
+  - prompt: "A pair of pink and white running shoes on a wooden floor"
+    caption: "A pair of pink and white running shoes on a wooden floor."
+    category: accessories
+  - prompt: "A leather brown wallet open showing credit card slots"
+    caption: "An open brown leather wallet showing card slots."
+    category: accessories
+
+  # --- Computer equipment (common in VizWiz) ---
+  - prompt: "An Apple wireless keyboard with white keys on a black desk near a cable"
+    caption: "An Apple wireless keyboard on a black desk near a cable."
+    category: computer_equipment
+  - prompt: "A Dell computer monitor displaying a screen with text and dates"
+    caption: "A Dell computer monitor displaying text on the screen."
+    category: computer_equipment
+  - prompt: "A JVC remote control with many buttons on a wooden surface"
+    caption: "A JVC remote control on a wooden surface."
+    category: computer_equipment
+  - prompt: "A laptop computer keyboard with a trackpad visible from above"
+    caption: "A laptop keyboard with a trackpad seen from above."
+    category: computer_equipment
+
+  # --- Labels and text (model can't read text) ---
+  - prompt: "A white shipping label on a cardboard box showing item number and made in China text"
+    caption: "A white label on a box listing item number and origin."
+    category: text_labels
+  - prompt: "A medicine bottle with a white prescription label showing dosage instructions"
+    caption: "A medicine bottle with a prescription label."
+    category: text_labels
+  - prompt: "A nutrition facts label on the back of a cereal box"
+    caption: "A nutrition facts label on the back of a cereal box."
+    category: text_labels
+
+  # --- Dark and blurry scenes (common in VizWiz) ---
+  - prompt: "A dimly lit room with a bright light source creating glare and a blurry object nearby"
+    caption: "A dimly lit room with a bright light and a blurry object."
+    category: low_quality
+  - prompt: "A dark photograph showing only the silhouette of a person in a room"
+    caption: "A dark photograph showing a person's silhouette."
+    category: low_quality
+
+  # --- Fabric and clothing ---
+  - prompt: "A wrinkled grey bedsheet on a bed with slight blue tint"
+    caption: "A wrinkled grey sheet on a bed."
+    category: fabric
+  - prompt: "A white t-shirt folded on a wooden table"
+    caption: "A white t-shirt folded on a table."
+    category: fabric
+
+  # --- Kitchen / food items ---
+  - prompt: "A box of frozen pizza on a grocery store shelf"
+    caption: "A box of frozen pizza on a store shelf."
+    category: food
+  - prompt: "A bowl of cereal with milk on a kitchen counter in morning light"
+    caption: "A bowl of cereal with milk on a kitchen counter."
+    category: food
+  - prompt: "A microwave oven with its door open showing a plate inside"
+    caption: "A microwave with its door open and a plate inside."
+    category: food

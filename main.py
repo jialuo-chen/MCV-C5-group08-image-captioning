@@ -10,6 +10,8 @@ from src.evaluate_lora import evaluate_lora
 from src.evaluate_multimodal import evaluate_multimodal
 from src.evaluate_pretrained import evaluate_pretrained
 from src.generate_presentation_plots import generate_all_plots
+from src.generate_sd import generate_sd
+from src.generate_synthetic_data import generate_synthetic_data
 from src.infer import collect_image_paths, infer
 from src.optuna_sweep import run_optuna_sweep
 from src.optuna_visualize import load_and_visualize
@@ -139,6 +141,16 @@ def cmd_evaluate_lora(args: argparse.Namespace) -> None:
         checkpoint_path=args.checkpoint,
         output_dir=getattr(args, "output_dir", None),
     )
+
+
+def cmd_generate_sd(args: argparse.Namespace) -> None:
+    cfg = load_config(args.config, overrides=args.override)
+    generate_sd(cfg, prompt_override=getattr(args, "prompt", None))
+
+
+def cmd_generate_synthetic(args: argparse.Namespace) -> None:
+    cfg = load_config(args.config, overrides=args.override)
+    generate_synthetic_data(cfg)
 
 
 def main() -> None:
@@ -293,6 +305,24 @@ def main() -> None:
         "--output-dir", type=str, default=None, help="Output directory for results."
     )
 
+    p_gen_sd = subparsers.add_parser(
+        "generate-sd",
+        help="Generate images using Stable Diffusion.",
+    )
+    _add_common_args(p_gen_sd)
+    p_gen_sd.add_argument(
+        "--prompt",
+        type=str,
+        default=None,
+        help="Override prompt for quick single-image generation.",
+    )
+
+    p_gen_syn = subparsers.add_parser(
+        "generate-synthetic",
+        help="Generate synthetic training data with SD and VizWiz-format annotations.",
+    )
+    _add_common_args(p_gen_syn)
+
     args = parser.parse_args()
 
     commands = {
@@ -309,6 +339,8 @@ def main() -> None:
         "evaluate-multimodal": cmd_evaluate_multimodal,
         "finetune-lora": cmd_finetune_lora,
         "evaluate-lora": cmd_evaluate_lora,
+        "generate-sd": cmd_generate_sd,
+        "generate-synthetic": cmd_generate_synthetic,
     }
     commands[args.command](args)
 

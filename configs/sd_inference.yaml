@@ -1,0 +1,20 @@
+# Stable Diffusion inference configuration
+# Usage: uv run python main.py generate-sd --config configs/sd_inference.yaml
+# Quick test: uv run python main.py generate-sd --config configs/sd_inference.yaml --prompt "a cat on a table"
+
+stable_diffusion:
+  model_id: stabilityai/stable-diffusion-3.5-large-turbo
+  prompt: "A clear photograph of a household object on a table, natural lighting"
+
+  # Scheduler: default | flow_match_euler | ddpm | ddim | euler | euler_ancestral | dpm++
+  scheduler: default
+
+  negative_prompt: null
+  guidance_scale: 0.0        # 0.0 for turbo models, 7.5 typical for standard models
+  num_inference_steps: 4     # 4 for turbo, 20-50 for standard models
+  num_images_per_prompt: 1
+  width: 1024
+  height: 1024
+  seed: 42
+  dtype: bfloat16
+  output_dir: outputs
