@@ -85,6 +85,8 @@ def evaluate_lora(
     print(f"\nTest Results: {format_metrics(metrics)}")
     print(f"Average inference time per image: {avg_ms:.3f} ms")
 
+    debug_test_set = cfg.inference.get("debug_test_set", False)
+
     ckpt_label = Path(checkpoint_path).parent.parent.name
     out_dir = (
         Path(output_dir)
@@ -93,21 +95,40 @@ def evaluate_lora(
     )
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    rng = random.Random(42)
-    indices = list(range(num_images))
-    rng.shuffle(indices)
-    samples = [
-        {
-            "image": Path(all_image_paths[i]).name,
-            "prediction": all_predictions[i],
-            "references": all_references[i],
-        }
-        for i in indices[:15]
-    ]
+    if debug_test_set:
+        print("debug_test_set enabled — computing per-caption metrics …")
+        samples = []
+        for i in tqdm(range(num_images), desc="Per-caption metrics"):
+            per_metrics = compute_metrics([all_predictions[i]], [all_references[i]])
+            samples.append(
+                {
+                    "image": Path(all_image_paths[i]).name,
+                    "prediction": all_predictions[i],
+                    "references": all_references[i],
+                    "metrics": per_metrics,
+                }
+            )
+        # Sort ascending by average of the 4 metrics (worst captions first).
+        samples.sort(key=lambda s: sum(s["metrics"].values()) / len(s["metrics"]))
+        print(f"Worst caption  → {samples[0]['metrics']}")
+        print(f"Best  caption  → {samples[-1]['metrics']}")
+    else:
+        rng = random.Random(42)
+        indices = list(range(num_images))
+        rng.shuffle(indices)
+        samples = [
+            {
+                "image": Path(all_image_paths[i]).name,
+                "prediction": all_predictions[i],
+                "references": all_references[i],
+            }
+            for i in indices[:15]
+        ]
 
     results = {
         "model": f"LoRA({cfg.encoder.name}+{cfg.decoder.name})",
         "checkpoint": checkpoint_path,
+        "debug_test_set": debug_test_set,
         "metrics": metrics,
         "num_images": num_images,
         "average_inference_time_per_image_ms": round(avg_ms, 6),
