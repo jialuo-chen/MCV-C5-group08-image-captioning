@@ -42,9 +42,11 @@ We compare three models that cover the design space, not the full zoo:
 
 | Model | Role |
 |---|---|
-| `stabilityai/stable-diffusion-2-1` | classic baseline |
+| `sd2-community/stable-diffusion-2-1` | classic baseline (community mirror of SD 2.1) |
 | `stabilityai/stable-diffusion-xl-base-1.0` | larger, higher quality |
 | `stabilityai/sdxl-turbo` | distilled / fast |
+
+Note: the original `stabilityai/stable-diffusion-2-1` repository is no longer publicly available on HuggingFace, so we use the community mirror which hosts the same weights.
 
 For each model we generate P1 and P2 with the model's recommended inference settings:
 
