@@ -85,13 +85,12 @@ def _build_grid(
     images_by_cell: dict[tuple[int, int], Image.Image],
     col_labels: list[str],
     row_labels: list[str],
-    title: str,
     cell_size: int = 512,
 ) -> Image.Image:
     """Compose a labeled grid. images_by_cell is keyed by (row, col)."""
     n_rows = len(row_labels)
     n_cols = len(col_labels)
-    margin_top = 80
+    margin_top = 50
     margin_left = 140
     label_h = 40
     W = margin_left + n_cols * cell_size
@@ -100,17 +99,13 @@ def _build_grid(
     draw = ImageDraw.Draw(canvas)
 
     try:
-        font_title = ImageFont.truetype("DejaVuSans-Bold.ttf", 28)
         font = ImageFont.truetype("DejaVuSans.ttf", 20)
     except OSError:
-        font_title = ImageFont.load_default()
         font = ImageFont.load_default()
-
-    draw.text((20, 20), title, fill="black", font=font_title)
 
     for c, cl in enumerate(col_labels):
         x = margin_left + c * cell_size + cell_size // 2
-        draw.text((x, margin_top - 30), cl, fill="black", font=font, anchor="mm")
+        draw.text((x, margin_top - 25), cl, fill="black", font=font, anchor="mm")
 
     for r, rl in enumerate(row_labels):
         y = margin_top + r * (cell_size + label_h) + cell_size // 2
@@ -149,12 +144,31 @@ def run_sd_sweeps(cfg: Config) -> Path:
 
     results: list[dict] = []
     t_start = time.time()
+    skip_existing = bool(cfg.get("skip_existing", True))
+
+    # Decide up front which tasks actually need generation; skip model loads entirely
+    # when every task for that model is already on disk.
+    def _fname_for(t: dict) -> str:
+        return f"{t['sweep']}__{_slug(t['variant_label'])}__{t['prompt_key']}.png"
 
     for model_id, model_tasks in by_model.items():
+        pending = [
+            t for t in model_tasks
+            if not (skip_existing and (img_dir / _fname_for(t)).exists())
+        ]
+        for t in model_tasks:
+            fname = _fname_for(t)
+            if skip_existing and (img_dir / fname).exists() and t not in pending:
+                print(f"[{t['sweep']}] {t['variant_label']} | {t['prompt_label']} | cached")
+                results.append({**t, "file_name": fname, "seconds": 0.0})
+
+        if not pending:
+            continue
+
         pipe = _load_pipeline(model_id, dtype, cpu_offload)
         last_scheduler = None
 
-        for t in model_tasks:
+        for t in pending:
             if t["scheduler"] != last_scheduler:
                 _apply_scheduler(pipe, t["scheduler"])
                 last_scheduler = t["scheduler"]
@@ -178,9 +192,7 @@ def run_sd_sweeps(cfg: Config) -> Path:
             )
             elapsed = time.time() - t0
             image = result.images[0]
-            fname = (
-                f"{t['sweep']}__{_slug(t['variant_label'])}__{t['prompt_key']}.png"
-            )
+            fname = _fname_for(t)
             image.save(img_dir / fname)
             results.append({**t, "file_name": fname, "seconds": round(elapsed, 2)})
 
@@ -230,8 +242,7 @@ def _build_sweep_grid(
                 continue
             cells[(r, c)] = Image.open(img_dir / match["file_name"]).convert("RGB")
 
-    title = f"{sname}  (axis: {sweep.get('axis', '')})"
-    grid = _build_grid(cells, col_labels, row_labels, title)
+    grid = _build_grid(cells, col_labels, row_labels, title=sname)
     grid.save(grid_dir / f"{sname}.png")
     print(f"Grid → {grid_dir / f'{sname}.png'}")
 
