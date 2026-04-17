@@ -12,11 +12,25 @@ stable_diffusion:
   negative_prompt: "watermark, text overlay, clear, artistic, illustration, cartoon, 3d render"
   guidance_scale: 0.0
   num_inference_steps: 4
-  images_per_prompt: 50
-  width: 1024
-  height: 1024
+  images_per_template_prompt: 500
+  images_per_static_prompt: 50
+  batch_size: 4
   seed: 42
   dtype: bfloat16
+  # GPU settings
+  num_gpus: auto          # "auto" = all available, or set integer (1, 2, ...)
+  cpu_offload: true       # use enable_model_cpu_offload() for low-VRAM GPUs (e.g. RTX 3090 24GB)
+  image_sizes:
+    - [1024, 1024]
+    - [768, 768]
+    - [512, 512]
+    - [384, 384]
+    - [256, 256]
+    - [224, 224]
+    - [1024, 768]
+    - [768, 1024]
+    - [512, 384]
+    - [384, 512]
 
 # VizWiz-style augmentation: randomly apply degradation prefixes to prompts
 # so synthetic images resemble real VizWiz photos (smartphone, blurry, poorly lit)
@@ -47,14 +61,20 @@ vizwiz_style:
 #   Template: pattern + caption_pattern + variables (random fills per image)
 # Prompt selection is based on quantified weaknesses from 7542-sample eval analysis.
 prompts:
-  # === TEMPLATES (variable combinations sampled per image) ===
+  # === TEMPLATES ===
 
-  # --- Products / packaging (HIGHEST PRIORITY: 560 generic "food" preds, only 1 specific) ---
-  - pattern: "A {container} of {brand} {product} on a {surface}"
-    caption_pattern: "A {container} of {brand} {product} on a {surface}."
+  # --- Products / packaging (560 generic "food" preds, only 1 specific) ---
+  - pattern: "A {container} of {brand} {product} {placement} {surface}"
+    caption_pattern: "A {container} of {brand} {product} {placement} {surface}."
     category: product_packaging
+    caption_synonyms:
+      - "{brand} {product} in a {container} {placement} {surface}."
+      - "A {container} containing {brand} {product} {placement} {surface}."
+      - "A {brand} {product} {container} resting {placement} {surface}."
+      - "There is a {container} of {brand} {product} {placement} {surface}."
+      - "A {brand} brand {product} {container} placed {placement} {surface}."
     variables:
-      container: [box, can, bottle, package, bag, jar, carton, jug, tub, pouch, tin, cup]
+      container: [box, can, bottle, package, bag, jar, carton, jug, tub, pouch, tin, cup, sachet, packet, tube, canister, container, wrapper, crate, six-pack]
       brand:
         - Barilla
         - Coca-Cola
@@ -83,6 +103,20 @@ prompts:
         - Pringles
         - Doritos
         - Fanta
+        - Lay's
+        - Oreo
+        - Ritz
+        - Nabisco
+        - Dole
+        - Del Monte
+        - Hershey's
+        - Snickers
+        - M&M's
+        - Skittles
+        - Goya
+        - General Mills
+        - Tyson
+        - Pillsbury
       product:
         - penne pasta
         - soda
@@ -113,6 +147,23 @@ prompts:
         - oatmeal
         - hot chocolate mix
         - protein shake
+        - spaghetti
+        - macaroni and cheese
+        - pancake mix
+        - brownie mix
+        - tuna fish
+        - baked beans
+        - corn
+        - green beans
+        - chicken broth
+        - apple sauce
+        - fruit punch
+        - lemonade
+        - iced coffee
+        - chocolate milk
+        - granola
+        - trail mix
+      placement: ["on a", "sitting on a", "placed on a", "resting on a", "next to items on a", "standing on a"]
       surface:
         - kitchen counter
         - wooden table
@@ -126,13 +177,22 @@ prompts:
         - marble counter
         - picnic table
         - glass table
+        - kitchen island
+        - pantry shelf
+        - microwave top
+        - window sill
 
-  # --- Food items without generic "food" (counter cookie/chip hallucination) ---
-  - pattern: "A {container} of {food_item} on a {surface}"
-    caption_pattern: "A {container} of {food_item} on a {surface}."
+  # --- Food items (counter cookie/chip hallucination + generic "food") ---
+  - pattern: "A {container} of {food_item} {placement} {surface}"
+    caption_pattern: "A {container} of {food_item} {placement} {surface}."
     category: food_specific
+    caption_synonyms:
+      - "{food_item} in a {container} {placement} {surface}."
+      - "A {container} filled with {food_item} {placement} {surface}."
+      - "Some {food_item} served in a {container} {placement} {surface}."
+      - "There is a {container} of {food_item} {placement} {surface}."
     variables:
-      container: [bag, package, bowl, box, plate, cup, tray, wrapper, basket, bucket]
+      container: [bag, package, bowl, box, plate, cup, tray, wrapper, basket, bucket, dish, platter, sack, tin, jar, bin, carton, pouch]
       food_item:
         - potato chips
         - chocolate chip cookies
@@ -154,6 +214,27 @@ prompts:
         - cheese crackers
         - tortilla chips
         - sunflower seeds
+        - peanuts
+        - almonds
+        - cashews
+        - goldfish crackers
+        - graham crackers
+        - fig bars
+        - banana chips
+        - corn chips
+        - veggie straws
+        - cheese puffs
+        - chocolate truffles
+        - hard candy
+        - jelly beans
+        - marshmallows
+        - dried mango
+        - wasabi peas
+        - pita chips
+        - breadsticks
+        - breakfast cereal
+        - muesli
+      placement: ["on a", "sitting on a", "placed on a", "resting on a", "set on a"]
       surface:
         - wooden table
         - shelf
@@ -164,11 +245,72 @@ prompts:
         - store shelf
         - dining table
         - coffee table
+        - tray table
+        - nightstand
+        - park bench
 
-  # --- DVD/media (36 hallucinated titles, 92% of quoted text wrong) ---
-  - pattern: "A {media_type} with {cover_desc} on a {surface}"
-    caption_pattern: "A {media_type} with {cover_desc} on a {surface}."
+  # --- Canned goods (148 generic "can of food" predictions) ---
+  - pattern: "A {adj} can of {product} {action}"
+    caption_pattern: "A {adj} can of {product} {action}."
+    category: canned_goods
+    caption_synonyms:
+      - "A {adj} tin of {product} {action}."
+      - "A {adj} can containing {product} {action}."
+      - "Someone has a {adj} can of {product} {action}."
+    variables:
+      adj: [red, blue, green, yellow, white, silver, tall, small, large, dented, shiny, colorful, unopened, open]
+      product:
+        - tomato soup
+        - chicken broth
+        - black beans
+        - tuna
+        - corn
+        - green beans
+        - peas
+        - mushrooms
+        - peaches
+        - pineapple
+        - coconut milk
+        - evaporated milk
+        - chili
+        - sardines
+        - spam
+        - ravioli
+        - baked beans
+        - kidney beans
+        - chickpeas
+        - diced tomatoes
+        - tomato paste
+        - condensed milk
+        - beef stew
+        - clam chowder
+        - vegetable soup
+        - cream of mushroom soup
+        - fruit cocktail
+        - mandarin oranges
+        - cranberry sauce
+      action:
+        - on a kitchen counter
+        - being held by a hand
+        - next to a bowl
+        - on a wooden shelf
+        - in a grocery cart
+        - on a pantry shelf
+        - on a dining table
+        - beside other cans
+        - near a can opener
+        - sitting on a stove top
+        - placed on a cutting board
+
+  # --- DVD/media (36 hallucinated titles, 92% wrong) ---
+  - pattern: "A {media_type} with {cover_desc} {placement} {surface}"
+    caption_pattern: "A {media_type} with {cover_desc} {placement} {surface}."
     category: media
+    caption_synonyms:
+      - "A {media_type} showing {cover_desc} {placement} {surface}."
+      - "A {media_type} featuring {cover_desc} lying {placement} {surface}."
+      - "There is a {media_type} with {cover_desc} {placement} {surface}."
+      - "A {media_type} displaying {cover_desc} {placement} {surface}."
     variables:
       media_type:
         - DVD case
@@ -183,6 +325,11 @@ prompts:
         - VHS tape
         - paperback novel
         - board game box
+        - record album
+        - audiobook case
+        - coloring book
+        - instruction manual
+        - photo album
       cover_desc:
         - a man in a suit on the cover
         - a woman smiling on the cover
@@ -198,6 +345,15 @@ prompts:
         - a family photo on the cover
         - a city skyline on the cover
         - a superhero on the cover
+        - a sunset on the cover
+        - a beach scene on the cover
+        - a car on the cover
+        - a dog on the cover
+        - a mountain landscape on the cover
+        - flowers on the cover
+        - a robot on the cover
+        - a spaceship on the cover
+      placement: ["on a", "sitting on a", "lying on a", "placed on a", "resting on a"]
       surface:
         - wooden table
         - grey surface
@@ -210,11 +366,19 @@ prompts:
         - bookshelf
         - glass table
         - floor
+        - bed
+        - countertop
+        - chair
 
-  # --- Computer screens (453 identical "screen with" preds) ---
-  - pattern: "A {device} showing {content}"
+  # --- Computer screens (453 identical "screen with" predictions) ---
+  - pattern: "A {device} showing {content} with {screen_detail}"
     caption_pattern: "A {device} showing {content}."
     category: screens
+    caption_synonyms:
+      - "A {device} displaying {content}."
+      - "{content} is visible on a {device}."
+      - "A {device} with {content} on the screen."
+      - "The {device} is showing {content}."
     variables:
       device:
         - computer monitor
@@ -223,9 +387,12 @@ prompts:
         - tablet screen
         - TV screen
         - desktop monitor
-        - smartphone
+        - smartphone display
         - iMac screen
         - Chromebook screen
+        - flat screen TV
+        - LCD display
+        - touchscreen device
       content:
         - a login page
         - an email inbox
@@ -247,13 +414,36 @@ prompts:
         - a captcha verification
         - a file browser
         - a chat conversation
+        - a word processor
+        - a code editor
+        - a photo editing app
+        - a game
+        - a calculator
+        - a recipe website
+        - a fitness tracker
+      screen_detail:
+        - a blue background
+        - a white background
+        - dark mode enabled
+        - multiple tabs open
+        - a pop-up notification
+        - text in a large font
+        - several icons
+        - a sidebar menu
+        - bright colors
+        - a loading spinner
 
   # --- Electronics / devices (model defaults to generic "device") ---
   - pattern: "A {color} {device} with {detail} on a {surface}"
     caption_pattern: "A {color} {device} with {detail} on a {surface}."
     category: electronics
+    caption_synonyms:
+      - "A {color} {device} featuring {detail} on a {surface}."
+      - "There is a {color} {device} with {detail} sitting on a {surface}."
+      - "A {color} {device} on a {surface}, showing {detail}."
+      - "A {device} in {color} with {detail} placed on a {surface}."
     variables:
-      color: [white, black, silver, grey, beige, blue, red]
+      color: [white, black, silver, grey, beige, blue, red, green, tan, dark grey, matte black, glossy white]
       device:
         - power strip
         - surge protector
@@ -271,6 +461,16 @@ prompts:
         - toaster
         - space heater
         - fan
+        - air purifier
+        - humidifier
+        - coffee maker
+        - blender
+        - rice cooker
+        - electric toothbrush
+        - hair dryer
+        - iron
+        - scale
+        - baby monitor
       detail:
         - multiple outlets
         - indicator lights
@@ -282,6 +482,11 @@ prompts:
         - an antenna
         - a digital screen
         - a USB port
+        - a charging cable
+        - a dial
+        - temperature readings
+        - a timer display
+        - a red light
       surface:
         - carpet floor
         - wooden desk
@@ -293,74 +498,235 @@ prompts:
         - bedside table
         - office desk
         - countertop
-
-  # === STATIC PROMPTS (categories with limited natural variation) ===
+        - bathroom counter
+        - dresser top
+        - window sill
+        - workbench
 
   # --- Currency / bills (misidentification) ---
-  - prompt: "A close-up photograph of a five dollar bill showing Abraham Lincoln's portrait"
-    caption: "A five dollar bill with Abraham Lincoln's portrait."
+  - pattern: "A {view} of a {denomination} dollar bill {detail} {placement}"
+    caption_pattern: "A {denomination} dollar bill {detail} {placement}."
     category: currency
-  - prompt: "A hand holding a one dollar bill with George Washington's portrait clearly visible"
-    caption: "A hand holding a one dollar bill with George Washington's portrait."
-    category: currency
-  - prompt: "A twenty dollar bill laid flat on a wooden table, Andrew Jackson portrait visible"
-    caption: "A twenty dollar bill on a wooden table showing Andrew Jackson."
-    category: currency
-  - prompt: "A hundred dollar bill with Benjamin Franklin's portrait on a desk"
-    caption: "A hundred dollar bill with Benjamin Franklin's portrait."
-    category: currency
-  - prompt: "A ten dollar bill showing Alexander Hamilton's portrait held between fingers"
-    caption: "A ten dollar bill with Alexander Hamilton's portrait."
-    category: currency
+    caption_synonyms:
+      - "A {denomination} dollar bill showing {detail} {placement}."
+      - "A US {denomination} dollar bill {placement}."
+      - "{detail}, visible on a {denomination} dollar bill {placement}."
+    variables:
+      view: [close-up photograph, detailed shot, clear image, hand-held photo, top-down view]
+      denomination: [one, five, ten, twenty, fifty, hundred]
+      detail:
+        - showing George Washington's portrait
+        - showing Abraham Lincoln's portrait
+        - showing Alexander Hamilton's portrait
+        - showing Andrew Jackson's portrait
+        - showing Ulysses Grant's portrait
+        - showing Benjamin Franklin's portrait
+        - with visible serial numbers
+        - showing the eagle emblem
+        - with creased folds
+        - looking crisp and new
+      placement:
+        - on a wooden table
+        - held between fingers
+        - on a desk
+        - in a wallet
+        - on a counter
+        - next to coins
+        - on a white surface
+        - lying flat on a table
+        - in someone's hand
+        - on top of other bills
 
   # --- Bags / accessories (object confusion) ---
-  - prompt: "A pink and brown Coach handbag with the Coach logo pattern on a table"
-    caption: "A pink and brown Coach handbag on a table."
+  - pattern: "A {color} {material} {item} {detail} on a {surface}"
+    caption_pattern: "A {color} {material} {item} {detail} on a {surface}."
     category: accessories
-  - prompt: "A pair of pink and white running shoes on a wooden floor"
-    caption: "A pair of pink and white running shoes on a wooden floor."
-    category: accessories
-  - prompt: "A leather brown wallet open showing credit card slots"
-    caption: "An open brown leather wallet showing card slots."
-    category: accessories
-  - prompt: "A black Nike backpack with white logo on a chair"
-    caption: "A black Nike backpack on a chair."
-    category: accessories
-  - prompt: "A blue denim purse with a metal clasp on a table"
-    caption: "A blue denim purse on a table."
-    category: accessories
+    caption_synonyms:
+      - "A {color} {item} made of {material} {detail} on a {surface}."
+      - "A {material} {item} in {color} on a {surface}."
+      - "There is a {color} {material} {item} on a {surface}."
+      - "A {item} in {color} {material} sitting on a {surface}."
+    variables:
+      color: [pink, brown, black, red, blue, white, tan, beige, green, purple, grey, orange, navy, maroon, teal]
+      material: [leather, canvas, denim, nylon, fabric, suede, vinyl, synthetic, cotton, woven, knit]
+      item: [handbag, backpack, wallet, purse, tote bag, shoulder bag, clutch, messenger bag, fanny pack, duffel bag, satchel, crossbody bag]
+      detail:
+        - with a zipper
+        - with a metal clasp
+        - with a logo pattern
+        - with multiple compartments
+        - with a strap
+        - with a buckle
+        - with decorative stitching
+        - showing a brand tag
+        - with a front pocket
+        - with a flap closure
+      surface: [table, chair, wooden floor, shelf, couch, bench, desk, countertop, bed, car seat, hook]
 
-  # --- Labels and text (model can't read, structural issue) ---
-  - prompt: "A white shipping label on a cardboard box showing item number and made in China text"
-    caption: "A white label on a box listing item number and origin."
-    category: text_labels
-  - prompt: "A medicine bottle with a white prescription label showing dosage instructions"
-    caption: "A medicine bottle with a prescription label."
-    category: text_labels
-  - prompt: "A nutrition facts label on the back of a cereal box"
-    caption: "A nutrition facts label on the back of a cereal box."
-    category: text_labels
+  # --- Shoes (commonly confused with bags) ---
+  - pattern: "A pair of {color} {shoe_type} {detail} on a {surface}"
+    caption_pattern: "A pair of {color} {shoe_type} {detail} on a {surface}."
+    category: shoes
+    caption_synonyms:
+      - "{color} {shoe_type} {detail} on a {surface}."
+      - "A pair of {shoe_type} in {color} on a {surface}."
+      - "Two {color} {shoe_type} sitting on a {surface}."
+    variables:
+      color: [pink, white, black, red, blue, brown, grey, green, orange, yellow, multicolored, navy, tan]
+      shoe_type: [running shoes, sneakers, boots, sandals, dress shoes, loafers, high heels, flip flops, slippers, tennis shoes, hiking boots, basketball shoes, cleats]
+      detail:
+        - with white laces
+        - with a logo on the side
+        - with rubber soles
+        - with velcro straps
+        - with a scuff mark
+        - neatly placed
+        - slightly worn
+        - brand new
+        - with colorful accents
+      surface: [wooden floor, carpet, doormat, shoe rack, tile floor, hardwood floor, grass, concrete]
 
-  # --- Dark and blurry scenes (VizWiz-specific) ---
-  - prompt: "A dimly lit room with a bright light source creating glare and a blurry object nearby"
-    caption: "A dimly lit room with a bright light and a blurry object."
+  # --- Labels and text ---
+  - pattern: "A {label_type} on a {item} showing {content_desc}"
+    caption_pattern: "A {label_type} on a {item} showing {content_desc}."
+    category: text_labels
+    caption_synonyms:
+      - "A {label_type} attached to a {item}."
+      - "A {item} with a {label_type} displaying {content_desc}."
+      - "The {label_type} on the {item} shows {content_desc}."
+    variables:
+      label_type: [shipping label, price tag, nutrition facts label, prescription label, barcode sticker, ingredient list, warning label, brand label, expiration date sticker, return address label]
+      item: [cardboard box, medicine bottle, cereal box, package, envelope, can, jar, bag, product, container, box]
+      content_desc:
+        - text and numbers
+        - an address and tracking number
+        - ingredient information
+        - dosage instructions
+        - a barcode and price
+        - nutritional values
+        - a warning symbol
+        - product specifications
+        - an expiration date
+        - origin information
+
+  # --- Dark / blurry / degraded scenes ---
+  - pattern: "A {quality} photograph of {subject} in {setting}"
+    caption_pattern: "A {quality} photograph of {subject} in {setting}."
     category: low_quality
-  - prompt: "A dark photograph showing only the silhouette of a person in a room"
-    caption: "A dark photograph showing a person's silhouette."
-    category: low_quality
+    caption_synonyms:
+      - "A {quality} image showing {subject} in {setting}."
+      - "{subject} captured in a {quality} photo in {setting}."
+      - "A {quality} picture of {subject}."
+    variables:
+      quality: [dimly lit, dark, blurry, overexposed, out of focus, grainy, shadowy, poorly lit, underexposed, hazy]
+      subject:
+        - a room with furniture
+        - a person's silhouette
+        - a kitchen appliance
+        - a window with light coming through
+        - a hallway
+        - a table with objects
+        - a bookshelf
+        - a doorway
+        - someone's hand reaching for something
+        - an unidentifiable object
+        - a wall with a picture
+        - a ceiling light
+      setting: [a dark room, a dimly lit hallway, a room at night, a poorly lit kitchen, a shadowy bedroom, an unlit corridor, a garage, a basement, a closet, an attic]
 
   # --- Fabric and clothing ---
-  - prompt: "A wrinkled grey bedsheet on a bed with slight blue tint"
-    caption: "A wrinkled grey sheet on a bed."
+  - pattern: "A {color} {garment} {state} on a {surface}"
+    caption_pattern: "A {color} {garment} {state} on a {surface}."
     category: fabric
-  - prompt: "A white t-shirt folded on a wooden table"
-    caption: "A white t-shirt folded on a table."
-    category: fabric
+    caption_synonyms:
+      - "A {garment} in {color} {state} on a {surface}."
+      - "There is a {color} {garment} {state} on a {surface}."
+      - "A {color} {garment} lies {state} on a {surface}."
+    variables:
+      color: [white, grey, blue, black, red, pink, green, striped, plaid, floral, dark, light blue, navy]
+      garment: [t-shirt, bedsheet, towel, pair of jeans, sweater, jacket, dress shirt, hoodie, shorts, skirt, blanket, pillowcase, polo shirt, blouse, scarf, sock]
+      state: [folded, wrinkled, laid flat, crumpled, hanging, neatly arranged, draped, spread out, bunched up, inside out]
+      surface: [wooden table, bed, chair, couch, dresser, floor, hanger, laundry basket, ironing board, washing machine top]
 
-  # --- Kitchen ---
-  - prompt: "A bowl of cereal with milk on a kitchen counter in morning light"
-    caption: "A bowl of cereal with milk on a kitchen counter."
-    category: food
-  - prompt: "A microwave oven with its door open showing a plate inside"
-    caption: "A microwave with its door open and a plate inside."
-    category: food
+  # --- Kitchen appliances and items ---
+  - pattern: "A {color} {appliance} {state} on a {surface}"
+    caption_pattern: "A {color} {appliance} {state} on a {surface}."
+    category: kitchen
+    caption_synonyms:
+      - "A {appliance} in {color} {state} on a {surface}."
+      - "There is a {color} {appliance} on a {surface}."
+      - "A {color} {appliance} sitting on a {surface}."
+    variables:
+      color: [white, black, silver, stainless steel, red, grey, beige, chrome]
+      appliance:
+        - microwave oven
+        - toaster
+        - coffee maker
+        - blender
+        - stand mixer
+        - rice cooker
+        - electric kettle
+        - slow cooker
+        - food processor
+        - air fryer
+        - waffle maker
+        - instant pot
+        - juicer
+        - bread maker
+        - electric grill
+        - ice cream maker
+      state:
+        - with its door open
+        - with a plate inside
+        - turned on
+        - plugged in
+        - with food inside
+        - next to a cutting board
+        - beside plates
+        - near a coffee mug
+        - with a timer running
+        - with its lid off
+      surface: [kitchen counter, granite countertop, wooden counter, marble island, stovetop, dining table, pantry shelf]
+
+  # --- People holding / interacting with objects ---
+  - pattern: "A person {action} a {object} {context}"
+    caption_pattern: "A person {action} a {object} {context}."
+    category: person_holding
+    caption_synonyms:
+      - "Someone {action} a {object} {context}."
+      - "A hand {action} a {object} {context}."
+      - "A person is {action} a {object} {context}."
+    variables:
+      action: [holding, gripping, examining, pointing at, reaching for, picking up, putting down, carrying, showing, reading]
+      object:
+        - can of soup
+        - bottle of water
+        - TV remote
+        - cell phone
+        - medicine bottle
+        - credit card
+        - book
+        - pen
+        - key ring
+        - pair of glasses
+        - flashlight
+        - package
+        - receipt
+        - newspaper
+        - shopping bag
+        - umbrella
+        - coffee cup
+        - fork
+        - toothbrush
+      context:
+        - in a kitchen
+        - near a table
+        - outdoors
+        - in a store
+        - at a desk
+        - in a car
+        - in a living room
+        - at a pharmacy
+        - in a bedroom
+        - in a hallway
+        - under a lamp

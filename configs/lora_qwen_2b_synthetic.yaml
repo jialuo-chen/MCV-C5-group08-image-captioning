@@ -42,7 +42,7 @@ projection:
   dropout: 0.1
 
 dataset:
-  root: /data/113-2/users/jchen/VizWiz-Captions/images
+  root: /data/123-1/users/jchen/VizWiz
   train_ann: annotations/train.json
   val_ann: annotations/val.json
   train_img_dir: train
