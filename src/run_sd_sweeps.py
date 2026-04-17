@@ -242,7 +242,7 @@ def _build_sweep_grid(
                 continue
             cells[(r, c)] = Image.open(img_dir / match["file_name"]).convert("RGB")
 
-    grid = _build_grid(cells, col_labels, row_labels, title=sname)
+    grid = _build_grid(cells, col_labels, row_labels)
     grid.save(grid_dir / f"{sname}.png")
     print(f"Grid → {grid_dir / f'{sname}.png'}")
 
