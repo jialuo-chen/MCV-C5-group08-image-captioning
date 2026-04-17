@@ -20,8 +20,118 @@ stable_diffusion:
 
 # Each prompt also acts as the ground-truth caption for that image.
 # caption field overrides prompt as GT when provided (for cleaner captions).
+# Prompt selection is based on quantified weaknesses from 7542-sample eval analysis.
 prompts:
-  # --- Currency / bills (model confused Washington for Lincoln) ---
+  # --- Specific products / packaging (HIGHEST PRIORITY: 560 generic "food" preds, only 1 specific) ---
+  - prompt: "A box of Barilla whole grain penne pasta on a kitchen counter"
+    caption: "A box of Barilla whole grain penne pasta on a kitchen counter."
+    category: product_packaging
+  - prompt: "A can of Coca-Cola sitting on a white table, red label clearly visible"
+    caption: "A can of Coca-Cola on a white table."
+    category: product_packaging
+  - prompt: "A bottle of Heinz ketchup next to a plate of food"
+    caption: "A bottle of Heinz ketchup next to a plate."
+    category: product_packaging
+  - prompt: "A can of Dr Pepper on a laptop keyboard, red and maroon label visible"
+    caption: "A can of Dr Pepper on a laptop keyboard."
+    category: product_packaging
+  - prompt: "A bottle of Ocean Spray cranberry juice on a wooden counter"
+    caption: "A bottle of Ocean Spray cranberry juice on a counter."
+    category: product_packaging
+  - prompt: "A can of Wegmans brand iced tea mix with a green label"
+    caption: "A can of Wegmans iced tea mix on the counter."
+    category: product_packaging
+  - prompt: "A box of Jell-O brand instant chocolate pudding mix on a shelf"
+    caption: "A box of Jell-O instant chocolate pudding mix."
+    category: product_packaging
+  - prompt: "A box of General Mills Cheerios cereal on a kitchen table"
+    caption: "A box of Cheerios cereal on a kitchen table."
+    category: product_packaging
+  - prompt: "A can of Mountain Dew next to a bag of Doritos on a table"
+    caption: "A can of Mountain Dew next to a bag of Doritos."
+    category: product_packaging
+  - prompt: "A bottle of Sprite in a convenience store refrigerator"
+    caption: "A bottle of Sprite in a store refrigerator."
+    category: product_packaging
+  - prompt: "A package of Betty Crocker cake mix with a red spoon logo"
+    caption: "A package of Betty Crocker cake mix."
+    category: product_packaging
+
+  # --- Food without "food" (counter cookie/chip hallucination: 13 wrong preds) ---
+  - prompt: "A bag of Frito-Lay potato chips on a wooden table"
+    caption: "A bag of Frito-Lay potato chips on a table."
+    category: food_specific
+  - prompt: "A package of Oreo cookies in a blue wrapper on a shelf"
+    caption: "A package of Oreo cookies in a blue wrapper."
+    category: food_specific
+  - prompt: "A bowl of chocolate chip cookies on a white plate"
+    caption: "A bowl of chocolate chip cookies on a white plate."
+    category: food_specific
+  - prompt: "A can of Progresso chicken noodle soup on a counter"
+    caption: "A can of Progresso chicken noodle soup."
+    category: food_specific
+  - prompt: "A box of frozen pizza on a grocery store shelf"
+    caption: "A box of frozen pizza on a store shelf."
+    category: food_specific
+  - prompt: "A package of 10 milligram supplement pills in blister packs"
+    caption: "A package of supplement pills in blister packs."
+    category: food_specific
+
+  # --- DVD/media (36 hallucinated titles, 92% of quoted text wrong) ---
+  - prompt: "A DVD case with a man dancing on a blue cover laying on a wooden surface"
+    caption: "A DVD case with a man dancing on the blue cover on a wooden surface."
+    category: media
+  - prompt: "A stack of DVD cases on a shelf showing various movie covers"
+    caption: "A stack of DVD cases on a shelf."
+    category: media
+  - prompt: "A Hannah Montana Disney movie DVD case on a grey surface"
+    caption: "A Hannah Montana Disney movie DVD case."
+    category: media
+  - prompt: "A CD album with a photo of a male musician on the cover"
+    caption: "A music CD with a male musician on the cover."
+    category: media
+  - prompt: "A TV Guide magazine with a close-up of a woman on the cover"
+    caption: "A TV Guide magazine on a table."
+    category: media
+  - prompt: "A cookbook with a picture of a blender and smoothie on the cover"
+    caption: "A cookbook with a blender and smoothie on the cover."
+    category: media
+
+  # --- Computer screens (453 identical "screen with" preds) ---
+  - prompt: "A computer monitor showing a login page with username and password fields"
+    caption: "A computer monitor showing a login page."
+    category: screens
+  - prompt: "A laptop screen showing an email inbox with unread messages"
+    caption: "A laptop screen showing an email inbox."
+    category: screens
+  - prompt: "A phone screen showing a weather forecast with temperature readings"
+    caption: "A phone screen showing a weather forecast."
+    category: screens
+  - prompt: "A tablet screen showing a satellite map view of a city"
+    caption: "A tablet screen showing a satellite map."
+    category: screens
+  - prompt: "A computer monitor showing a video call application with a person on screen"
+    caption: "A computer monitor showing a video call."
+    category: screens
+
+  # --- Power strips / electronics (model defaults to 'device') ---
+  - prompt: "A white power strip with multiple outlets and switches plugged in on carpet floor"
+    caption: "A white power strip with multiple outlets plugged in on carpet."
+    category: electronics
+  - prompt: "A black surge protector with six outlets and indicator lights"
+    caption: "A black surge protector with six outlets."
+    category: electronics
+  - prompt: "A USB charging hub with multiple cables connected on a desk"
+    caption: "A USB charging hub with cables on a desk."
+    category: electronics
+  - prompt: "A barbecue grill with a black lid outdoors on a patio"
+    caption: "A barbecue grill with a black lid on a patio."
+    category: electronics
+  - prompt: "A digital alarm clock on a nightstand showing the time in red numbers"
+    caption: "A digital alarm clock on a nightstand."
+    category: electronics
+
+  # --- Currency / bills (misidentification) ---
   - prompt: "A close-up photograph of a five dollar bill showing Abraham Lincoln's portrait"
     caption: "A five dollar bill with Abraham Lincoln's portrait."
     category: currency
@@ -32,37 +142,7 @@ prompts:
     caption: "A twenty dollar bill on a wooden table showing Andrew Jackson."
     category: currency
 
-  # --- Specific products / packaging (model too generic) ---
-  - prompt: "A box of Barilla whole grain penne pasta on a kitchen counter"
-    caption: "A box of Barilla whole grain penne pasta on a kitchen counter."
-    category: product_packaging
-  - prompt: "A can of Coca-Cola sitting on a white table, red label clearly visible"
-    caption: "A can of Coca-Cola on a white table."
-    category: product_packaging
-  - prompt: "A bottle of Heinz ketchup next to a plate of food"
-    caption: "A bottle of Heinz ketchup next to a plate."
-    category: product_packaging
-
-  # --- Power strips / electronics (model called it 'white device') ---
-  - prompt: "A white power strip with multiple outlets and switches plugged in on carpet floor"
-    caption: "A white power strip with multiple outlets plugged in on carpet."
-    category: electronics
-  - prompt: "A black surge protector with six outlets and indicator lights"
-    caption: "A black surge protector with six outlets."
-    category: electronics
-  - prompt: "A USB charging hub with multiple cables connected on a desk"
-    caption: "A USB charging hub with cables on a desk."
-    category: electronics
-
-  # --- DVD/media covers (model hallucinated specific shows) ---
-  - prompt: "A DVD case with a man dancing on a blue cover laying on a wooden surface"
-    caption: "A DVD case with a man dancing on the blue cover on a wooden surface."
-    category: media
-  - prompt: "A stack of DVD cases on a shelf showing various movie covers"
-    caption: "A stack of DVD cases on a shelf."
-    category: media
-
-  # --- Bags / accessories (model confused shoe for handbag) ---
+  # --- Bags / accessories (object confusion) ---
   - prompt: "A pink and brown Coach handbag with the Coach logo pattern on a table"
     caption: "A pink and brown Coach handbag on a table."
     category: accessories
@@ -73,21 +153,7 @@ prompts:
     caption: "An open brown leather wallet showing card slots."
     category: accessories
 
-  # --- Computer equipment (common in VizWiz) ---
-  - prompt: "An Apple wireless keyboard with white keys on a black desk near a cable"
-    caption: "An Apple wireless keyboard on a black desk near a cable."
-    category: computer_equipment
-  - prompt: "A Dell computer monitor displaying a screen with text and dates"
-    caption: "A Dell computer monitor displaying text on the screen."
-    category: computer_equipment
-  - prompt: "A JVC remote control with many buttons on a wooden surface"
-    caption: "A JVC remote control on a wooden surface."
-    category: computer_equipment
-  - prompt: "A laptop computer keyboard with a trackpad visible from above"
-    caption: "A laptop keyboard with a trackpad seen from above."
-    category: computer_equipment
-
-  # --- Labels and text (model can't read text) ---
+  # --- Labels and text (model can't read, structural issue) ---
   - prompt: "A white shipping label on a cardboard box showing item number and made in China text"
     caption: "A white label on a box listing item number and origin."
     category: text_labels
@@ -98,7 +164,7 @@ prompts:
     caption: "A nutrition facts label on the back of a cereal box."
     category: text_labels
 
-  # --- Dark and blurry scenes (common in VizWiz) ---
+  # --- Dark and blurry scenes (VizWiz-specific) ---
   - prompt: "A dimly lit room with a bright light source creating glare and a blurry object nearby"
     caption: "A dimly lit room with a bright light and a blurry object."
     category: low_quality
@@ -113,11 +179,6 @@ prompts:
   - prompt: "A white t-shirt folded on a wooden table"
     caption: "A white t-shirt folded on a table."
     category: fabric
-
-  # --- Kitchen / food items ---
-  - prompt: "A box of frozen pizza on a grocery store shelf"
-    caption: "A box of frozen pizza on a store shelf."
-    category: food
   - prompt: "A bowl of cereal with milk on a kitchen counter in morning light"
     caption: "A bowl of cereal with milk on a kitchen counter."
     category: food
