@@ -12,6 +12,7 @@ from src.evaluate_pretrained import evaluate_pretrained
 from src.generate_presentation_plots import generate_all_plots
 from src.generate_sd import generate_sd
 from src.generate_synthetic_data import generate_synthetic_data
+from src.run_sd_sweeps import run_sd_sweeps
 from src.infer import collect_image_paths, infer
 from src.optuna_sweep import run_optuna_sweep
 from src.optuna_visualize import load_and_visualize
@@ -151,6 +152,11 @@ def cmd_generate_sd(args: argparse.Namespace) -> None:
 def cmd_generate_synthetic(args: argparse.Namespace) -> None:
     cfg = load_config(args.config, overrides=args.override)
     generate_synthetic_data(cfg)
+
+
+def cmd_run_sd_sweeps(args: argparse.Namespace) -> None:
+    cfg = load_config(args.config, overrides=args.override)
+    run_sd_sweeps(cfg)
 
 
 def main() -> None:
@@ -323,6 +329,12 @@ def main() -> None:
     )
     _add_common_args(p_gen_syn)
 
+    p_sweeps = subparsers.add_parser(
+        "run-sd-sweeps",
+        help="Run the Task A/B Stable Diffusion experiment sweeps.",
+    )
+    _add_common_args(p_sweeps)
+
     args = parser.parse_args()
 
     commands = {
@@ -341,6 +353,7 @@ def main() -> None:
         "evaluate-lora": cmd_evaluate_lora,
         "generate-sd": cmd_generate_sd,
         "generate-synthetic": cmd_generate_synthetic,
+        "run-sd-sweeps": cmd_run_sd_sweeps,
     }
     commands[args.command](args)
 

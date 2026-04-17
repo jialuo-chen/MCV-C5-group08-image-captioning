@@ -1,0 +1,82 @@
+# Experiment spec for Tasks A & B (see docs/task_ab_experiment.md).
+# Every sweep has 3 variants × 2 prompts = 6 images (B4 has 2 variants × 1 prompt = 2).
+
+seed: 42
+output_dir: outputs
+run_name: sd_sweeps
+
+# Pipeline / hardware
+dtype: bfloat16
+cpu_offload: false
+width: 1024
+height: 1024
+
+# Two reference prompts reused across every sweep
+prompts:
+  p1:
+    label: "P1 simple"
+    text: "a red apple on a wooden table, studio lighting"
+  p2:
+    label: "P2 hard"
+    text: "a person holding a sign that reads 'HELLO', realistic photo"
+
+# Default inference point. Any value not overridden by a sweep variant
+# falls back here.
+reference:
+  scheduler: "dpm++"
+  guidance_scale: 7.5
+  num_inference_steps: 25
+  negative_prompt: ""
+
+sweeps:
+  # Task A — model comparison (each variant uses its own recommended settings)
+  - name: A_models
+    axis: model
+    prompts: [p1, p2]
+    variants:
+      - label: "SD 2.1"
+        model_id: "stabilityai/stable-diffusion-2-1"
+      - label: "SDXL base"
+        model_id: "stabilityai/stable-diffusion-xl-base-1.0"
+      - label: "SDXL Turbo"
+        model_id: "stabilityai/sdxl-turbo"
+        guidance_scale: 0.0
+        num_inference_steps: 4
+
+  # Task B — all parameter sweeps run on SDXL base
+  - name: B1_scheduler
+    axis: scheduler
+    model_id: "stabilityai/stable-diffusion-xl-base-1.0"
+    prompts: [p1, p2]
+    variants:
+      - { label: "DDPM",  scheduler: "ddpm" }
+      - { label: "DDIM",  scheduler: "ddim" }
+      - { label: "DPM++", scheduler: "dpm++" }
+
+  - name: B2_cfg
+    axis: guidance_scale
+    model_id: "stabilityai/stable-diffusion-xl-base-1.0"
+    prompts: [p1, p2]
+    variants:
+      - { label: "CFG 1.0",  guidance_scale: 1.0 }
+      - { label: "CFG 7.5",  guidance_scale: 7.5 }
+      - { label: "CFG 12.0", guidance_scale: 12.0 }
+
+  - name: B3_steps
+    axis: num_inference_steps
+    model_id: "stabilityai/stable-diffusion-xl-base-1.0"
+    prompts: [p1, p2]
+    variants:
+      - { label: "steps 4",  num_inference_steps: 4 }
+      - { label: "steps 25", num_inference_steps: 25 }
+      - { label: "steps 50", num_inference_steps: 50 }
+
+  - name: B4_negative
+    axis: negative_prompt
+    model_id: "stabilityai/stable-diffusion-xl-base-1.0"
+    prompts: [p2]
+    variants:
+      - { label: "no neg",
+          negative_prompt: "" }
+      - { label: "with neg",
+          negative_prompt: "blurry, low quality, extra fingers, deformed hands, unreadable text, watermark" }
