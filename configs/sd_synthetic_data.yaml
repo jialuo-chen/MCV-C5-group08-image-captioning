@@ -9,127 +9,292 @@ output_dir: outputs
 stable_diffusion:
   model_id: stabilityai/stable-diffusion-3.5-large-turbo
   scheduler: default
-  negative_prompt: "blurry, low quality, distorted, watermark, text overlay"
+  negative_prompt: "watermark, text overlay, clear, artistic, illustration, cartoon, 3d render"
   guidance_scale: 0.0
   num_inference_steps: 4
-  images_per_prompt: 3
+  images_per_prompt: 50
   width: 1024
   height: 1024
   seed: 42
   dtype: bfloat16
 
-# Each prompt also acts as the ground-truth caption for that image.
-# caption field overrides prompt as GT when provided (for cleaner captions).
+# VizWiz-style augmentation: randomly apply degradation prefixes to prompts
+# so synthetic images resemble real VizWiz photos (smartphone, blurry, poorly lit)
+vizwiz_style:
+  enabled: true
+  # fraction of images that get a clean prompt (no degradation prefix)
+  clean_fraction: 0.2
+  prefixes:
+    - "Blurry smartphone photo of"
+    - "Out of focus close-up photo of"
+    - "Poorly lit smartphone photo of"
+    - "Dark and grainy phone camera photo of"
+    - "Overexposed flash photo of"
+    - "Tilted and slightly blurry photo of"
+    - "Extreme close-up smartphone photo of"
+    - "Low resolution phone camera picture of"
+    - "A finger partially covering the lens in a photo of"
+    - "Shaky handheld smartphone photo of"
+    - "Dimly lit indoor smartphone photo of"
+    - "Motion blurred photo of"
+    - "Unfocused amateur photo of"
+    - "Hastily taken smartphone snapshot of"
+    - "2010s era phone camera photo of"
+    - "2004s era cell phone photo of"
+
+# Prompt entries support two formats:
+#   Static:   prompt + caption (same text for all images)
+#   Template: pattern + caption_pattern + variables (random fills per image)
 # Prompt selection is based on quantified weaknesses from 7542-sample eval analysis.
 prompts:
-  # --- Specific products / packaging (HIGHEST PRIORITY: 560 generic "food" preds, only 1 specific) ---
-  - prompt: "A box of Barilla whole grain penne pasta on a kitchen counter"
-    caption: "A box of Barilla whole grain penne pasta on a kitchen counter."
-    category: product_packaging
-  - prompt: "A can of Coca-Cola sitting on a white table, red label clearly visible"
-    caption: "A can of Coca-Cola on a white table."
-    category: product_packaging
-  - prompt: "A bottle of Heinz ketchup next to a plate of food"
-    caption: "A bottle of Heinz ketchup next to a plate."
-    category: product_packaging
-  - prompt: "A can of Dr Pepper on a laptop keyboard, red and maroon label visible"
-    caption: "A can of Dr Pepper on a laptop keyboard."
-    category: product_packaging
-  - prompt: "A bottle of Ocean Spray cranberry juice on a wooden counter"
-    caption: "A bottle of Ocean Spray cranberry juice on a counter."
-    category: product_packaging
-  - prompt: "A can of Wegmans brand iced tea mix with a green label"
-    caption: "A can of Wegmans iced tea mix on the counter."
-    category: product_packaging
-  - prompt: "A box of Jell-O brand instant chocolate pudding mix on a shelf"
-    caption: "A box of Jell-O instant chocolate pudding mix."
-    category: product_packaging
-  - prompt: "A box of General Mills Cheerios cereal on a kitchen table"
-    caption: "A box of Cheerios cereal on a kitchen table."
-    category: product_packaging
-  - prompt: "A can of Mountain Dew next to a bag of Doritos on a table"
-    caption: "A can of Mountain Dew next to a bag of Doritos."
-    category: product_packaging
-  - prompt: "A bottle of Sprite in a convenience store refrigerator"
-    caption: "A bottle of Sprite in a store refrigerator."
-    category: product_packaging
-  - prompt: "A package of Betty Crocker cake mix with a red spoon logo"
-    caption: "A package of Betty Crocker cake mix."
-    category: product_packaging
+  # === TEMPLATES (variable combinations sampled per image) ===
 
-  # --- Food without "food" (counter cookie/chip hallucination: 13 wrong preds) ---
-  - prompt: "A bag of Frito-Lay potato chips on a wooden table"
-    caption: "A bag of Frito-Lay potato chips on a table."
+  # --- Products / packaging (HIGHEST PRIORITY: 560 generic "food" preds, only 1 specific) ---
+  - pattern: "A {container} of {brand} {product} on a {surface}"
+    caption_pattern: "A {container} of {brand} {product} on a {surface}."
+    category: product_packaging
+    variables:
+      container: [box, can, bottle, package, bag, jar, carton, jug, tub, pouch, tin, cup]
+      brand:
+        - Barilla
+        - Coca-Cola
+        - Heinz
+        - Dr Pepper
+        - Ocean Spray
+        - Wegmans
+        - Jell-O
+        - Cheerios
+        - Mountain Dew
+        - Sprite
+        - Betty Crocker
+        - Pepsi
+        - Gatorade
+        - Tropicana
+        - Nestle
+        - Kraft
+        - Campbell's
+        - Progresso
+        - Folgers
+        - Starbucks
+        - Lipton
+        - Red Bull
+        - Quaker
+        - Kellogg's
+        - Pringles
+        - Doritos
+        - Fanta
+      product:
+        - penne pasta
+        - soda
+        - ketchup
+        - chips
+        - iced tea
+        - chocolate pudding
+        - cereal
+        - cake mix
+        - orange juice
+        - cranberry juice
+        - rice
+        - ravioli
+        - soup
+        - tomato sauce
+        - coffee
+        - cookies
+        - crackers
+        - frozen pizza
+        - yogurt
+        - energy drink
+        - sparkling water
+        - salsa
+        - mayonnaise
+        - mustard
+        - peanut butter
+        - jam
+        - oatmeal
+        - hot chocolate mix
+        - protein shake
+      surface:
+        - kitchen counter
+        - wooden table
+        - store shelf
+        - granite countertop
+        - desk
+        - refrigerator shelf
+        - dining table
+        - grocery store shelf
+        - checkout counter
+        - marble counter
+        - picnic table
+        - glass table
+
+  # --- Food items without generic "food" (counter cookie/chip hallucination) ---
+  - pattern: "A {container} of {food_item} on a {surface}"
+    caption_pattern: "A {container} of {food_item} on a {surface}."
     category: food_specific
-  - prompt: "A package of Oreo cookies in a blue wrapper on a shelf"
-    caption: "A package of Oreo cookies in a blue wrapper."
-    category: food_specific
-  - prompt: "A bowl of chocolate chip cookies on a white plate"
-    caption: "A bowl of chocolate chip cookies on a white plate."
-    category: food_specific
-  - prompt: "A can of Progresso chicken noodle soup on a counter"
-    caption: "A can of Progresso chicken noodle soup."
-    category: food_specific
-  - prompt: "A box of frozen pizza on a grocery store shelf"
-    caption: "A box of frozen pizza on a store shelf."
-    category: food_specific
-  - prompt: "A package of 10 milligram supplement pills in blister packs"
-    caption: "A package of supplement pills in blister packs."
-    category: food_specific
+    variables:
+      container: [bag, package, bowl, box, plate, cup, tray, wrapper, basket, bucket]
+      food_item:
+        - potato chips
+        - chocolate chip cookies
+        - chicken noodle soup
+        - trail mix
+        - mixed nuts
+        - granola bars
+        - ramen noodles
+        - candy bars
+        - protein bars
+        - dried fruit
+        - microwave popcorn
+        - gummy bears
+        - pretzels
+        - beef jerky
+        - rice cakes
+        - fruit snacks
+        - animal crackers
+        - cheese crackers
+        - tortilla chips
+        - sunflower seeds
+      surface:
+        - wooden table
+        - shelf
+        - counter
+        - kitchen counter
+        - desk
+        - picnic table
+        - store shelf
+        - dining table
+        - coffee table
 
   # --- DVD/media (36 hallucinated titles, 92% of quoted text wrong) ---
-  - prompt: "A DVD case with a man dancing on a blue cover laying on a wooden surface"
-    caption: "A DVD case with a man dancing on the blue cover on a wooden surface."
+  - pattern: "A {media_type} with {cover_desc} on a {surface}"
+    caption_pattern: "A {media_type} with {cover_desc} on a {surface}."
     category: media
-  - prompt: "A stack of DVD cases on a shelf showing various movie covers"
-    caption: "A stack of DVD cases on a shelf."
-    category: media
-  - prompt: "A Hannah Montana Disney movie DVD case on a grey surface"
-    caption: "A Hannah Montana Disney movie DVD case."
-    category: media
-  - prompt: "A CD album with a photo of a male musician on the cover"
-    caption: "A music CD with a male musician on the cover."
-    category: media
-  - prompt: "A TV Guide magazine with a close-up of a woman on the cover"
-    caption: "A TV Guide magazine on a table."
-    category: media
-  - prompt: "A cookbook with a picture of a blender and smoothie on the cover"
-    caption: "A cookbook with a blender and smoothie on the cover."
-    category: media
+    variables:
+      media_type:
+        - DVD case
+        - Blu-ray case
+        - CD album
+        - magazine
+        - book
+        - TV Guide
+        - cookbook
+        - comic book
+        - video game case
+        - VHS tape
+        - paperback novel
+        - board game box
+      cover_desc:
+        - a man in a suit on the cover
+        - a woman smiling on the cover
+        - a landscape scene on the cover
+        - a cartoon character on the cover
+        - an action scene on the cover
+        - a group photo on the cover
+        - a close-up portrait on the cover
+        - a colorful design on the cover
+        - an animal on the cover
+        - a sports scene on the cover
+        - a musician playing guitar on the cover
+        - a family photo on the cover
+        - a city skyline on the cover
+        - a superhero on the cover
+      surface:
+        - wooden table
+        - grey surface
+        - shelf
+        - carpet
+        - desk
+        - store shelf
+        - coffee table
+        - nightstand
+        - bookshelf
+        - glass table
+        - floor
 
   # --- Computer screens (453 identical "screen with" preds) ---
-  - prompt: "A computer monitor showing a login page with username and password fields"
-    caption: "A computer monitor showing a login page."
+  - pattern: "A {device} showing {content}"
+    caption_pattern: "A {device} showing {content}."
     category: screens
-  - prompt: "A laptop screen showing an email inbox with unread messages"
-    caption: "A laptop screen showing an email inbox."
-    category: screens
-  - prompt: "A phone screen showing a weather forecast with temperature readings"
-    caption: "A phone screen showing a weather forecast."
-    category: screens
-  - prompt: "A tablet screen showing a satellite map view of a city"
-    caption: "A tablet screen showing a satellite map."
-    category: screens
-  - prompt: "A computer monitor showing a video call application with a person on screen"
-    caption: "A computer monitor showing a video call."
-    category: screens
+    variables:
+      device:
+        - computer monitor
+        - laptop screen
+        - phone screen
+        - tablet screen
+        - TV screen
+        - desktop monitor
+        - smartphone
+        - iMac screen
+        - Chromebook screen
+      content:
+        - a login page
+        - an email inbox
+        - a weather forecast
+        - a satellite map
+        - a video call
+        - a spreadsheet
+        - a social media feed
+        - a news article
+        - search results
+        - a photo gallery
+        - a settings menu
+        - text messages
+        - a calendar app
+        - a music player
+        - an online store
+        - a map application
+        - a streaming video
+        - a captcha verification
+        - a file browser
+        - a chat conversation
 
-  # --- Power strips / electronics (model defaults to 'device') ---
-  - prompt: "A white power strip with multiple outlets and switches plugged in on carpet floor"
-    caption: "A white power strip with multiple outlets plugged in on carpet."
+  # --- Electronics / devices (model defaults to generic "device") ---
+  - pattern: "A {color} {device} with {detail} on a {surface}"
+    caption_pattern: "A {color} {device} with {detail} on a {surface}."
     category: electronics
-  - prompt: "A black surge protector with six outlets and indicator lights"
-    caption: "A black surge protector with six outlets."
-    category: electronics
-  - prompt: "A USB charging hub with multiple cables connected on a desk"
-    caption: "A USB charging hub with cables on a desk."
-    category: electronics
-  - prompt: "A barbecue grill with a black lid outdoors on a patio"
-    caption: "A barbecue grill with a black lid on a patio."
-    category: electronics
-  - prompt: "A digital alarm clock on a nightstand showing the time in red numbers"
-    caption: "A digital alarm clock on a nightstand."
-    category: electronics
+    variables:
+      color: [white, black, silver, grey, beige, blue, red]
+      device:
+        - power strip
+        - surge protector
+        - USB hub
+        - alarm clock
+        - remote control
+        - router
+        - speaker
+        - charging station
+        - thermostat
+        - extension cord
+        - cable modem
+        - wireless charger
+        - electric kettle
+        - toaster
+        - space heater
+        - fan
+      detail:
+        - multiple outlets
+        - indicator lights
+        - cables connected
+        - several buttons
+        - an LED display
+        - a power cord
+        - blinking lights
+        - an antenna
+        - a digital screen
+        - a USB port
+      surface:
+        - carpet floor
+        - wooden desk
+        - nightstand
+        - kitchen counter
+        - floor
+        - shelf
+        - table
+        - bedside table
+        - office desk
+        - countertop
+
+  # === STATIC PROMPTS (categories with limited natural variation) ===
 
   # --- Currency / bills (misidentification) ---
   - prompt: "A close-up photograph of a five dollar bill showing Abraham Lincoln's portrait"
@@ -141,6 +306,12 @@ prompts:
   - prompt: "A twenty dollar bill laid flat on a wooden table, Andrew Jackson portrait visible"
     caption: "A twenty dollar bill on a wooden table showing Andrew Jackson."
     category: currency
+  - prompt: "A hundred dollar bill with Benjamin Franklin's portrait on a desk"
+    caption: "A hundred dollar bill with Benjamin Franklin's portrait."
+    category: currency
+  - prompt: "A ten dollar bill showing Alexander Hamilton's portrait held between fingers"
+    caption: "A ten dollar bill with Alexander Hamilton's portrait."
+    category: currency
 
   # --- Bags / accessories (object confusion) ---
   - prompt: "A pink and brown Coach handbag with the Coach logo pattern on a table"
@@ -151,6 +322,12 @@ prompts:
     category: accessories
   - prompt: "A leather brown wallet open showing credit card slots"
     caption: "An open brown leather wallet showing card slots."
+    category: accessories
+  - prompt: "A black Nike backpack with white logo on a chair"
+    caption: "A black Nike backpack on a chair."
+    category: accessories
+  - prompt: "A blue denim purse with a metal clasp on a table"
+    caption: "A blue denim purse on a table."
     category: accessories
 
   # --- Labels and text (model can't read, structural issue) ---
@@ -179,6 +356,8 @@ prompts:
   - prompt: "A white t-shirt folded on a wooden table"
     caption: "A white t-shirt folded on a table."
     category: fabric
+
+  # --- Kitchen ---
   - prompt: "A bowl of cereal with milk on a kitchen counter in morning light"
     caption: "A bowl of cereal with milk on a kitchen counter."
     category: food

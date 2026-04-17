@@ -86,7 +86,9 @@ def generate_sd(cfg: Config, prompt_override: str | None = None) -> Path:
         model_id,
         torch_dtype=dtype,
     )
-    pipe = pipe.to("cuda")
+    pipe.enable_model_cpu_offload()
+    pipe.vae.enable_tiling()
+    pipe.vae.enable_slicing()
 
     if scheduler_name != "default" and scheduler_name in SCHEDULER_MAP:
         sched_cls = SCHEDULER_MAP[scheduler_name]
@@ -94,7 +96,7 @@ def generate_sd(cfg: Config, prompt_override: str | None = None) -> Path:
         print(f"Scheduler overridden to: {scheduler_name}")
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    generator = torch.Generator("cuda").manual_seed(seed)
+    generator = torch.Generator("cpu").manual_seed(seed)
 
     all_metadata = []
     img_counter = 0
