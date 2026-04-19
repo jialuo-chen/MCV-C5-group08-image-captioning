@@ -46,7 +46,7 @@ c5-caption = "main:main"
 
 [[tool.uv.index]]
 name = "pytorch-cu"
-url = "https://download.pytorch.org/whl/cu130" #"https://download.pytorch.org/whl/cu118" #"https://download.pytorch.org/whl/cu129"
+url = "https://download.pytorch.org/whl/cu128" #"https://download.pytorch.org/whl/cu118" #"https://download.pytorch.org/whl/cu129"
 explicit = true
 
 [tool.uv.sources]

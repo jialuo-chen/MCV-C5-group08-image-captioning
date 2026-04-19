@@ -1,59 +1,15 @@
 __author__ = "nilavra"
 __version__ = "1.0"
-# Interface for accessing the VizWiz dataset.
-
-# The codebase is adapted from Microsoft COCO Python API (http://cocodataset.org)
-# https://github.com/cocodataset/cocoapi
-
-# VizWiz is an image dataset originating from people who are blind, which is
-# designed for Visual Question Answering, caption generation, and a host of
-# other tasks. The VizWiz API assists in loading, parsing and visualizing the
-# annotations in VizWiz. # Please visit http://vizwiz.org for more information
-# on VizWiz, including # for the data, paper, and tutorials. The exact format
-# of the annotations # is also described on the VizWiz website. In addition
-# to this API, please download both the VizWiz images and annotations in order
-# to run the demo.
-
-# The following API functions are defined:
-#  VizWiz     - VizWiz api class that loads VizWiz annotation file and prepare data structures.
-#  getImgIds  - Get img ids that satisfy given filter conditions.
-#  loadImgs   - Load imgs with the specified ids.
-#  getAnnIds  - Get ann ids that satisfy given filter conditions.
-#  loadAnns   - Load anns with the specified ids.
-#  showAnns   - Display the specified annotations.
-#  loadRes    - Load algorithm results and create API for accessing them.
-#  download   - Download COCO images from mscoco.org server.
-
-# The following API functions are also available:
-#  getCatIds  - Get cat ids that satisfy given filter conditions.
-#  loadCats   - Load cats with the specified ids.
-
-# The following API functions were present in the original COCO API, but they
-# have not been implemented here
-#  decodeMask - Decode binary mask M encoded via run-length encoding.
-#  encodeMask - Encode binary mask M using run-length encoding.
-#  annToMask  - Convert segmentation in an annotation to binary mask.
-
-# Throughout the API "ann"=annotation, "img"=image, and "cat"=category,.
-
-# VizWiz API Version 1.0
-# Data, paper, and tutorials available at:  http://vizwiz.org
-# Code written by Nilavra Bhattacharya, 2019.
-# Licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0)
-# https://creativecommons.org/licenses/by/4.0
 
 
 import itertools
 import json
 import os
-import sys
 import time
 from collections import defaultdict
 from urllib.request import urlretrieve
 
 import numpy as np
-
-PYTHON_VERSION = sys.version_info[0]
 
 
 def _isArrayLike(obj):

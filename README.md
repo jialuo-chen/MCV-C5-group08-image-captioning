@@ -1,24 +1,9 @@
-# C5 Image Captioning (VizWiz)
+# C5 Generative Vision Workbench
 
-A modular image-captioning project with multiple workflows:
-- classic encoder-decoder training
-- VisionEncoderDecoder fine-tuning
-- multimodal VLM evaluation (Qwen)
-- ViT + Qwen LoRA fine-tuning and evaluation
-- Optuna sweep and plot generation
+This repository has two major tracks:
 
-## Reviewer Quick Start
-
-If you only have a few minutes, start here:
-
-1. Read `main.py` to understand all supported commands and entrypoints.
-2. Read `src/utils/config.py` to see how YAML configs are loaded and overridden.
-3. Read the specific pipeline module:
-   - `src/train.py` and `src/evaluate.py` for classic captioning pipeline.
-   - `src/train_vit_decoder.py` and `src/evaluate_pretrained.py` for VisionEncoderDecoder pipeline.
-   - `src/train_lora.py` and `src/evaluate_lora.py` for LoRA pipeline.
-   - `src/evaluate_multimodal.py` and `src/models/qwen_vlm.py` for direct multimodal evaluation.
-4. Inspect example configs in `configs/` matching the pipeline you are reviewing.
+1. Diffusion generation and synthetic data creation.
+2. Image captioning training and evaluation on VizWiz.
 
 ## Setup
 
@@ -31,45 +16,76 @@ Install dependencies:
 
 uv sync
 
-Run commands through uv so the local environment is used:
+Quick sanity check:
 
 uv run python main.py --help
 
-## Main Commands
+## Reviewer Quick Start
 
-Training and evaluation:
+Start with diffusion/generation first, then captioning.
+
+### A) Diffusion Models and Generation (start here)
+
+Code entry path:
+1. `main.py` (commands: `generate-sd`, `generate-synthetic`, `run-sd-sweeps`)
+2. `src/generate_sd.py`
+3. `src/generate_synthetic_data.py`
+4. `src/run_sd_sweeps.py`
+5. `configs/` files for SD workflows (for example `sd_*.yaml`)
+
+Fast test path:
+1. `uv run python main.py generate-sd --help`
+2. `uv run python main.py generate-synthetic --help`
+3. `uv run python main.py run-sd-sweeps --help`
+
+Example commands:
+- `uv run python main.py generate-sd --config configs/sd_inference.yaml`
+- `uv run python main.py generate-synthetic --config configs/sd_synthetic_data.yaml`
+- `uv run python main.py run-sd-sweeps --config configs/sd_sweeps.yaml`
+
+### B) Image Captioning
+
+Code entry path:
+1. `main.py` (captioning commands)
+2. `src/utils/config.py`
+3. Training/eval modules by pipeline:
+   - classic: `src/train.py`, `src/evaluate.py`
+   - VisionEncoderDecoder: `src/train_vit_decoder.py`, `src/evaluate_pretrained.py`
+   - LoRA: `src/train_lora.py`, `src/evaluate_lora.py`
+   - multimodal eval: `src/evaluate_multimodal.py`, `src/models/qwen_vlm.py`
+
+Fast test path:
+1. `uv run python main.py evaluate-multimodal --help`
+2. `uv run python main.py evaluate-lora --help`
+3. `uv run python main.py train --help`
+
+Example commands:
 - `uv run python main.py train --config <config.yaml>`
 - `uv run python main.py evaluate --config <config.yaml> --checkpoint <path>`
 - `uv run python main.py infer --config <config.yaml> --checkpoint <path> --image <img_or_dir>`
-- `uv run python main.py visualize --config <config.yaml> --checkpoint <path>`
-
-Pretrained and multimodal:
 - `uv run python main.py finetune --config configs/vit_gpt2.yaml`
 - `uv run python main.py evaluate-pretrained --config configs/eval_pretrained.yaml --model nlpconnect/vit-gpt2-image-captioning`
-- `uv run python main.py evaluate-multimodal --config configs/eval_qwen_multimodal.yaml --model Qwen/Qwen3.5-0.8B`
-
-LoRA:
 - `uv run python main.py finetune-lora --config configs/lora_qwen_0.8b.yaml`
 - `uv run python main.py evaluate-lora --config configs/lora_qwen_0.8b.yaml --checkpoint outputs/<run>/checkpoints/best`
 
-Optuna and analysis:
-- `uv run python main.py optuna-sweep --config configs/optuna_lora_2b.yaml`
-- `uv run python main.py optuna-viz --study-dir outputs/optuna_lora_qwen_2b`
-- `uv run python main.py quantitative-plots --outputs-dir outputs --out-dir outputs/presentation_plots`
-
 ## Minimal Smoke Checks
 
-There is no dedicated unit-test suite in this repository. For quick verification:
+There is no dedicated unit-test suite in this repository.
 
-1. Syntax/compile check:
+1. Syntax check:
 
 uv run python -m compileall main.py src
 
-2. CLI wiring check:
+2. CLI wiring:
 
 uv run python main.py --help
 
-3. Pipeline command check:
+3. Diffusion CLI checks:
+
+uv run python main.py generate-sd --help
+uv run python main.py run-sd-sweeps --help
+
+4. Captioning CLI checks:
 
 uv run python main.py evaluate-multimodal --help
 uv run python main.py evaluate-lora --help
@@ -77,19 +93,18 @@ uv run python main.py evaluate-lora --help
 ## Project Layout
 
 - `main.py`: single CLI dispatcher
-- `configs/`: experiment/eval/sweep config files
-- `src/data/`: VizWiz access, datasets, tokenizers
-- `src/models/`: captioning models, VLM wrappers, LoRA bridge modules
-- `src/train.py`: classic encoder-decoder training
-- `src/train_vit_decoder.py`: VisionEncoderDecoder fine-tuning
-- `src/train_lora.py`: LoRA fine-tuning for ViT+Qwen
+- `configs/`: all config files (diffusion, training, eval, sweeps)
+- `src/generate_sd.py`, `src/generate_synthetic_data.py`, `src/run_sd_sweeps.py`: diffusion/synthetic pipeline
+- `src/data/`: VizWiz access, dataset classes, tokenizers
+- `src/models/`: captioning and multimodal model modules
+- `src/train.py`, `src/train_vit_decoder.py`, `src/train_lora.py`: training entrypoints
 - `src/evaluate.py`, `src/evaluate_pretrained.py`, `src/evaluate_multimodal.py`, `src/evaluate_lora.py`: evaluation entrypoints
-- `src/optuna_sweep.py`, `src/optuna_visualize.py`: hyperparameter search and visualization
-- `src/generate_*plots.py`, `src/generate_task2_presentation.py`: report/presentation figures
-- `outputs/`: run artifacts and evaluation JSON files
+- `src/optuna_sweep.py`, `src/optuna_visualize.py`: hyperparameter search and plots
+- `src/generate_*plots.py`, `src/generate_task2_presentation.py`, `src/generate_task_de_plots.py`: reporting plots
+- `outputs/`: generated images, checkpoints, metrics, and artifacts
 
-## Notes For Reviewers
+## Notes
 
-- Config overrides are supported via `--override key=value` on commands that accept configs.
-- Most workflows write outputs under `outputs/` unless an explicit output directory is passed.
-- Some workflows assume GPU availability for practical runtime.
+- Commands supporting configs accept `--override key=value`.
+- Most runs write to `outputs/` unless `output_dir` is overridden.
+- GPU is recommended for both diffusion and captioning workflows.
