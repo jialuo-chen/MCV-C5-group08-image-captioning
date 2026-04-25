@@ -1,0 +1,383 @@
+{
+  "hyperparameters": {
+    "encoder": {
+      "name": "vit-base",
+      "pretrained": "google/vit-base-patch16-224",
+      "freeze": true,
+      "feature_dim": 768,
+      "checkpoint": "outputs/best_T1-2/best",
+      "num_prefix_tokens": 0
+    },
+    "decoder": {
+      "type": "rnn",
+      "name": "qwen3.5-2b",
+      "pretrained": "Qwen/Qwen3.5-2B",
+      "hidden_size": 512,
+      "num_layers": 1,
+      "embed_size": 512,
+      "dropout": 0.0
+    },
+    "attention": {
+      "enabled": false,
+      "type": "bahdanau",
+      "attention_dim": 256
+    },
+    "tokenizer": {
+      "type": "hf",
+      "vocab_size": null,
+      "max_length": 128,
+      "pretrained": null
+    },
+    "training": {
+      "epochs": 10,
+      "batch_size": 8,
+      "lr": 2e-05,
+      "init_checkpoint": "outputs/lora-vit-qwen-2b-synthetic-stage1-aug3-unclear20/checkpoints/best",
+      "freeze_encoder": false,
+      "freeze_decoder": false,
+      "optimizer": "adamw",
+      "weight_decay": 0.05,
+      "scheduler": "cosine",
+      "scheduler_params": {},
+      "grad_clip": 1.0,
+      "teacher_forcing_ratio": 1.0,
+      "mixed_precision": "bf16",
+      "num_workers": 4,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "prefetch_factor": 2,
+      "drop_last": false,
+      "tf32": true,
+      "cudnn_benchmark": true,
+      "early_stopping_patience": 4,
+      "distributed": {
+        "enabled": "auto",
+        "backend": "nccl",
+        "nproc_per_node": "auto",
+        "timeout_minutes": 60,
+        "find_unused_parameters": false,
+        "gradient_as_bucket_view": true,
+        "broadcast_buffers": false,
+        "static_graph": false,
+        "eval_rank0_only": true
+      },
+      "gradient_accumulation_steps": 4
+    },
+    "seed": 42,
+    "device": "cuda"
+  },
+  "model_info": {
+    "total_params": 2012203328,
+    "readable_total_params": "2.01G",
+    "trainable_params": 43988992,
+    "encoder_total_params": 86389248,
+    "encoder_trainable_params": 0,
+    "decoder_total_params": 1882193728,
+    "decoder_trainable_params": 368640,
+    "other_total_params": 43620352,
+    "other_trainable_params": 43620352,
+    "encoder_flops": 35127300096,
+    "encoder_flops_readable": "35.13G",
+    "projection_flops": null,
+    "projection_flops_readable": "N/A",
+    "decoder_flops": null,
+    "decoder_flops_readable": "N/A",
+    "total_flops": 35127300096,
+    "total_flops_readable": "35.13G"
+  },
+  "training": {
+    "epochs": [
+      {
+        "epoch": 1,
+        "train_loss": 2.716473,
+        "val_loss": 2.742173,
+        "bleu1": 0.663317,
+        "bleu2": 0.405255,
+        "rougeL": 0.421652,
+        "meteor": 0.396284,
+        "lr": 1.9510565162951538e-05,
+        "epoch_time_s": 410.08,
+        "is_best": true
+      },
+      {
+        "epoch": 2,
+        "train_loss": 2.540014,
+        "val_loss": 2.684904,
+        "bleu1": 0.663965,
+        "bleu2": 0.41007,
+        "rougeL": 0.426948,
+        "meteor": 0.400816,
+        "lr": 1.8090169943749477e-05,
+        "epoch_time_s": 404.95,
+        "is_best": true
+      },
+      {
+        "epoch": 3,
+        "train_loss": 2.477069,
+        "val_loss": 2.667307,
+        "bleu1": 0.676417,
+        "bleu2": 0.423813,
+        "rougeL": 0.436397,
+        "meteor": 0.40824,
+        "lr": 1.5877852522924733e-05,
+        "epoch_time_s": 398.82,
+        "is_best": true
+      },
+      {
+        "epoch": 4,
+        "train_loss": 2.446175,
+        "val_loss": 2.654079,
+        "bleu1": 0.673427,
+        "bleu2": 0.422711,
+        "rougeL": 0.435028,
+        "meteor": 0.407465,
+        "lr": 1.3090169943749475e-05,
+        "epoch_time_s": 407.34,
+        "is_best": false
+      },
+      {
+        "epoch": 5,
+        "train_loss": 2.416641,
+        "val_loss": 2.649309,
+        "bleu1": 0.674013,
+        "bleu2": 0.422812,
+        "rougeL": 0.436622,
+        "meteor": 0.407317,
+        "lr": 1e-05,
+        "epoch_time_s": 404.34,
+        "is_best": false
+      },
+      {
+        "epoch": 6,
+        "train_loss": 2.396028,
+        "val_loss": 2.647784,
+        "bleu1": 0.682702,
+        "bleu2": 0.430216,
+        "rougeL": 0.441683,
+        "meteor": 0.412492,
+        "lr": 6.909830056250527e-06,
+        "epoch_time_s": 405.84,
+        "is_best": true
+      },
+      {
+        "epoch": 7,
+        "train_loss": 2.372781,
+        "val_loss": 2.644531,
+        "bleu1": 0.679758,
+        "bleu2": 0.42735,
+        "rougeL": 0.440298,
+        "meteor": 0.413196,
+        "lr": 4.12214747707527e-06,
+        "epoch_time_s": 404.72,
+        "is_best": true
+      },
+      {
+        "epoch": 8,
+        "train_loss": 2.369829,
+        "val_loss": 2.643443,
+        "bleu1": 0.683237,
+        "bleu2": 0.431544,
+        "rougeL": 0.444131,
+        "meteor": 0.412972,
+        "lr": 1.9098300562505266e-06,
+        "epoch_time_s": 408.38,
+        "is_best": false
+      },
+      {
+        "epoch": 9,
+        "train_loss": 2.370412,
+        "val_loss": 2.641649,
+        "bleu1": 0.683131,
+        "bleu2": 0.431959,
+        "rougeL": 0.443608,
+        "meteor": 0.414188,
+        "lr": 4.894348370484647e-07,
+        "epoch_time_s": 403.43,
+        "is_best": true
+      },
+      {
+        "epoch": 10,
+        "train_loss": 2.364982,
+        "val_loss": 2.642721,
+        "bleu1": 0.682812,
+        "bleu2": 0.431847,
+        "rougeL": 0.443452,
+        "meteor": 0.41323,
+        "lr": 0.0,
+        "epoch_time_s": 401.9,
+        "is_best": false
+      }
+    ]
+  },
+  "summary": {
+    "total_epochs_run": 10,
+    "total_training_time_s": 4066.85,
+    "total_training_time_readable": "1.1h",
+    "best_epoch": 9,
+    "best_metrics": {
+      "bleu1": 0.683131,
+      "bleu2": 0.431959,
+      "rougeL": 0.443608,
+      "meteor": 0.414188
+    },
+    "final_train_loss": 2.364982,
+    "final_val_loss": 2.642721,
+    "min_train_loss": 2.364982,
+    "min_val_loss": 2.641649,
+    "avg_epoch_time_s": 404.98
+  },
+  "test_eval": {
+    "bleu1": 0.677895,
+    "bleu2": 0.427712,
+    "rougeL": 0.440709,
+    "meteor": 0.415114,
+    "samples": [
+      {
+        "image": "VizWiz_val_00000475.jpg",
+        "prediction": "A computer monitor is on a desk with an open window.",
+        "references": [
+          "A Dell brand black computer monitor with white windows on the screen.",
+          "A Dell computer screen with a screen shot that has a list of dates at the bottom.",
+          "The screen is displaying multiple dates on the screen of a computer.",
+          "The display of a Dell computer shows a screen malfunction.",
+          "An internet window turned sideways on a Dell monitor"
+        ]
+      },
+      {
+        "image": "VizWiz_val_00000655.jpg",
+        "prediction": "A piece of paper with some writing on it.",
+        "references": [
+          "A piece of paper has some words printed on it.",
+          "a white page with black text printed on it",
+          "typed out letters on a white piece of paper.",
+          "five lines written on a white page and the writing is unclear."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00006752.jpg",
+        "prediction": "A white keyboard with a black cord plugged into it.",
+        "references": [
+          "a shiny keyboard and cable on a black surface",
+          "An apple wireless keyboard on a black surface.",
+          "A small Apple keyboard with white keys and metallic backsplash.",
+          "A wireless keyboard on a smooth desk near a single cable",
+          "A silver apple keyboard on a black background"
+        ]
+      },
+      {
+        "image": "VizWiz_val_00001532.jpg",
+        "prediction": "A person holding a piece of paper with an image on it.",
+        "references": [
+          "A hand holds up the face of a piece of American currency.",
+          "Abraham Lincoln as seen on a five dollar bill - only the portrait visible.",
+          "A picture of someone holding a 5 dollar bill.",
+          "Abraham Lincoln pictured on a 5 dollar bill.",
+          "Currency with a photo of Abraham Lincoln held up to the camera."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00006487.jpg",
+        "prediction": "A white plastic device with a black cord and wires attached to it.",
+        "references": [
+          "A white extension cord is lying on the carpet floor, there are many different cables inside of the extension cord.",
+          "A white European style six outlet power strip with individual switches for each outlet and two outlets unused sits on an African style rug",
+          "White outlet cord with many wires plugged in and switches.",
+          "A white power strip with five plugins and switches beside each one that has a red USB and three black AC adapters plugged into it."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00005001.jpg",
+        "prediction": "A sign that says \"The Great American Restaurant\" with a blue and white logo.",
+        "references": [
+          "A label on a box reads the quantity and the item number.",
+          "A label for item NO:39653 QT: 1 set Made in China",
+          "An upside down image of a label on a white box.",
+          "A label on a box identified this set was made half way around the world.",
+          "The label on a white box listing the item number and quantity."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00002358.jpg",
+        "prediction": "A blurry image of a white surface with some black specks.",
+        "references": [
+          "A brownish object sits around a bright white flash."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00007011.jpg",
+        "prediction": "A DVD case for a movie called \"The Last Dance\"",
+        "references": [
+          "the front cover of a DVD with a man in a white suit",
+          "A blue DVD with a man wearing yellow on a wooden flat surface.",
+          "A DVD cover has the image of a dancing man",
+          "A dark blue DVD box with a man in a yellow suit dancing on the front.",
+          "A case for a DVD sitting on a brown wooden surface."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00006521.jpg",
+        "prediction": "A box of frozen food with a picture on it.",
+        "references": [
+          "Red and yellow Barilla pasta box of whole grain penne pasta.",
+          "A partial image of a box that contains the words \"Barilla Whole Grain Penne\".",
+          "a person hand holding an orange package of barilla",
+          "A box of Barilla whole grain Penne is held up for the camera.",
+          "Box of Barilla brand whole grain penne pasta"
+        ]
+      },
+      {
+        "image": "VizWiz_val_00006800.jpg",
+        "prediction": "A black remote control for a television is on the table.",
+        "references": [
+          "A close up of a JVC brand remote control.",
+          "Universal remote control for a home entertainment center sitting on a piece of wood.",
+          "An older, dusty, JVC remote with basic buttons."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00006584.jpg",
+        "prediction": "A close up of a laptop keyboard with the letters and numbers.",
+        "references": [
+          "Apple Mac laptop computer with black keyboard keys",
+          "Showing most of a keyboard from a computer.",
+          "Computer keyboard that starts at the number 5 in the upper left corner and ends in backspace in the upper right corner.",
+          "A beige computer keyboard with a white sticker on the top right side.",
+          "Most of an older keyboard from a laptop is a little dusty"
+        ]
+      },
+      {
+        "image": "VizWiz_val_00007401.jpg",
+        "prediction": "A black screen with nothing else on it.",
+        "references": [
+          "Image is completely black and there are no items visible."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00003209.jpg",
+        "prediction": "A pink and white shoe with a flower on it.",
+        "references": [
+          "A pink brown and white coach handbag",
+          "A multi-colored bag on a table in a living room.",
+          "A circle shape pink, brown and white something with coach written on it and there's a different things behind it."
+        ]
+      },
+      {
+        "image": "VizWiz_val_00001618.jpg",
+        "prediction": "A grey piece of fabric with a dark blue line across it.",
+        "references": [
+          "A plain light grey piece of fabric that looks like a sheet.",
+          "A grayish bluish sheet is wrinkled  and speckled white"
+        ]
+      },
+      {
+        "image": "VizWiz_val_00000043.jpg",
+        "prediction": "A person is holding a white object in front of them.",
+        "references": [
+          "The back of a person who is wearing a white shirt",
+          "Someone facing away from the camera in a sitting position",
+          "an object that has black rectangles in it with a large square object above it"
+        ]
+      }
+    ]
+  }
+}

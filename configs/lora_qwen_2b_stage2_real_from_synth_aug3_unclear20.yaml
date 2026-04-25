@@ -1,0 +1,90 @@
+run_name: lora-vit-qwen-2b-stage2-real-from-synth-aug3-unclear20
+seed: 42
+device: cuda
+output_dir: outputs
+
+encoder:
+  name: vit-base
+  pretrained: google/vit-base-patch16-224
+  freeze: true
+  feature_dim: 768
+  checkpoint: outputs/best_T1-2/best
+  num_prefix_tokens: 0
+
+decoder:
+  name: qwen3.5-2b
+  pretrained: Qwen/Qwen3.5-2B
+
+tokenizer:
+  type: hf
+  max_length: 128
+
+attention:
+  enabled: false
+
+lora:
+  enabled: true
+  r: 4
+  alpha: 4
+  dropout: 0.1
+  target: attention
+
+projection:
+  type: qformer
+  num_queries: 32
+  num_layers: 1
+  num_heads: 8
+  ffn_dim: 2048
+  dropout: 0.1
+
+dataset:
+  root: /data/123-1/users/jchen/VizWiz
+  train_ann: annotations/train.json
+  val_ann: annotations/val.json
+  train_img_dir: train
+  val_img_dir: val
+  ignore_rejected: true
+  ignore_precanned: true
+  val_split_ratio: 0.1
+
+synthetic_data:
+  enabled: false
+  mode: "off"
+  root: outputs/synthetic_data
+  annotation: annotations/synthetic_multicap_qwen36_aug3_unclear20.json
+  image_dir: images_aug3_unclear20
+
+training:
+  init_checkpoint: outputs/lora-vit-qwen-2b-synthetic-stage1-aug3-unclear20/checkpoints/best
+  epochs: 10
+  batch_size: 8
+  lr: 2.0e-05
+  optimizer: adamw
+  weight_decay: 0.05
+  scheduler: cosine
+  grad_clip: 1.0
+  mixed_precision: bf16
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+  tf32: true
+  early_stopping_patience: 4
+  gradient_accumulation_steps: 4
+  distributed:
+    enabled: auto
+    backend: nccl
+    nproc_per_node: auto
+    timeout_minutes: 60
+    find_unused_parameters: false
+    gradient_as_bucket_view: true
+    broadcast_buffers: false
+    static_graph: false
+    eval_rank0_only: true
+
+inference:
+  max_length: 128
+
+wandb:
+  enabled: false
+  project: c5-image-caption
