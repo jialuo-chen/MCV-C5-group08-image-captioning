@@ -51,6 +51,7 @@ DEFAULTS: dict[str, Any] = {
         "epochs": 20,
         "batch_size": 64,
         "lr": 1e-3,
+        "init_checkpoint": None,
         "freeze_encoder": False,
         "freeze_decoder": False,
         "optimizer": "adam",  # "adam", "adamw", "sgd"
@@ -61,7 +62,24 @@ DEFAULTS: dict[str, Any] = {
         "teacher_forcing_ratio": 1.0,
         "mixed_precision": False,
         "num_workers": 4,
+        "pin_memory": True,
+        "persistent_workers": True,
+        "prefetch_factor": 2,
+        "drop_last": False,
+        "tf32": True,
+        "cudnn_benchmark": True,
         "early_stopping_patience": None,
+        "distributed": {
+            "enabled": "auto",
+            "backend": "nccl",
+            "nproc_per_node": "auto",
+            "timeout_minutes": 60,
+            "find_unused_parameters": False,
+            "gradient_as_bucket_view": True,
+            "broadcast_buffers": False,
+            "static_graph": False,
+            "eval_rank0_only": True,
+        },
     },
     "inference": {
         "beam_size": 1,  # 1 = greedy
@@ -73,6 +91,13 @@ DEFAULTS: dict[str, Any] = {
         "project": "c5-image-caption",
         "entity": None,
         "tags": [],
+    },
+    "synthetic_data": {
+        "enabled": False,
+        "mode": "off",  # "off" | "append" | "only"
+        "root": "outputs/synthetic_data",
+        "annotation": "annotations/synthetic.json",
+        "image_dir": "images",
     },
     "lora": {
         "enabled": False,

@@ -401,7 +401,22 @@ def build_vision_datasets(cfg, image_processor, tokenizer):
     )
 
     syn_cfg = cfg.get("synthetic_data", {})
-    if isinstance(syn_cfg, dict) and syn_cfg.get("enabled", False):
+    if isinstance(syn_cfg, dict):
+        syn_mode = syn_cfg.get("mode")
+        syn_enabled = syn_cfg.get("enabled", False)
+        if isinstance(syn_mode, bool):
+            syn_mode = "append" if syn_mode else "off"
+        if syn_mode is None:
+            syn_mode = "append" if syn_enabled else "off"
+    else:
+        syn_mode = "off"
+
+    if syn_mode not in {"off", "append", "only"}:
+        raise ValueError(
+            f"Unknown synthetic_data.mode '{syn_mode}'. Use 'off', 'append', or 'only'."
+        )
+
+    if syn_mode != "off":
         syn_root = Path(syn_cfg["root"])
         syn_ann = str(syn_root / syn_cfg.get("annotation", "annotations/synthetic.json"))
         syn_img_dir = str(syn_root / syn_cfg.get("image_dir", "images"))
@@ -414,8 +429,11 @@ def build_vision_datasets(cfg, image_processor, tokenizer):
             split="train",
             indices=None,
         )
-        print(f"Synthetic data: {len(syn_ds)} samples from {syn_root}")
-        train_ds = ConcatDataset([train_ds, syn_ds])
+        print(f"Synthetic data ({syn_mode}): {len(syn_ds)} samples from {syn_root}")
+        if syn_mode == "append":
+            train_ds = ConcatDataset([train_ds, syn_ds])
+        elif syn_mode == "only":
+            train_ds = syn_ds
 
     val_ds = VizWizVisionDataset(
         annotation_file=train_ann,

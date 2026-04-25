@@ -9,15 +9,14 @@ from src.evaluate import evaluate
 from src.evaluate_lora import evaluate_lora
 from src.evaluate_multimodal import evaluate_multimodal
 from src.evaluate_pretrained import evaluate_pretrained
-from src.generate_presentation_plots import generate_all_plots
 from src.generate_sd import generate_sd
 from src.generate_synthetic_data import generate_synthetic_data
-from src.run_sd_sweeps import run_sd_sweeps
 from src.infer import collect_image_paths, infer
 from src.optuna_sweep import run_optuna_sweep
 from src.optuna_visualize import load_and_visualize
+from src.run_sd_sweeps import run_sd_sweeps
 from src.train import train
-from src.train_lora import train_lora
+from src.train_lora import maybe_launch_distributed_training, train_lora
 from src.train_vit_decoder import train_vit_decoder
 from src.utils.config import load_config
 from src.visualize import visualize
@@ -85,10 +84,6 @@ def cmd_optuna_viz(args: argparse.Namespace) -> None:
     load_and_visualize(args.study_dir)
 
 
-def cmd_quantitative_plots(args: argparse.Namespace) -> None:
-    generate_all_plots(args.outputs_dir, args.out_dir)
-
-
 def cmd_visualize(args: argparse.Namespace) -> None:
     cfg = load_config(args.config, overrides=args.override)
     visualize(
@@ -131,6 +126,8 @@ def cmd_evaluate_multimodal(args: argparse.Namespace) -> None:
 
 
 def cmd_finetune_lora(args: argparse.Namespace) -> None:
+    if maybe_launch_distributed_training(args.config, args.override):
+        return
     cfg = load_config(args.config, overrides=args.override)
     train_lora(cfg)
 
@@ -223,23 +220,6 @@ def main() -> None:
     )
     p_vis.add_argument(
         "--model-type", type=str, default=None, help="Model label for plot title."
-    )
-
-    quant_plots = subparsers.add_parser(
-        "quantitative-plots",
-        help="Generate quantitative result plots for the presentation.",
-    )
-    quant_plots.add_argument(
-        "--outputs-dir",
-        type=str,
-        default="outputs",
-        help="Directory containing experiment outputs (default: outputs).",
-    )
-    quant_plots.add_argument(
-        "--out-dir",
-        type=str,
-        default="outputs/presentation_plots",
-        help="Output directory for plots (default: outputs/presentation_plots).",
     )
 
     p_eval_pt = subparsers.add_parser(
@@ -345,7 +325,6 @@ def main() -> None:
         "optuna-sweep": cmd_optuna_sweep,
         "optuna-viz": cmd_optuna_viz,
         "visualize": cmd_visualize,
-        "quantitative-plots": cmd_quantitative_plots,
         "evaluate-pretrained": cmd_evaluate_pretrained,
         "finetune": cmd_finetune,
         "evaluate-multimodal": cmd_evaluate_multimodal,

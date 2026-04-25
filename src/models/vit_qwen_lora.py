@@ -339,6 +339,7 @@ class ViTQwenLoRA(nn.Module):
         encoder_id: str,
         decoder_id: str,
         device: str = "cuda",
+        is_trainable: bool = False,
         **kwargs,
     ) -> "ViTQwenLoRA":
         """Load a saved LoRA checkpoint."""
@@ -367,7 +368,9 @@ class ViTQwenLoRA(nn.Module):
             decoder_id, dtype=torch.bfloat16, trust_remote_code=True
         )
         model.decoder = PeftModel.from_pretrained(
-            base_decoder, save_path / "lora_adapter"
+            base_decoder,
+            save_path / "lora_adapter",
+            is_trainable=is_trainable,
         )
         peft_cfg = model.decoder.peft_config.get("default")
         model.target_modules = list(getattr(peft_cfg, "target_modules", []) or [])
